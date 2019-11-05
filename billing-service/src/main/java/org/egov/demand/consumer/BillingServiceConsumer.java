@@ -7,7 +7,6 @@ import java.util.Map;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.demand.config.ApplicationProperties;
 import org.egov.demand.helper.CollectionReceiptRequest;
-import org.egov.demand.model.Bill;
 import org.egov.demand.model.BillDetail.StatusEnum;
 import org.egov.demand.model.BillV2;
 import org.egov.demand.repository.BillRepository;
@@ -19,16 +18,17 @@ import org.egov.demand.web.contract.BillRequestV2;
 import org.egov.demand.web.contract.DemandRequest;
 import org.egov.demand.web.contract.Receipt;
 import org.egov.demand.web.contract.ReceiptRequest;
-import org.egov.demand.web.contract.ReceiptRequestV2;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -131,11 +131,17 @@ public class BillingServiceConsumer {
 	 */
 	private BillRequestV2 getBillsFromPayment(Map<String, Object> consumerRecord) {
 		
-		JSONObject json = new JSONObject(consumerRecord);
-		JSONArray array = json.getJSONArray("$.Payment.paymentDetails.*.bill");
-		List<BillV2> bills = Arrays.asList(objectMapper.convertValue(array, BillV2[].class));
-		RequestInfo requestInfo = objectMapper.convertValue((json.getJSONObject("$.RequestInfo")), RequestInfo.class);
+		DocumentContext context = null;
 		
+		try {
+			context = JsonPath.parse(objectMapper.writeValueAsString(consumerRecord));
+		} catch (JsonProcessingException e) {
+			log.error("Parsing of data failed in back update for data : {}" + consumerRecord);
+			throw new CustomException("Parsing of data failed in back update", e.getMessage());
+		}
+		
+		List<BillV2> bills = Arrays.asList(objectMapper.convertValue(context.read("$.Payment.paymentDetails.*.bill"), BillV2[].class));
+		RequestInfo requestInfo = objectMapper.convertValue(context.read("$.RequestInfo"), RequestInfo.class);
 		return BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
 	}
 }
