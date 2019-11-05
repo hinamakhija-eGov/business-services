@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -21,7 +20,6 @@ import org.egov.demand.model.DemandCriteria;
 import org.egov.demand.model.DemandDetail;
 import org.egov.demand.web.contract.BillRequestV2;
 import org.egov.demand.web.contract.DemandRequest;
-import org.egov.demand.web.contract.ReceiptRequestV2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -36,20 +34,16 @@ public class ReceiptServiceV2 {
 	private DemandService demandService;
 	
 
-	public void updateDemandFromReceipt(ReceiptRequestV2 receiptRequest, StatusEnum status, Boolean isReceiptCancellation) {
+	public void updateDemandFromReceipt(BillRequestV2 billReq, StatusEnum status, Boolean isReceiptCancellation) {
 
-		if (null != receiptRequest && CollectionUtils.isEmpty(receiptRequest.getReceipt())
-				|| Objects.isNull(receiptRequest)
-				|| CollectionUtils.isEmpty(receiptRequest.getReceipt().get(0).getBill())) {
+		if (billReq == null || billReq != null && CollectionUtils.isEmpty(billReq.getBills())) {
 
-			log.info(" no data found in receipt for update : {} " + receiptRequest);
+			log.info(" no data found in payment for update : {} " + billReq);
 			return;
 		}
 
-		List<BillV2> bills = receiptRequest.getReceipt().get(0).getBill();
-		
 		Set<String> demandIds = new HashSet<>();
-		bills.forEach(bill -> {
+		billReq.getBills().forEach(bill -> {
 
 			bill.setStatus(status);
 			bill.getBillDetails().forEach(billDetail -> {
@@ -57,9 +51,8 @@ public class ReceiptServiceV2 {
 			});
 		});
 
-		BillRequestV2 billRequest = BillRequestV2.builder().requestInfo(receiptRequest.getRequestInfo()).bills(bills)
-				.build();
-		updateDemandFromBill(billRequest,demandIds, isReceiptCancellation);
+
+		updateDemandFromBill(billReq,demandIds, isReceiptCancellation);
 	}
 
 	/**

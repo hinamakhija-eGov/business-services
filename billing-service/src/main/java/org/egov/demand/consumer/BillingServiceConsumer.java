@@ -1,21 +1,27 @@
 package org.egov.demand.consumer;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.demand.config.ApplicationProperties;
 import org.egov.demand.helper.CollectionReceiptRequest;
+import org.egov.demand.model.Bill;
 import org.egov.demand.model.BillDetail.StatusEnum;
+import org.egov.demand.model.BillV2;
 import org.egov.demand.repository.BillRepository;
 import org.egov.demand.service.DemandService;
 import org.egov.demand.service.ReceiptService;
 import org.egov.demand.service.ReceiptServiceV2;
 import org.egov.demand.web.contract.BillRequest;
+import org.egov.demand.web.contract.BillRequestV2;
 import org.egov.demand.web.contract.DemandRequest;
 import org.egov.demand.web.contract.Receipt;
 import org.egov.demand.web.contract.ReceiptRequest;
 import org.egov.demand.web.contract.ReceiptRequestV2;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -105,17 +111,31 @@ public class BillingServiceConsumer {
 		 */
 		else if (applicationProperties.getUpdateDemandFromReceiptV2().equals(topic)) {
 
-			ReceiptRequestV2 receiptRequest = objectMapper.convertValue(consumerRecord, ReceiptRequestV2.class);
-			receiptServiceV2.updateDemandFromReceipt(receiptRequest, org.egov.demand.model.BillV2.StatusEnum.PAID,
-					false);
+			BillRequestV2 billReq = getBillsFromPayment(consumerRecord);
+			receiptServiceV2.updateDemandFromReceipt(billReq, org.egov.demand.model.BillV2.StatusEnum.PAID, false);
 		}
 
 		/*
 		 * update demand for receipt cancellation
 		 */
 		else if (applicationProperties.getReceiptCancellationTopicV2().equals(topic)) {
-			receiptServiceV2.updateDemandFromReceipt(objectMapper.convertValue(consumerRecord, ReceiptRequestV2.class),
-					org.egov.demand.model.BillV2.StatusEnum.CANCELLED, true);
+
+			BillRequestV2 billReq = getBillsFromPayment(consumerRecord);
+			receiptServiceV2.updateDemandFromReceipt(billReq, org.egov.demand.model.BillV2.StatusEnum.CANCELLED, true);
 		}
+	}
+
+
+	/**
+	 * @param consumerRecord
+	 */
+	private BillRequestV2 getBillsFromPayment(Map<String, Object> consumerRecord) {
+		
+		JSONObject json = new JSONObject(consumerRecord);
+		JSONArray array = json.getJSONArray("$.Payments.*.paymentDetails.*.bill");
+		List<BillV2> bills = Arrays.asList(objectMapper.convertValue(array, BillV2[].class));
+		RequestInfo requestInfo = objectMapper.convertValue((json.getJSONObject("$.RequestInfo")), RequestInfo.class);
+		
+		return BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
 	}
 }
