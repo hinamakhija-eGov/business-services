@@ -132,7 +132,7 @@ public class BillingServiceConsumer {
 	private BillRequestV2 getBillsFromPayment(Map<String, Object> consumerRecord) {
 		
 		JSONObject json = new JSONObject(consumerRecord);
-		JSONArray array = json.getJSONArray("$.Payments.*.paymentDetails.*.bill");
+		JSONArray array = json.getJSONArray("$.Payment.paymentDetails.*.bill");
 		List<BillV2> bills = Arrays.asList(objectMapper.convertValue(array, BillV2[].class));
 		RequestInfo requestInfo = objectMapper.convertValue((json.getJSONObject("$.RequestInfo")), RequestInfo.class);
 		
