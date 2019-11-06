@@ -15,7 +15,7 @@ public class BillQueryBuilder {
 	private ApplicationProperties applicationProperties;
 	
 	
-	public static final String EXPIRE_BILL_QUERY = "UPDATE egbs_bill_v1 SET status='EXPIRED' WHERE id IN ";
+	public static final String BILL_STATUS_UPDATE_QUERY = "UPDATE egbs_bill_v1 SET status=? WHERE id IN ";
 	
 	public static final String INSERT_BILL_QUERY = "INSERT into egbs_bill_v1 "
 			+"(id, tenantid, payername, payeraddress, payeremail, isactive, iscancelled, createdby, createddate, lastmodifiedby, lastmodifieddate, mobilenumber, status, additionaldetails)"
@@ -133,9 +133,9 @@ public class BillQueryBuilder {
 	 * @param billIds
 	 * @param preparedStmtList
 	 */
-	public String getBillExpiryQuery(List<String> billIds, List<Object> preparedStmtList) {
+	public String getBillStatusUpdateQuery(List<String> billIds, List<Object> preparedStmtList) {
 
-		StringBuilder builder = new StringBuilder(EXPIRE_BILL_QUERY);
+		StringBuilder builder = new StringBuilder(BILL_STATUS_UPDATE_QUERY);
 		builder.append("( ");
 		int length = billIds.size();
 		

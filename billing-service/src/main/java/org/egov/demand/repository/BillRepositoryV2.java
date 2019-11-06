@@ -13,6 +13,7 @@ import org.egov.demand.model.BillAccountDetailV2;
 import org.egov.demand.model.BillDetailV2;
 import org.egov.demand.model.BillSearchCriteria;
 import org.egov.demand.model.BillV2;
+import org.egov.demand.model.BillV2.StatusEnum;
 import org.egov.demand.repository.querybuilder.BillQueryBuilder;
 import org.egov.demand.repository.rowmapper.BillRowMapperV2;
 import org.egov.demand.util.Util;
@@ -190,10 +191,11 @@ public class BillRepositoryV2 {
 	 * executes query to update bill status to expired 
 	 * @param billIds
 	 */
-	public void expireBills(List<String> billIds) {
+	public void updateBillStatus(List<String> billIds, StatusEnum status) {
 
 		List<Object> preparedStmtList = new ArrayList<>();
-		String queryStr = billQueryBuilder.getBillExpiryQuery(billIds, preparedStmtList);
+		preparedStmtList.add(status.toString());
+		String queryStr = billQueryBuilder.getBillStatusUpdateQuery(billIds, preparedStmtList);
 		jdbcTemplate.update(queryStr, preparedStmtList.toArray());
 	}
 }

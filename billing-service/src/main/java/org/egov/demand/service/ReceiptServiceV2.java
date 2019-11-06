@@ -1,6 +1,7 @@
 package org.egov.demand.service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -18,6 +19,7 @@ import org.egov.demand.model.BillV2.StatusEnum;
 import org.egov.demand.model.Demand;
 import org.egov.demand.model.DemandCriteria;
 import org.egov.demand.model.DemandDetail;
+import org.egov.demand.repository.BillRepositoryV2;
 import org.egov.demand.web.contract.BillRequestV2;
 import org.egov.demand.web.contract.DemandRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,9 @@ public class ReceiptServiceV2 {
 
 	@Autowired
 	private DemandService demandService;
+	
+	@Autowired
+	private BillRepositoryV2 billRepository;
 	
 
 	public void updateDemandFromReceipt(BillRequestV2 billReq, StatusEnum status, Boolean isReceiptCancellation) {
@@ -68,6 +73,7 @@ public class ReceiptServiceV2 {
 		List<BillV2> bills = billRequest.getBills();
 		String tenantId = bills.get(0).getTenantId();
 		RequestInfo requestInfo = billRequest.getRequestInfo();
+		List<String> billIdsToBePaid = new ArrayList<>();
 
 		DemandCriteria demandCriteria = DemandCriteria.builder().demandId(demandIds).tenantId(tenantId).build();
 		List<Demand> demandsToBeUpdated = demandService.getDemands(demandCriteria, requestInfo);
@@ -76,12 +82,14 @@ public class ReceiptServiceV2 {
 		
 		for(BillV2 bill : bills) {
 			
+			billIdsToBePaid.add(bill.getId());
 			for (BillDetailV2 billDetail : bill.getBillDetails())
 				updateDemandFromBillDetail(billDetail, demandIdMap.get(billDetail.getDemandId()), isReceiptCancellation);
 			
 		}
 		
 		demandService.updateAsync(DemandRequest.builder().demands(demandsToBeUpdated).requestInfo(billRequest.getRequestInfo()).build());
+		billRepository.updateBillStatus(billIdsToBePaid, StatusEnum.PAID);
 	}
 
 	/**

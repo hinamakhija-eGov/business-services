@@ -185,7 +185,7 @@ public class BillServicev2 {
 			return res;
 		else {
 			updateDemandsForexpiredBillDetails(serviceAndConsumerCodeList, billCriteria.getTenantId(), requestInfoWrapper);
-			billRepository.expireBills(billIdsToBeExpired);
+			billRepository.updateBillStatus(billIdsToBeExpired, StatusEnum.EXPIRED);
 			return generateBill(billCriteria, requestInfo);
 		}
 	}
