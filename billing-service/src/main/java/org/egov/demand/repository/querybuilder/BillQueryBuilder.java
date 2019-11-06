@@ -14,6 +14,9 @@ public class BillQueryBuilder {
 	@Autowired
 	private ApplicationProperties applicationProperties;
 	
+	
+	public static final String EXPIRE_BILL_QUERY = "UPDATE egbs_bill_v1 SET status='EXPIRED' WHERE id IN ";
+	
 	public static final String INSERT_BILL_QUERY = "INSERT into egbs_bill_v1 "
 			+"(id, tenantid, payername, payeraddress, payeremail, isactive, iscancelled, createdby, createddate, lastmodifiedby, lastmodifieddate, mobilenumber, status, additionaldetails)"
 			+"values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -63,21 +66,18 @@ public class BillQueryBuilder {
 	private void addWhereClause(final StringBuilder selectQuery, final List preparedStatementValues,
 			final BillSearchCriteria searchBill) {
 		
-		if (searchBill.getConsumerCode() == null && searchBill.getBillId() == null && searchBill.getIsActive() == null
-				&& searchBill.getIsCancelled() == null)
+		if (searchBill.getConsumerCode() == null && searchBill.getBillId() == null)
 			return;
 		
 		if(searchBill.getBillId() != null && !searchBill.getBillId().isEmpty())
 			selectQuery.append(" AND b.id in (" + getIdQuery(searchBill.getBillId()));
 		
-		if(searchBill.getIsActive() != null){
-			selectQuery.append(" AND b.isactive = ?");
-			preparedStatementValues.add(searchBill.getIsActive());
-		}
-		if(searchBill.getIsCancelled() != null){
-			selectQuery.append(" AND b.iscancelled = ?");
-			preparedStatementValues.add(searchBill.getIsCancelled());
-		}
+		if (searchBill.getStatus() != null) {
+			selectQuery.append(" AND b.status = ?");
+			preparedStatementValues.add(searchBill.getStatus().toString());
+		} else {
+			selectQuery.append(" AND b.status = 'ACTIVE'");
+		}	
 
 		if (searchBill.getEmail() != null) {
 			selectQuery.append(" AND b.payeremail = ?");
@@ -127,6 +127,27 @@ public class BillQueryBuilder {
 															// pageNo * pageSize
 	}
 	
+	/**
+	 * Bill expire query builder
+	 * 
+	 * @param billIds
+	 * @param preparedStmtList
+	 */
+	public String getBillExpiryQuery(List<String> billIds, List<Object> preparedStmtList) {
+
+		StringBuilder builder = new StringBuilder(EXPIRE_BILL_QUERY);
+		builder.append("( ");
+		int length = billIds.size();
+		
+		for (int i = 0; i < length; i++) {
+			builder.append(" ?");
+			if (i != length - 1)
+				builder.append(",");
+			preparedStmtList.add(billIds.get(i));
+		}
+		return builder.append(")").toString();
+	}
+
 	private static String getIdQuery(Set<String> idList) {
 
 		StringBuilder query = new StringBuilder();

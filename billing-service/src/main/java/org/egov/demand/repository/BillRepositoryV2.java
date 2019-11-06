@@ -185,4 +185,15 @@ public class BillRepositoryV2 {
 			}
 		});
 	}
+
+	/**
+	 * executes query to update bill status to expired 
+	 * @param billIds
+	 */
+	public void expireBills(List<String> billIds) {
+
+		List<Object> preparedStmtList = new ArrayList<>();
+		String queryStr = billQueryBuilder.getBillExpiryQuery(billIds, preparedStmtList);
+		jdbcTemplate.update(queryStr, preparedStmtList.toArray());
+	}
 }

@@ -64,11 +64,11 @@ import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.demand.config.ApplicationProperties;
-import org.egov.demand.model.BillV2;
-import org.egov.demand.model.BillV2.StatusEnum;
 import org.egov.demand.model.BillAccountDetailV2;
 import org.egov.demand.model.BillDetailV2;
 import org.egov.demand.model.BillSearchCriteria;
+import org.egov.demand.model.BillV2;
+import org.egov.demand.model.BillV2.StatusEnum;
 import org.egov.demand.model.BusinessServiceDetail;
 import org.egov.demand.model.Demand;
 import org.egov.demand.model.DemandCriteria;
@@ -167,24 +167,46 @@ public class BillServicev2 {
 		 * consumerCodes against the service code
 		 */
 		
-		Map<String, List<String>> serviceAndConsumerCodeListMap = bills.stream().filter(bill -> {
-
-			return (bill.getBillDetails().stream().filter(
-					detail -> detail.getExpiryDate().compareTo(System.currentTimeMillis()) < 0)) != null;
-		}).collect(Collectors.groupingBy(BillV2::getBusinessService, Collectors.mapping(BillV2::getConsumerCode, Collectors.toList())));
+		Map<String, Set<String>> serviceAndConsumerCodeList = new HashMap<>();
+		List<String> billIdsToBeExpired = new ArrayList<>();
 		
+		for (BillV2 bill : bills)
+			for (BillDetailV2 billDetail : bill.getBillDetails())
+				if (billDetail.getExpiryDate().compareTo(System.currentTimeMillis()) < 0) {
+					billIdsToBeExpired.add(bill.getId());
+					addConsumercodeToexpiredMap(bill, serviceAndConsumerCodeList);
+					continue;
+				}
+
 		/*
 		 * If none of the billDetails in the bills needs to be updated then return the search result
 		 */
-		if(CollectionUtils.isEmpty(serviceAndConsumerCodeListMap))
+		if(CollectionUtils.isEmpty(serviceAndConsumerCodeList))
 			return res;
 		else {
-			
-			updateDemandsForexpiredBillDetails(serviceAndConsumerCodeListMap, billCriteria.getTenantId(), requestInfoWrapper);
+			updateDemandsForexpiredBillDetails(serviceAndConsumerCodeList, billCriteria.getTenantId(), requestInfoWrapper);
+			billRepository.expireBills(billIdsToBeExpired);
 			return generateBill(billCriteria, requestInfo);
 		}
 	}
-	
+
+	/**
+	 * private method to update consumer code values for expired bills
+	 * 
+	 * @param bill
+	 * @param serviceAndConsumerCodeList
+	 */
+	private void addConsumercodeToexpiredMap(BillV2 bill, Map<String, Set<String>> serviceAndConsumerCodeList) {
+
+		Set<String> consumerCodeSet = serviceAndConsumerCodeList.get(bill.getBusinessService());
+		if (null == consumerCodeSet) {
+			consumerCodeSet = new HashSet<String>();
+			consumerCodeSet.add(bill.getConsumerCode());
+			serviceAndConsumerCodeList.put(bill.getBusinessService(), consumerCodeSet);
+		} else
+			consumerCodeSet.add(bill.getConsumerCode());
+	}
+
 	/**
 	 * To make calls to respective service which updates the demands belonging to
 	 * the arguments passed
@@ -192,12 +214,12 @@ public class BillServicev2 {
 	 * @param serviceAndConsumerCodeListMap
 	 * @param tenantId
 	 */
-	private void updateDemandsForexpiredBillDetails(Map<String, List<String>> serviceAndConsumerCodeListMap,
+	private void updateDemandsForexpiredBillDetails(Map<String, Set<String>> serviceAndConsumerCodeListMap,
 			String tenantId, RequestInfoWrapper requestInfoWrapper) {
 
 		Map<String, String> serviceUrlMap = appProps.getBusinessCodeAndDemandUpdateUrlMap();
 
-		for (Entry<String, List<String>> entry : serviceAndConsumerCodeListMap.entrySet()) {
+		for (Entry<String, Set<String>> entry : serviceAndConsumerCodeListMap.entrySet()) {
 
 			String url = serviceUrlMap.get(entry.getKey());
 
