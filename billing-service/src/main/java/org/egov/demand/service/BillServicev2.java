@@ -306,7 +306,7 @@ public class BillServicev2 {
 
 		
 		List<BillV2> bills = new ArrayList<>();
-		User payer = demands.get(0).getPayer();
+		User payer = null != demands.get(0).getPayer() ?  demands.get(0).getPayer() : new User();
 		
 		/*
 		 * Fetching Required master data
@@ -353,6 +353,7 @@ public class BillServicev2 {
 				billDetails.add(billDetail);
 				billAmount = billAmount.add(billDetail.getAmount());
 			}
+			
 			
 			BillV2 bill = BillV2.builder()
 					.collectionModesNotAllowed(business.getCollectionModesNotAllowed())
