@@ -81,12 +81,12 @@ public class BillQueryBuilder {
 
 		if (searchBill.getEmail() != null) {
 			selectQuery.append(" AND b.payeremail = ?");
-			preparedStatementValues.add(searchBill.getConsumerCode());
+			preparedStatementValues.add(searchBill.getEmail());
 		}
 
 		if (searchBill.getMobileNumber()!= null) {
 			selectQuery.append(" AND b.mobileNumber = ?");
-			preparedStatementValues.add(searchBill.getConsumerCode());
+			preparedStatementValues.add(searchBill.getMobileNumber());
 		}
 
 		if (searchBill.getService() != null) {
