@@ -66,9 +66,6 @@ public class BillQueryBuilder {
 	private void addWhereClause(final StringBuilder selectQuery, final List preparedStatementValues,
 			final BillSearchCriteria searchBill) {
 		
-		if (searchBill.getConsumerCode() == null && searchBill.getBillId() == null)
-			return;
-		
 		if(searchBill.getBillId() != null && !searchBill.getBillId().isEmpty())
 			selectQuery.append(" AND b.id in (" + getIdQuery(searchBill.getBillId()));
 		
