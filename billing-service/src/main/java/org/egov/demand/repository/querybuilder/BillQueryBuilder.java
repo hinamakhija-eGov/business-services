@@ -139,6 +139,7 @@ public class BillQueryBuilder {
 
 			builder.append("id IN ( SELECT billid from egbs_billdetail_v1 where consumercode IN (");
 			appendListToQuery(consumerCodes, preparedStmtList, builder);
+			builder.append(")");
 		}
 		return builder.toString();
 	}
