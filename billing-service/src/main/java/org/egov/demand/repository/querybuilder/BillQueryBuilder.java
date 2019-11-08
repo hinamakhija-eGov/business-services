@@ -7,6 +7,7 @@ import org.egov.demand.config.ApplicationProperties;
 import org.egov.demand.model.BillSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 @Component
 public class BillQueryBuilder {
@@ -15,7 +16,7 @@ public class BillQueryBuilder {
 	private ApplicationProperties applicationProperties;
 	
 	
-	public static final String BILL_STATUS_UPDATE_QUERY = "UPDATE egbs_bill_v1 SET status=? WHERE id IN ";
+	public static final String BILL_STATUS_UPDATE_QUERY = "UPDATE egbs_bill_v1 SET status=? WHERE ";
 	
 	public static final String INSERT_BILL_QUERY = "INSERT into egbs_bill_v1 "
 			+"(id, tenantid, payername, payeraddress, payeremail, isactive, iscancelled, createdby, createddate, lastmodifiedby, lastmodifieddate, mobilenumber, status, additionaldetails)"
@@ -130,19 +131,33 @@ public class BillQueryBuilder {
 	 * @param billIds
 	 * @param preparedStmtList
 	 */
-	public String getBillStatusUpdateQuery(List<String> billIds, List<Object> preparedStmtList) {
+	public String getBillStatusUpdateQuery(List<String> consumerCodes, List<Object> preparedStmtList) {
 
 		StringBuilder builder = new StringBuilder(BILL_STATUS_UPDATE_QUERY);
-		builder.append("( ");
-		int length = billIds.size();
-		
+
+		if (!CollectionUtils.isEmpty(consumerCodes)) {
+
+			builder.append("id IN ( SELECT billid from egbs_billdetail_v1 where consumercode IN (");
+			appendListToQuery(consumerCodes, preparedStmtList, builder);
+		}
+		return builder.toString();
+	}
+
+	/**
+	 * @param billIds
+	 * @param preparedStmtList
+	 * @param builder
+	 */
+	private void appendListToQuery(List<String> values, List<Object> preparedStmtList, StringBuilder builder) {
+		int length = values.size();
+
 		for (int i = 0; i < length; i++) {
 			builder.append(" ?");
 			if (i != length - 1)
 				builder.append(",");
-			preparedStmtList.add(billIds.get(i));
+			preparedStmtList.add(values.get(i));
 		}
-		return builder.append(")").toString();
+		builder.append(")");
 	}
 
 	private static String getIdQuery(Set<String> idList) {

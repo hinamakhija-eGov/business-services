@@ -73,7 +73,8 @@ public class ReceiptServiceV2 {
 		List<BillV2> bills = billRequest.getBills();
 		String tenantId = bills.get(0).getTenantId();
 		RequestInfo requestInfo = billRequest.getRequestInfo();
-		List<String> billIdsToBePaid = new ArrayList<>();
+		List<String> billConsumerCodesToBePaid = new ArrayList<>();
+		StatusEnum status = isReceiptCancellation ? StatusEnum.CANCELLED : StatusEnum.PAID; 
 
 		DemandCriteria demandCriteria = DemandCriteria.builder().demandId(demandIds).tenantId(tenantId).build();
 		List<Demand> demandsToBeUpdated = demandService.getDemands(demandCriteria, requestInfo);
@@ -82,14 +83,14 @@ public class ReceiptServiceV2 {
 		
 		for(BillV2 bill : bills) {
 			
-			billIdsToBePaid.add(bill.getId());
+			billConsumerCodesToBePaid.add(bill.getConsumerCode());
 			for (BillDetailV2 billDetail : bill.getBillDetails())
 				updateDemandFromBillDetail(billDetail, demandIdMap.get(billDetail.getDemandId()), isReceiptCancellation);
 			
 		}
 		
 		demandService.updateAsync(DemandRequest.builder().demands(demandsToBeUpdated).requestInfo(billRequest.getRequestInfo()).build());
-		billRepository.updateBillStatus(billIdsToBePaid, StatusEnum.PAID);
+		billRepository.updateBillStatus(billConsumerCodesToBePaid, status);
 	}
 
 	/**

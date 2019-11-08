@@ -168,12 +168,12 @@ public class BillServicev2 {
 		 */
 		
 		Map<String, Set<String>> serviceAndConsumerCodeList = new HashMap<>();
-		List<String> billIdsToBeExpired = new ArrayList<>();
+		List<String> billCosnumerCodesToBeExpired = new ArrayList<>();
 		
 		for (BillV2 bill : bills)
 			for (BillDetailV2 billDetail : bill.getBillDetails())
 				if (billDetail.getExpiryDate().compareTo(System.currentTimeMillis()) < 0) {
-					billIdsToBeExpired.add(bill.getId());
+					billCosnumerCodesToBeExpired.add(bill.getConsumerCode());
 					addConsumercodeToexpiredMap(bill, serviceAndConsumerCodeList);
 					continue;
 				}
@@ -185,7 +185,7 @@ public class BillServicev2 {
 			return res;
 		else {
 			updateDemandsForexpiredBillDetails(serviceAndConsumerCodeList, billCriteria.getTenantId(), requestInfoWrapper);
-			billRepository.updateBillStatus(billIdsToBeExpired, StatusEnum.EXPIRED);
+			billRepository.updateBillStatus(billCosnumerCodesToBeExpired, StatusEnum.EXPIRED);
 			return generateBill(billCriteria, requestInfo);
 		}
 	}
