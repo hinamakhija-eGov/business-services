@@ -88,9 +88,9 @@ public class DemandRowMapper implements ResultSetExtractor<List<Demand>> {
 				demand.setBillExpiryTime(rs.getLong("dbillexpirytime"));
 				demand.setStatus(StatusEnum.fromValue(rs.getString("status")));
 
-				Object adDetail = rs.getObject("demandadditionaldetails");
-				if(null != adDetail)
-				demand.setAdditionalDetails(util.getJsonValue((PGobject) adDetail));
+
+				PGobject adDetail = (PGobject) rs.getObject("demandadditionaldetails");
+				demand.setAdditionalDetails(util.getJsonValue(adDetail));
 				demand.setMinimumAmountPayable(rs.getBigDecimal("dminimumAmountPayable"));
 
 				String payerId = rs.getString("payer");
@@ -131,4 +131,5 @@ public class DemandRowMapper implements ResultSetExtractor<List<Demand>> {
 		}
 		return new ArrayList<>(demandMap.values());
 	}
+	
 }
