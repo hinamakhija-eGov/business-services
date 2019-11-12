@@ -271,6 +271,7 @@ public class BillServicev2 {
 			consumerCodes.add(billCriteria.getConsumerCode());
 
 		DemandCriteria demandCriteria = DemandCriteria.builder()
+				.status(org.egov.demand.model.Demand.StatusEnum.ACTIVE.toString())
 				.businessService(billCriteria.getBusinessService())
 				.mobileNumber(billCriteria.getMobileNumber())
 				.tenantId(billCriteria.getTenantId())
@@ -356,9 +357,6 @@ public class BillServicev2 {
 			
 			
 			BillV2 bill = BillV2.builder()
-					.collectionModesNotAllowed(business.getCollectionModesNotAllowed())
-					.partPaymentAllowed(business.getPartPaymentAllowed())
-					.isAdvanceAllowed(business.getIsAdvanceAllowed())
 					.auditDetails(util.getAuditDetail(requestInfo))
 					.payerAddress(payer.getPermanentAddress())
 					.mobileNumber(payer.getMobileNumber())
