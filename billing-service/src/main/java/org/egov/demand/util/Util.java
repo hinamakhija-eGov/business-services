@@ -3,9 +3,11 @@ package org.egov.demand.util;
 import static org.egov.demand.util.Constants.INVALID_TENANT_ID_MDMS_KEY;
 import static org.egov.demand.util.Constants.INVALID_TENANT_ID_MDMS_MSG;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.egov.common.contract.request.RequestInfo;
@@ -22,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
@@ -142,5 +145,16 @@ public class Util {
 		}
 		return json;
 	}
+	
+    public JsonNode getJsonValue(PGobject pGobject){
+        try {
+            if(Objects.isNull(pGobject) || Objects.isNull(pGobject.getValue()))
+                return null;
+            else
+                return mapper.readTree( pGobject.getValue());
+        } catch (IOException e) {
+        	throw new CustomException(Constants.EG_BS_JSON_EXCEPTION_KEY, Constants.EG_BS_JSON_EXCEPTION_MSG);
+        }
+    }
 	
 }

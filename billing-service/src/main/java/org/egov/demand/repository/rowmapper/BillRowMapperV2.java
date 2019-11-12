@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,15 +14,21 @@ import org.egov.demand.model.BillAccountDetailV2;
 import org.egov.demand.model.BillDetailV2;
 import org.egov.demand.model.BillV2;
 import org.egov.demand.model.BillV2.StatusEnum;
+import org.egov.demand.util.Util;
+import org.postgresql.util.PGobject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
 
 @Component
 public class BillRowMapperV2 implements ResultSetExtractor<List<BillV2>>{
 
+	@Autowired
+	private Util util;
+
 	@Override
 	public List<BillV2> extractData(ResultSet rs) throws SQLException {
-		
+
 		Map<String, BillV2> billMap = new LinkedHashMap<>();
 		Map<String, BillDetailV2> billDetailMap = new HashMap<>();
 
@@ -54,10 +59,7 @@ public class BillRowMapperV2 implements ResultSetExtractor<List<BillV2>>{
 					.billNumber(rs.getString("bd_billno"))
 					.billDate(rs.getLong("bd_billDate"))
 					.consumerCode(rs.getString("bd_consumerCode"))
-					.collectionModesNotAllowed(Arrays.asList(rs.getString("bd_collectionmodesnotallowed").split(",")))
-					.partPaymentAllowed(rs.getBoolean("bd_partpaymentallowed"))
-					.isAdvanceAllowed(rs.getBoolean("bd_isadvanceallowed"))
-					.additionalDetails(rs.getObject("b_additionalDetails"))
+					.additionalDetails(util.getJsonValue((PGobject) rs.getObject("b_additionalDetails")))
 					.auditDetails(auditDetails)
 					.build();
 

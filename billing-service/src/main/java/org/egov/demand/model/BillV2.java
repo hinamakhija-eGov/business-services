@@ -54,16 +54,6 @@ public class BillV2 {
 	@JsonProperty("consumerCode")
 	private String consumerCode;
 
-	@JsonProperty("collectionModesNotAllowed")
-	@Valid
-	private List<String> collectionModesNotAllowed;
-
-	@JsonProperty("partPaymentAllowed")
-	private Boolean partPaymentAllowed;
-	
-	@JsonProperty("isAdvanceAllowed")
-	private Boolean isAdvanceAllowed;
-
 	@JsonProperty("additionalDetails")
 	private Object additionalDetails;
 

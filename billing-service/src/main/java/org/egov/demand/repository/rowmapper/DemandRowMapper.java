@@ -49,14 +49,20 @@ import java.util.Map;
 import org.egov.demand.model.AuditDetails;
 import org.egov.demand.model.Demand;
 import org.egov.demand.model.Demand.StatusEnum;
+import org.egov.demand.util.Util;
 import org.egov.demand.model.DemandDetail;
 import org.egov.demand.web.contract.User;
+import org.postgresql.util.PGobject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DemandRowMapper implements ResultSetExtractor<List<Demand>> {
+	
+	@Autowired
+	private Util util;
 
 	@Override
 	public List<Demand> extractData(ResultSet rs) throws SQLException, DataAccessException {
@@ -81,6 +87,7 @@ public class DemandRowMapper implements ResultSetExtractor<List<Demand>> {
 				demand.setTenantId(rs.getString("dtenantid"));
 				demand.setBillExpiryTime(rs.getLong("dbillexpirytime"));
 				demand.setStatus(StatusEnum.fromValue(rs.getString("status")));
+				demand.setAdditionalDetails(util.getJsonValue((PGobject) rs.getObject("b_additionalDetails")));
 
 				demand.setMinimumAmountPayable(rs.getBigDecimal("dminimumAmountPayable"));
 

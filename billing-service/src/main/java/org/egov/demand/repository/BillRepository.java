@@ -182,10 +182,6 @@ public class BillRepository {
 			public void setValues(PreparedStatement ps, int index) throws SQLException {
 				BillAccountDetail billAccountDetail = billAccountDetails.get(index);
 				
-				String purpose = null;
-				if(billAccountDetail.getPurpose()!=null)
-					purpose = billAccountDetail.getPurpose().toString();
-					
 				ps.setString(1, billAccountDetail.getId());
 				ps.setString(2, billAccountDetail.getTenantId());
 				ps.setString(3, billAccountDetail.getBillDetail());
@@ -193,8 +189,8 @@ public class BillRepository {
 				ps.setObject(5, billAccountDetail.getOrder());
 				ps.setBigDecimal(6, billAccountDetail.getAmount());
 				ps.setObject(7, billAccountDetail.getAdjustedAmount());
-				ps.setObject(8, billAccountDetail.getIsActualDemand());
-				ps.setString(9, purpose);
+				ps.setObject(8, null);
+				ps.setString(9, null);
 				ps.setString(10, auditDetails.getCreatedBy());
 				ps.setLong(11, auditDetails.getCreatedTime());
 				ps.setString(12, auditDetails.getLastModifiedBy());

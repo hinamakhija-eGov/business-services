@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.egov.demand.model.AuditDetails;
 import org.egov.demand.model.BillAccountDetailV2;
 import org.egov.demand.model.BillDetailV2;
@@ -132,18 +131,13 @@ public class BillRepositoryV2 {
 				ps.setObject(15, billDetail.getAmount());
 				// apportioning logic does not reside in billing service anymore 
 				ps.setBoolean(16, false);
-				ps.setObject(17, bill.getPartPaymentAllowed());
-				
-				String collectionModesNotAllowed = null != bill.getCollectionModesNotAllowed()
-						? StringUtils.join(bill.getCollectionModesNotAllowed(), ",")
-						: null;
-				ps.setString(18, collectionModesNotAllowed);
-				
+				ps.setObject(17, null);
+				ps.setString(18, null);
 				ps.setString(19, auditDetails.getCreatedBy());
 				ps.setLong(20, auditDetails.getCreatedTime());
 				ps.setString(21, auditDetails.getLastModifiedBy());
 				ps.setLong(22, auditDetails.getLastModifiedTime());
-				ps.setBoolean(23, bill.getIsAdvanceAllowed());
+				ps.setObject(23, null);
 				ps.setLong(24, billDetail.getExpiryDate());
 			}
 
