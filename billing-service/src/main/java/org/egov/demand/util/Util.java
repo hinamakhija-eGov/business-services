@@ -3,7 +3,6 @@ package org.egov.demand.util;
 import static org.egov.demand.util.Constants.INVALID_TENANT_ID_MDMS_KEY;
 import static org.egov.demand.util.Constants.INVALID_TENANT_ID_MDMS_MSG;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -152,7 +151,7 @@ public class Util {
                 return null;
             else
                 return mapper.readTree( pGobject.getValue());
-        } catch (IOException e) {
+        } catch (Exception e) {
         	throw new CustomException(Constants.EG_BS_JSON_EXCEPTION_KEY, Constants.EG_BS_JSON_EXCEPTION_MSG);
         }
     }
