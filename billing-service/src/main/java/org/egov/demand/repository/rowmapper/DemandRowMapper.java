@@ -63,9 +63,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 @Component
 public class DemandRowMapper implements ResultSetExtractor<List<Demand>> {
 	
+
 	@Autowired
 	private Util util;
-
+	
 	@Override
 	public List<Demand> extractData(ResultSet rs) throws SQLException, DataAccessException {
 
