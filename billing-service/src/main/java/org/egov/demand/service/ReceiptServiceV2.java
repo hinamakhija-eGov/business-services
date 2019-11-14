@@ -112,12 +112,13 @@ public class ReceiptServiceV2 {
 			if(null == billAccDetail.getTaxHeadCode()) return;
 			
 			List<DemandDetail> currentDetails = taxHeadCodeDemandDetailgroup.get(billAccDetail.getTaxHeadCode());
-			Collections.sort(currentDetails, Comparator.comparing(DemandDetail::getTaxAmount));
 					
 			int length = 0;
 			
-			if (!CollectionUtils.isEmpty(currentDetails))
+			if (!CollectionUtils.isEmpty(currentDetails)) {
 				length = currentDetails.size();
+				Collections.sort(currentDetails, Comparator.comparing(DemandDetail::getTaxAmount));
+			}
 			
 			/* 
 			 * if single demand detail corresponds to single billAccountDetail then update directly
