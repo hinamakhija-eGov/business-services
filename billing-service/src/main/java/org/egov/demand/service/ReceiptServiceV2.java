@@ -122,7 +122,7 @@ public class ReceiptServiceV2 {
 				Collections.sort(currentDetails, Comparator.comparing(DemandDetail::getTaxAmount));
 			}
 
-			if (!(billAccDetail.getAdjustedAmount().compareTo(BigDecimal.ZERO) == 0) || length == 0) {
+			if (billAccDetail.getAdjustedAmount().compareTo(BigDecimal.ZERO) == 0 || length == 0) {
 				addNewDemandDetail(demand, billAccDetail);
 			}
 			/*
