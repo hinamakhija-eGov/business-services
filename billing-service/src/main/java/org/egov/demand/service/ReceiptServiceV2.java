@@ -108,8 +108,10 @@ public class ReceiptServiceV2 {
 
 			/* Ignoring billaccount details with no taxhead codes
 			 * to avoid saving collection only information
+			 * 
+			 * Avoiding operating empty bill Account Details from bill
 			 */ 
-			if(null == billAccDetail.getTaxHeadCode()) return;
+			if(null == billAccDetail.getTaxHeadCode() || billAccDetail.getAmount().compareTo(BigDecimal.ZERO) == 0) return;
 			
 			List<DemandDetail> currentDetails = taxHeadCodeDemandDetailgroup.get(billAccDetail.getTaxHeadCode());
 					
@@ -119,11 +121,16 @@ public class ReceiptServiceV2 {
 				length = currentDetails.size();
 				Collections.sort(currentDetails, Comparator.comparing(DemandDetail::getTaxAmount));
 			}
-			
-			/* 
-			 * if single demand detail corresponds to single billAccountDetail then update directly
+
+			if (!(billAccDetail.getAdjustedAmount().compareTo(BigDecimal.ZERO) == 0) || length == 0) {
+				addNewDemandDetail(demand, billAccDetail);
+			}
+			/*
+			 * if single demand detail corresponds to single billAccountDetail then update
+			 * directly
+			 * 
 			 */
-			if (length == 1) {
+			else if (length == 1) {
 
 				updateSingleDemandDetail(currentDetails.get(0), billAccDetail, isRecieptCancellation);
 			}
@@ -133,28 +140,34 @@ public class ReceiptServiceV2 {
 			else if (length > 1) {
 
 				updateMultipleDemandDetails(currentDetails, billAccDetail, isRecieptCancellation);
-			} else {
-
-				/*
-				 * if no demand detail found for the corresponding billAccountDetail 
-				 * then add the new DemandDetail in the demand
-				 */
-				DemandDetail newAdvanceDetail = DemandDetail.builder()
-						.taxHeadMasterCode(billAccDetail.getTaxHeadCode())
-						.taxAmount(billAccDetail.getAmount())
-						.collectionAmount(BigDecimal.ZERO)
-						.tenantId(demand.getTenantId())
-						.demandId(demand.getId())
-						.build();
-				
-				demand.getDemandDetails().add(newAdvanceDetail);
 			}
 		}
 	}
 
+	/**
+	 * To create and add a new demand detail to the demand for the incoming advance
+	 * @param demand
+	 * @param billAccDetail
+	 */
+	private void addNewDemandDetail(Demand demand, BillAccountDetailV2 billAccDetail) {
+		/*
+		 * if no demand detail found for the corresponding billAccountDetail 
+		 * then add the new DemandDetail in the demand
+		 */
+		DemandDetail newAdvanceDetail = DemandDetail.builder()
+				.taxHeadMasterCode(billAccDetail.getTaxHeadCode())
+				.taxAmount(billAccDetail.getAmount())
+				.collectionAmount(BigDecimal.ZERO)
+				.tenantId(demand.getTenantId())
+				.demandId(demand.getId())
+				.build();
+		
+		demand.getDemandDetails().add(newAdvanceDetail);
+	}
+
 	
 	/**
-	 * Method to handle update if single demandDetail is presnt for a BillAccountDetail
+	 * Method to handle update if single demandDetail is present for a BillAccountDetail
 	 * 
 	 * @param currentDetail         the demand detail object to be updated
 	 * 
