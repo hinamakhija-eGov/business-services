@@ -16,7 +16,9 @@ public class BillQueryBuilder {
 	private ApplicationProperties applicationProperties;
 	
 	
-	public static final String BILL_STATUS_UPDATE_QUERY = "UPDATE egbs_bill_v1 SET status=? WHERE ";
+	public static final String BILL_STATUS_UPDATE_QUERY = "UPDATE egbs_bill_v1 SET status=? WHERE status='ACTIVE' ";
+	
+	public static final String BILL_STATUS_UPDATE_BATCH_QUERY = "UPDATE egbs_bill_v1 SET status=? WHERE id = ?";
 	
 	public static final String INSERT_BILL_QUERY = "INSERT into egbs_bill_v1 "
 			+"(id, tenantid, payername, payeraddress, payeremail, isactive, iscancelled, createdby, createddate, lastmodifiedby, lastmodifieddate, mobilenumber, status, additionaldetails)"
@@ -137,13 +139,17 @@ public class BillQueryBuilder {
 
 		if (!CollectionUtils.isEmpty(consumerCodes)) {
 
-			builder.append("id IN ( SELECT billid from egbs_billdetail_v1 where consumercode IN (");
+			builder.append(" AND id IN ( SELECT billid from egbs_billdetail_v1 where consumercode IN (");
 			appendListToQuery(consumerCodes, preparedStmtList, builder);
 			builder.append(")");
 		}
 		return builder.toString();
 	}
-
+	
+	public String getBillStatusUpdateBatchQuery() {
+		
+		return BILL_STATUS_UPDATE_BATCH_QUERY;
+	}
 	/**
 	 * @param billIds
 	 * @param preparedStmtList

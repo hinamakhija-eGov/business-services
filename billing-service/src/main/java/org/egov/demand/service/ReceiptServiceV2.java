@@ -1,9 +1,9 @@
 package org.egov.demand.service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +15,6 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.demand.model.BillAccountDetailV2;
 import org.egov.demand.model.BillDetailV2;
 import org.egov.demand.model.BillV2;
-import org.egov.demand.model.BillV2.StatusEnum;
 import org.egov.demand.model.Demand;
 import org.egov.demand.model.DemandCriteria;
 import org.egov.demand.model.DemandDetail;
@@ -39,7 +38,7 @@ public class ReceiptServiceV2 {
 	private BillRepositoryV2 billRepository;
 	
 
-	public void updateDemandFromReceipt(BillRequestV2 billReq, StatusEnum status, Boolean isReceiptCancellation) {
+	public void updateDemandFromReceipt(BillRequestV2 billReq, Boolean isReceiptCancellation) {
 
 		if (billReq == null || billReq != null && CollectionUtils.isEmpty(billReq.getBills())) {
 
@@ -50,7 +49,6 @@ public class ReceiptServiceV2 {
 		Set<String> demandIds = new HashSet<>();
 		billReq.getBills().forEach(bill -> {
 
-			bill.setStatus(status);
 			bill.getBillDetails().forEach(billDetail -> {
 				demandIds.add(billDetail.getDemandId());
 			});
@@ -73,24 +71,22 @@ public class ReceiptServiceV2 {
 		List<BillV2> bills = billRequest.getBills();
 		String tenantId = bills.get(0).getTenantId();
 		RequestInfo requestInfo = billRequest.getRequestInfo();
-		List<String> billConsumerCodesToBePaid = new ArrayList<>();
-		StatusEnum status = isReceiptCancellation ? StatusEnum.CANCELLED : StatusEnum.PAID; 
+		Map<String, String> mapOfBillIdAndStatus = new HashMap<>();
 
 		DemandCriteria demandCriteria = DemandCriteria.builder().demandId(demandIds).tenantId(tenantId).build();
 		List<Demand> demandsToBeUpdated = demandService.getDemands(demandCriteria, requestInfo);
-		Map<String, Demand> demandIdMap = demandsToBeUpdated.stream()
-				.collect(Collectors.toMap(Demand::getId, Function.identity()));
-		
-		for(BillV2 bill : bills) {
-			
-			billConsumerCodesToBePaid.add(bill.getConsumerCode());
+		Map<String, Demand> demandIdMap = demandsToBeUpdated.stream().collect(Collectors.toMap(Demand::getId, Function.identity()));
+
+		for (BillV2 bill : bills) {
+
+			mapOfBillIdAndStatus.put(bill.getId(), bill.getStatus().toString());
 			for (BillDetailV2 billDetail : bill.getBillDetails())
 				updateDemandFromBillDetail(billDetail, demandIdMap.get(billDetail.getDemandId()), isReceiptCancellation);
-			
+
 		}
-		
+
 		demandService.updateAsync(DemandRequest.builder().demands(demandsToBeUpdated).requestInfo(billRequest.getRequestInfo()).build());
-		billRepository.updateBillStatus(billConsumerCodesToBePaid, status);
+		billRepository.updateBillStatusInBatch(mapOfBillIdAndStatus);
 	}
 
 	/**

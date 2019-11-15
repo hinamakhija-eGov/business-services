@@ -192,4 +192,32 @@ public class BillRepositoryV2 {
 		String queryStr = billQueryBuilder.getBillStatusUpdateQuery(cosnumerCodes, preparedStmtList);
 		jdbcTemplate.update(queryStr, preparedStmtList.toArray());
 	}
+	
+	/**
+	 * executes batch query to update bill status for bill id
+	 *  
+	 * @param billIds
+	 */
+	public void updateBillStatusInBatch(Map<String, String> billIdAndStatusMap) {
+
+		String queryStr = billQueryBuilder.getBillStatusUpdateBatchQuery();
+		List<String> keys = new ArrayList<>(billIdAndStatusMap.keySet());
+		jdbcTemplate.batchUpdate(queryStr, new BatchPreparedStatementSetter() {
+			
+			@Override
+			public void setValues(PreparedStatement ps, int rowNum) throws SQLException {
+
+				String key = keys.get(rowNum);
+
+				ps.setString(0, billIdAndStatusMap.get(key));
+				ps.setString(1, key);
+			}
+			
+			@Override
+			public int getBatchSize() {
+
+				return billIdAndStatusMap.size();
+			}
+		});
+	}
 }

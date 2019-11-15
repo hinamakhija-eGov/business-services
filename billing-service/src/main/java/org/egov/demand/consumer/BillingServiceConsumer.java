@@ -1,5 +1,6 @@
 package org.egov.demand.consumer;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -111,8 +112,8 @@ public class BillingServiceConsumer {
 		 */
 		else if (applicationProperties.getUpdateDemandFromReceiptV2().equals(topic)) {
 
-			BillRequestV2 billReq = getBillsFromPayment(consumerRecord);
-			receiptServiceV2.updateDemandFromReceipt(billReq, org.egov.demand.model.BillV2.StatusEnum.PAID, false);
+			BillRequestV2 billReq = getBillsFromPayment(consumerRecord, false);
+			receiptServiceV2.updateDemandFromReceipt(billReq, false);
 		}
 
 		/*
@@ -120,8 +121,8 @@ public class BillingServiceConsumer {
 		 */
 		else if (applicationProperties.getReceiptCancellationTopicV2().equals(topic)) {
 
-			BillRequestV2 billReq = getBillsFromPayment(consumerRecord);
-			receiptServiceV2.updateDemandFromReceipt(billReq, org.egov.demand.model.BillV2.StatusEnum.CANCELLED, true);
+			BillRequestV2 billReq = getBillsFromPayment(consumerRecord, true);
+			receiptServiceV2.updateDemandFromReceipt(billReq, true);
 		}
 	}
 
@@ -129,7 +130,7 @@ public class BillingServiceConsumer {
 	/**
 	 * @param consumerRecord
 	 */
-	private BillRequestV2 getBillsFromPayment(Map<String, Object> consumerRecord) {
+	private BillRequestV2 getBillsFromPayment(Map<String, Object> consumerRecord, boolean isReceiptCancelled) {
 		
 		DocumentContext context = null;
 		
@@ -140,7 +141,25 @@ public class BillingServiceConsumer {
 			throw new CustomException("Parsing of data failed in back update", e.getMessage());
 		}
 		
+		List<BigDecimal> amtPaidList = context.read("$.Payment.paymentDetails.*.totalAmountPaid");
 		List<BillV2> bills = Arrays.asList(objectMapper.convertValue(context.read("$.Payment.paymentDetails.*.bill"), BillV2[].class));
+		
+		for (int i = 0; i < bills.size(); i++) {
+			
+			BillV2 bill = bills.get(i);
+			BigDecimal amtPaid = null != amtPaidList.get(i) ? amtPaidList.get(i) : BigDecimal.ZERO; 
+
+			if (isReceiptCancelled) {
+				bill.setStatus(org.egov.demand.model.BillV2.StatusEnum.CANCELLED);
+
+			} else if (bill.getTotalAmount().compareTo(amtPaid) >= 0) {
+				bill.setStatus(org.egov.demand.model.BillV2.StatusEnum.PAID);
+
+			} else {
+				bill.setStatus(org.egov.demand.model.BillV2.StatusEnum.PARTIALLY_PAID);
+		}
+	}
+		
 		RequestInfo requestInfo = objectMapper.convertValue(context.read("$.RequestInfo"), RequestInfo.class);
 		return BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
 	}
