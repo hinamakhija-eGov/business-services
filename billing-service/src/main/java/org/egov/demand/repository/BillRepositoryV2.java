@@ -209,8 +209,8 @@ public class BillRepositoryV2 {
 
 				String key = keys.get(rowNum);
 
-				ps.setString(0, billIdAndStatusMap.get(key));
-				ps.setString(1, key);
+				ps.setString(1, billIdAndStatusMap.get(key));
+				ps.setString(2, key);
 			}
 			
 			@Override
