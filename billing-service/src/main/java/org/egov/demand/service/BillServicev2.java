@@ -223,9 +223,12 @@ public class BillServicev2 {
 
 			String url = serviceUrlMap.get(entry.getKey());
 
-			if (StringUtils.isEmpty(url))
-				throw new CustomException(URL_NOT_CONFIGURED_FOR_DEMAND_UPDATE_KEY, URL_NOT_CONFIGURED_FOR_DEMAND_UPDATE_MSG
+			if (StringUtils.isEmpty(url)) {
+				
+				log.info(URL_NOT_CONFIGURED_FOR_DEMAND_UPDATE_KEY, URL_NOT_CONFIGURED_FOR_DEMAND_UPDATE_MSG
 						.replace(URL_NOT_CONFIGURED_REPLACE_TEXT, entry.getKey()));
+				return;
+			}
 
 			StringBuilder completeUrl = new StringBuilder(url)
 					.append(URL_PARAMS_FOR_SERVICE_BASED_DEMAND_APIS.replace(TENANTID_REPLACE_TEXT, tenantId).replace(
