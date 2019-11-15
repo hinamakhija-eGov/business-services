@@ -30,7 +30,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.TypeRef;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -142,7 +141,7 @@ public class BillingServiceConsumer {
 			throw new CustomException("Parsing of data failed in back update", e.getMessage());
 		}
 		
-		List<BigDecimal> amtPaidList = context.read("$.Payment.paymentDetails.*.totalAmountPaid", new TypeRef<List<BigDecimal>>() {});
+		List<BigDecimal> amtPaidList = Arrays.asList(objectMapper.convertValue(context.read("$.Payment.paymentDetails.*.totalAmountPaid"), BigDecimal[].class));
 		List<BillV2> bills = Arrays.asList(objectMapper.convertValue(context.read("$.Payment.paymentDetails.*.bill"), BillV2[].class));
 		
 		for (int i = 0; i < bills.size(); i++) {
