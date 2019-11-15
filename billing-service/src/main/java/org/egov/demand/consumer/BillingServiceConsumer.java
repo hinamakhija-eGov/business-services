@@ -153,11 +153,11 @@ public class BillingServiceConsumer {
 			if (isReceiptCancelled) {
 				bill.setStatus(org.egov.demand.model.BillV2.StatusEnum.CANCELLED);
 
-			} else if (bill.getTotalAmount().compareTo(amtPaid) >= 0) {
-				bill.setStatus(org.egov.demand.model.BillV2.StatusEnum.PAID);
+			} else if (bill.getTotalAmount().compareTo(amtPaid) > 0) {
+				bill.setStatus(org.egov.demand.model.BillV2.StatusEnum.PARTIALLY_PAID);
 
 			} else {
-				bill.setStatus(org.egov.demand.model.BillV2.StatusEnum.PARTIALLY_PAID);
+				bill.setStatus(org.egov.demand.model.BillV2.StatusEnum.PAID);
 		}
 	}
 		
