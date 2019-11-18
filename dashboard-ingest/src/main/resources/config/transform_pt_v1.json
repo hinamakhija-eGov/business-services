@@ -1,0 +1,10 @@
+[
+  {
+    "operation": "shift",
+    "spec": {
+      "tenantId": "tenantId",
+      "propertyId": "propertyId",
+      "propertyDetails": "propertyDetails"
+    }
+  }
+]

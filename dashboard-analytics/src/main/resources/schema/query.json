@@ -1,0 +1,20 @@
+
+
+{
+	"y_axis": {
+		"aggregation": {
+			"sum": {
+				"field": "netAmt"
+			},
+			"label": "revenue"
+		}
+	},
+	"x_axis": {
+		"aggregation": {
+			"term": {
+				"field": "storeId"
+			},
+			"label":"stores"
+		}
+	}
+}
