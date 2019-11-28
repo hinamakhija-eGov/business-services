@@ -75,8 +75,6 @@ public class BillQueryBuilder {
 		if (searchBill.getStatus() != null) {
 			selectQuery.append(" AND b.status = ?");
 			preparedStatementValues.add(searchBill.getStatus().toString());
-		} else {
-			selectQuery.append(" AND b.status = 'ACTIVE'");
 		}	
 
 		if (searchBill.getEmail() != null) {
