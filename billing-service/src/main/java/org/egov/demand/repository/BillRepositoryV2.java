@@ -139,6 +139,7 @@ public class BillRepositoryV2 {
 				ps.setLong(22, auditDetails.getLastModifiedTime());
 				ps.setObject(23, null);
 				ps.setLong(24, billDetail.getExpiryDate());
+				ps.setObject(25,billDetail.getAdditionalDetails());
 			}
 
 			@Override
