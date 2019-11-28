@@ -30,7 +30,7 @@ public class EnrichmentConsumer implements KafkaConsumer {
 	@KafkaListener(id = INTENT, groupId = INTENT, topics = { Constants.KafkaTopics.TRANSFORMED_DATA}, containerFactory = Constants.BeanContainerFactory.INCOMING_KAFKA_LISTENER)
 	public void processMessage(final Map incomingData,
 			@Header(KafkaHeaders.RECEIVED_TOPIC) final String topic) {
-		LOGGER.info("##KafkaMessageAlert## : key:" + topic + ":" + "value:" + incomingData);
+		LOGGER.info("##KafkaMessageAlert## : key:" + topic + ":" + "value:" + incomingData.size());
 
 		try {
 			boolean denormStatus = enrichmentService.enrichData(incomingData);
@@ -38,6 +38,7 @@ public class EnrichmentConsumer implements KafkaConsumer {
 				ingestProducer.pushToPipeline(incomingData, ERROR_INTENT, ERROR_INTENT);
 			}
 		} catch (final Exception e) {
+			e.printStackTrace();
 			LOGGER.error("Exception Encountered while processing the received message : " + e.getMessage());
 		}
 	}

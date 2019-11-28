@@ -17,9 +17,9 @@ import com.ingestpipeline.service.IESService;
 public class ElasticSearchConfiguration extends AbstractFactoryBean<RestHighLevelClient> {
 
 	private static final Logger logger = LoggerFactory.getLogger(ElasticSearchConfiguration.class);
-	@Value("${spring.data.elasticsearch.cluster-nodes}")
+	@Value("${spring.data.elasticsearch.cluster.nodes}")
 	private String clusterNodes;
-	@Value("${spring.data.elasticsearch.cluster-name}")
+	@Value("${spring.data.elasticsearch.cluster.name}")
 	private String clusterName;
 	private RestHighLevelClient restHighLevelClient;
 	@Value("${services.esindexer.host.name}")

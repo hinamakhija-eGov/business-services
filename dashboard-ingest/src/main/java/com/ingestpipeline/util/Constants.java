@@ -1,5 +1,8 @@
 package com.ingestpipeline.util;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Constants which are with respect to the Ingest App
  * 
@@ -22,6 +25,7 @@ public interface Constants {
 		final String VALIDATOR_SERVICE = "validatorService";
 		final String TRANSFORM_SERVICE = "transformService";
 		final String ENRICHMENT_SERVICE = "enrichmentService"; 
+		final String DIGRESS_SERVICE = "digressService"; 
 	}
 
 	public static String SUCCESS = "success";
@@ -41,10 +45,18 @@ public interface Constants {
 		public static final String VALID_DATA = "validData";
 		public static final String TRANSFORMED_DATA = "transformedData";
 		public static final String ERROR_INTENT = "DataError";
+		public static final String TOPIC_ONE = "topicOne"; 
+		public static final String TOPIC_TWO = "topicTwo"; 
+		public static final String TOPIC_THREE = "topicThree"; 
+		public static final String TOPIC_FOUR = "topicFour"; 
 	}
 	
 	public interface BeanContainerFactory { 
 		public static final String INCOMING_KAFKA_LISTENER = "incomingKafkaListenerContainerFactory"; 
+	}
+	
+	public interface DomainConfigurations { 
+		public static final String COLLECTION_DOMAIN_CONFIG = "DomainConfig";
 	}
 	
 	public interface PipelineRules {
@@ -53,6 +65,12 @@ public interface Constants {
 		public static final String ENRICH_DATA = "ENRICH";
 	}
 
+	public interface ScrollSearch { 
+		public static final String SCROLL_ID = "scrollId"; 
+		public static final String SEARCH_PATH = "searchPath"; 
+		public static final String QUERY = "query"; 
+	}
+	
 	public static String DATA_CONTEXT = "dataContext";
 	public static String DATA_CONTEXT_VERSION = "dataContextVersion";
 	public static String DATA_OBJECT = "dataObject";
@@ -63,4 +81,17 @@ public interface Constants {
 	public static String MUNICIPAL_CORPORATIONS = "Municipal Corporations";
 	public static String ES_INDEX_COLLECTION = "collectionsindex-v1";
 	public static String ES_INDEX_BILLING = "billingservice";
+	
+	public interface ErrorMessages {
+		Map<String,String> errorCodeMessageMap = new HashMap<String, String>() {{
+	        put("INGEST","Error finding Context for the Topic");
+	        put("VALIDATE","Error while validating the Document");
+	        put("TRANSFORM","Error while transforming the Document");
+	        put("ENRICH","Error while enriching the Document");
+	    }};
+	}
+	
+	public static interface ConfigurationFileNames { 
+		public static final String DIGRESSION_POINTS = "DigressionPoints.json"; 
+	}
 }

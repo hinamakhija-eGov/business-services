@@ -1,15 +1,17 @@
 package com.ingestpipeline;
 
-import com.ingestpipeline.controller.RestApiController;
-import com.ingestpipeline.model.CollectionDomainConfig;
-import com.ingestpipeline.util.ConfigLoader;
-import com.ingestpipeline.util.ReadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
+
+import com.ingestpipeline.config.DomainConfig;
+import com.ingestpipeline.config.DomainConfigFactory;
+import com.ingestpipeline.controller.RestApiController;
+import com.ingestpipeline.util.ConfigLoader;
+import com.ingestpipeline.util.ReadUtil;
 
 /**
  * The App Startup Runner runs on the start of the application as it implements Application Runner
@@ -26,7 +28,7 @@ public class AppStartupRunner implements ApplicationRunner {
 	@Autowired
 	ConfigLoader configLoader;
 	@Autowired
-    CollectionDomainConfig collectionDomainConfig;
+    DomainConfigFactory domainConfigFactory;
 	
 	  @Autowired ReadUtil readutil;
 	 
@@ -37,6 +39,9 @@ public class AppStartupRunner implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
     	logger.info("On Boot starts loading: config resources ");
 		configLoader.loadResources();
-        collectionDomainConfig.loadCollectionDomains();
+		for(DomainConfig domainConfig : domainConfigFactory.getAllConfigs()) { 
+			domainConfig.loadDomains(); 
+		}
+        
     }
 }

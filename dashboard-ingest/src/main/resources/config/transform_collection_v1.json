@@ -93,10 +93,5 @@
         }
       }
     }
-  }, {
-    "operation": "default",
-    "spec": {
-      "domainObject": "{{domainObject}}"
-    }
   }
 ]

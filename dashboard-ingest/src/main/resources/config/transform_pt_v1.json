@@ -4,7 +4,8 @@
     "spec": {
       "tenantId": "tenantId",
       "propertyId": "propertyId",
-      "propertyDetails": "propertyDetails"
+      "propertyDetails": "propertyDetails",
+      "ward" : "ward"
     }
   }
 ]

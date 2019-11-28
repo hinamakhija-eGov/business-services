@@ -8,12 +8,30 @@ import java.util.List;
 public class DomainIndexConfig {
 
     private String id;
-    private String businessType;
+    private String domain;
     private String indexName;
     private String documentType;
     private String query;
 
-    private List<CollectionRef> collectionRef = new ArrayList<>();
+    private List<SourceReferences> sourceReferences = new ArrayList<>();
+    private List<TargetReferences> targetReferences = new ArrayList<>();
+
+    @JsonProperty(value="sourceReferences")
+    public List<SourceReferences> getSourceReferences() {
+        return sourceReferences;
+    }
+
+    public void setSourceReferences(List<SourceReferences> sourceReferences) {
+        this.sourceReferences = sourceReferences;
+    }
+    @JsonProperty(value="targetReferences")
+    public List<TargetReferences> getTargetReferences() {
+        return targetReferences;
+    }
+
+    public void setTargetReferences(List<TargetReferences> targetReferences) {
+        this.targetReferences = targetReferences;
+    }
 
     @JsonProperty(value="id")
     public String getId() {
@@ -24,13 +42,13 @@ public class DomainIndexConfig {
         this.id = id;
     }
 
-    @JsonProperty(value="businessType")
-    public String getBusinessType() {
-        return businessType;
+    @JsonProperty(value="domain")
+    public String getDomain() {
+        return domain;
     }
 
-    public void setBusinessType(String businessType) {
-        this.businessType = businessType;
+    public void setDomain(String businessType) {
+        this.domain = businessType;
     }
 
     @JsonProperty(value="indexName")
@@ -60,12 +78,4 @@ public class DomainIndexConfig {
         this.query = query;
     }
 
-    @JsonProperty(value="collectionRef")
-    public List<CollectionRef> getCollectionRef() {
-        return collectionRef;
-    }
-
-    public void setCollectionRef(List<CollectionRef> collectionRef) {
-        this.collectionRef = collectionRef;
-    }
 }

@@ -1,18 +1,13 @@
 package com.ingestpipeline.controller;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 
-import com.ingestpipeline.model.TargetData;
-import com.ingestpipeline.repository.TargetDataDao;
-import org.apache.poi.EncryptedDocumentException;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -21,20 +16,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.bazaarvoice.jolt.modifier.DataType.MAP;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.ingestpipeline.model.IncomingData;
+import com.ingestpipeline.model.TargetData;
+import com.ingestpipeline.repository.TargetDataDao;
+import com.ingestpipeline.service.ElasticService;
 import com.ingestpipeline.service.IngestService;
 import com.ingestpipeline.util.Constants;
 import com.ingestpipeline.util.JSONUtil;
-import com.ingestpipeline.util.JSONUtils;
 import com.ingestpipeline.util.ReadUtil;
-import com.ingestpipeline.service.ElasticService;
 
 @RestController
 @RequestMapping(Constants.Paths.ELASTIC_PUSH_CONTROLLER_PATH)
@@ -153,42 +152,13 @@ public class RestApiController {
 	@RequestMapping(value = Constants.Paths.ES_INDEX, method = RequestMethod.POST)
 	public ResponseEntity<?> migrateIndex(@PathVariable String indexName) throws Exception {
 		String index = null, queryString = null, dataContext = null;
-		if (indexName.equals(Constants.ES_INDEX_COLLECTION)) {
-			index = Constants.ES_INDEX_COLLECTION;
-			queryString = elasticService.getSearchQueryCollection();
-			dataContext = "collection";
-		} else if (indexName.equals(Constants.ES_INDEX_BILLING)) {
-			index = Constants.ES_INDEX_BILLING;
-			queryString = elasticService.getSearchQueryBilling();
-			dataContext = "billing";
-		} else {
-			index = "notDefinedIndex";
-			queryString = "noquery";
-		}
-		Boolean status = false;
-		if (!index.equals("notDefinedIndex")) {
-			Map<String, List<Object>> doc_Map = elasticService.searchIndex(index, queryString);
-			for (Map.Entry<String, List<Object>> entry : doc_Map.entrySet()) {
-				for (int i = 0; i < entry.getValue().size(); i++) {
-					status = ingestService
-							.ingestToPipeline(setIncomingData(dataContext, "v1", entry.getValue().get(i)));
-				}
-			}
-		}
+		Boolean status = elasticService.searchIndex(indexName, queryString);
 		if (status) {
 			return new ResponseEntity<String>(HttpStatus.CREATED);
 		} else if (index.equals("notDefinedIndex")) {
 			return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
 		}
 		return new ResponseEntity<String>(HttpStatus.SERVICE_UNAVAILABLE);
-	}
-
-	private IncomingData setIncomingData(String index, String version, Object documentValue) {
-		IncomingData incomingData = new IncomingData();
-		incomingData.setDataContext(index);
-		incomingData.setDataContextVersion(version);
-		incomingData.setDataObject(documentValue);
-		return incomingData;
 	}
 
 	private void logMyTime() {

@@ -6,7 +6,7 @@
       "indexName": "ptindex-v1",
       "documentType": "",
       "query": "{\"query\":{\"bool\":{\"must\":[{\"match_phrase\":{\"Data.propertyDetails.assessmentNumber\":\"value\"}},{\"match_phrase\":{\"Data.propertyId\":\"value\"}}]}}}",
-      "collectionRef": [
+      "references": [
         {
           "fieldName": "consumerCode",
           "argument": "Data.propertyId",
@@ -25,7 +25,7 @@
       "indexName": "tlindex-v1",
       "documentType": "",
       "query": "{\"query\":{\"bool\":{\"must\":[{\"match_phrase\":{\"Data.tradelicense.applicationnumber\":\"value\"}}]}}}",
-      "collectionRef": [
+      "references": [
         {
           "fieldName": "consumerCode",
           "argument": "Data.tradelicense.applicationnumber",
@@ -39,7 +39,7 @@
       "indexName": "pgrindex-v1",
       "documentType": "",
       "query": "{}",
-      "collectionRef": [
+      "references": [
         {
           "fieldName": "consumerCode",
           "argument": "complainNumber",

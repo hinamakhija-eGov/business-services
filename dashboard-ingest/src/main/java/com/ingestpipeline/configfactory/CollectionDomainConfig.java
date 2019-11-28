@@ -1,4 +1,4 @@
-package com.ingestpipeline.model;
+package com.ingestpipeline.configfactory;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -12,14 +12,17 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.ingestpipeline.config.DomainConfig;
+import com.ingestpipeline.model.DomainIndexConfig;
 import com.ingestpipeline.util.ConfigLoader;
+import com.ingestpipeline.util.Constants;
 
 //@JsonIgnoreProperties(ignoreUnknown=true)
-@Component("CollectionDomainConfig")
-public class CollectionDomainConfig {
+@Component(Constants.DomainConfigurations.COLLECTION_DOMAIN_CONFIG)
+public class CollectionDomainConfig implements DomainConfig {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CollectionDomainConfig.class);
-    private static final String COLLECTION_DOMAIN_CONFIG = "CollectionDomainConfig.json";
+    private static final String COLLECTION_DOMAIN_CONFIG = Constants.DomainConfigurations.COLLECTION_DOMAIN_CONFIG + ".json";
 
 
     @Autowired
@@ -33,6 +36,7 @@ public class CollectionDomainConfig {
         domainIndexConfigMap.put(domainName, domainIndexConfig);
     }
 
+    @Override
     public DomainIndexConfig getIndexConfig(String domainName){
         return domainIndexConfigMap.get(domainName);
     }
@@ -41,7 +45,8 @@ public class CollectionDomainConfig {
     /**
      * loads once on application start up.
      */
-    public void loadCollectionDomains(){
+    @Override
+    public void loadDomains(){
         //TODO:- load the JSON mapping, read/prepare the n queries
         String collectionConfigContent = configLoader.get(COLLECTION_DOMAIN_CONFIG);
         LOGGER.info("collectionConfigContent json string = "+collectionConfigContent);
@@ -50,13 +55,13 @@ public class CollectionDomainConfig {
 
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = new ObjectMapper().readTree(collectionConfigContent);
-            ArrayNode domainConfigArr = (ArrayNode) root.path("domainConfig");
+            ArrayNode domainConfigArr = (ArrayNode) root.path(DOMAIN_CONFIG);
 
             Iterator<JsonNode> iterator = domainConfigArr.elements();
             while (iterator.hasNext()) {
                 DomainIndexConfig domainIndexConfig = mapper.readValue(iterator.next().toString(), DomainIndexConfig.class);
-                System.out.println("DomainIndexConfig id=" + domainIndexConfig.getBusinessType());
-                domainIndexConfigMap.put(domainIndexConfig.getBusinessType(), domainIndexConfig);
+                System.out.println("DomainIndexConfig id=" + domainIndexConfig.getDomain());
+                domainIndexConfigMap.put(domainIndexConfig.getDomain(), domainIndexConfig);
 
             }
             LOGGER.info("After loading, domainIndexConfigMap size  = "+ domainIndexConfigMap.size());
@@ -67,17 +72,4 @@ public class CollectionDomainConfig {
         }
 
     }
-
-
-
-/*    private List<DomainIndexConfig> domainIndexConfig;
-    @JsonProperty(value="domainConfig")
-    public List<DomainIndexConfig> getDomainIndexConfig() {
-        return domainIndexConfig;
-    }
-
-    public void setDomainIndexConfig(List<DomainIndexConfig> domainIndexConfig) {
-        this.domainIndexConfig = domainIndexConfig;
-    }*/
-
 }

@@ -1,37 +1,6 @@
 package com.ingestpipeline.service;
 
-import com.eclipsesource.json.JsonObject;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.ingestpipeline.model.TargetData;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.search.SearchHit;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
-
-import org.springframework.http.*;
 import java.io.IOException;
-import java.util.Date;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,10 +8,39 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.search.SearchHit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
+import com.eclipsesource.json.JsonObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.ingestpipeline.model.IncomingData;
+import com.ingestpipeline.model.TargetData;
+import com.ingestpipeline.util.Constants;
+
 @Component("elasticService")
 public class ElasticService implements IESService {
 
-	@Value("${egov.services.esindexer.host.name}")
+	@Value("${services.esindexer.host}")
 	private String indexServiceHost;
 	@Value("${egov.services.esindexer.host.search}")
 	private String indexServiceHostSearch;
@@ -66,6 +64,9 @@ public class ElasticService implements IESService {
 
 	@Autowired
 	private RestTemplate restTemplate;
+	
+	@Autowired
+	private IngestService ingestService; 
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(ElasticService.class);
 
@@ -184,36 +185,51 @@ public class ElasticService implements IESService {
 	}
 	
 	@Override
-	public Map searchIndex(String index, String searchQuery) throws Exception {
-		String scrollUrl = indexServiceHost + index + indexServiceHostSearch + "?scroll=5m";
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-
+	public Boolean searchIndex(String index, String searchQuery) throws Exception {
+		Boolean status = Boolean.FALSE; 
 		LOGGER.info("searching ES for query: " + searchQuery + " on " + index);
-
-		HttpEntity<String> requestEntity = new HttpEntity<>(searchQuery, headers);
-		Map hits = new LinkedHashMap();
-		String scroll_id = null;
-		String str = null;
-		String queryForScrollId = null;
-		String postByScrollId = null;
+		
+		Map<String, String> scrollSearchParams = getScrollIdForScrollSearch(index); 
+		Map<String, List<Object>> documentMap = new HashMap<>();
+		int counter = 100; 
+		int iSize = 0; 
+		while (iSize >= 0 && iSize < counter) { 
+			documentMap = performScrollSearch(scrollSearchParams);
+			List<Object> listOfDocs = documentMap.get("hits");
+			iSize = listOfDocs.size(); 
+			for (Map.Entry<String, List<Object>> entry : documentMap.entrySet()) {
+				for (int i = 0; i < entry.getValue().size(); i++) {
+					Map innerMap = (Map) entry.getValue().get(i);
+					Gson gson = new Gson(); 
+					String json = gson.toJson(innerMap.get("_source"));
+				    ObjectMapper mapper = new ObjectMapper();
+					JsonNode dataNode = mapper.readTree(json); 
+					JsonNode dataObjectNode = dataNode.get("Data");
+					Map<Object, Object> dataMap = new Gson().fromJson(
+							dataObjectNode.toString(), new TypeToken<HashMap<Object, Object>>() {}.getType()
+						);
+					status = ingestService
+							.ingestToPipeline(setIncomingData(scrollSearchParams.get("CONTEXT"), "v1", dataObjectNode));
+				}
+			}
+		}
+		return status;
+	}
+	
+	private IncomingData setIncomingData(String index, String version, Object documentValue) {
+		IncomingData incomingData = new IncomingData();
+		incomingData.setDataContext(index);
+		incomingData.setDataContextVersion(version);
+		incomingData.setDataObject(documentValue);
+		return incomingData;
+	}
+	
+	private Map performScrollSearch(Map<String, String> scrollSearchParams) { 
 		Map<String, List<JsonObject>> hitsToMap = new LinkedHashMap();
 		try {
-			ResponseEntity<Object> response = restTemplate.exchange(scrollUrl, HttpMethod.POST, requestEntity,
-					Object.class);
-			Map responseNode = new ObjectMapper().convertValue(response.getBody(), Map.class);
-			str = indexServiceHostSearch.replaceAll("[/]", "");
-			scroll_id = (String) responseNode.get("_scroll_id");
-			postByScrollId = indexServiceHost + str + "/" + "scroll";
-			queryForScrollId = "{\"scroll\":\"5m\",\"scroll_id\":" + "\"" + scroll_id + "\"" + "}";
-
-		} catch (HttpClientErrorException e) {
-			e.printStackTrace();
-			LOGGER.error("client error while searching ES : " + e.getMessage());
-		}
-		try {
-			requestEntity = new HttpEntity<>(queryForScrollId, headers);
-			ResponseEntity<Object> response = restTemplate.exchange(postByScrollId, HttpMethod.POST, requestEntity,
+			Map hits = new LinkedHashMap();
+			HttpEntity<String> requestEntity = new HttpEntity<>(scrollSearchParams.get(Constants.ScrollSearch.QUERY), getHttpHeaders());
+			ResponseEntity<Object> response = restTemplate.exchange(scrollSearchParams.get(Constants.ScrollSearch.SEARCH_PATH), HttpMethod.POST, requestEntity,
 					Object.class);
 			Map responseNode = new ObjectMapper().convertValue(response.getBody(), Map.class);
 			hits = (Map) responseNode.get("hits");
@@ -221,12 +237,49 @@ public class ElasticService implements IESService {
 				hitsToMap.put("hits", ((ArrayList) hits.get("hits")));
 				return hitsToMap;
 			}
-
 		} catch (HttpClientErrorException e) {
-			e.printStackTrace();
 			LOGGER.error("client error while searching ES : " + e.getMessage());
 		}
-		return hits;
+		return hitsToMap;
+	}
+	
+	private Map<String, String> getScrollIdForScrollSearch(String index) { 
+		Map<String, String> scrollSearchParams = new HashMap<>(); 
+		String queryString = null; 
+		if (index.equals(Constants.ES_INDEX_COLLECTION)) {
+			index = Constants.ES_INDEX_COLLECTION;
+			queryString = getSearchQueryCollection();
+			scrollSearchParams.put("CONTEXT", "collection"); 
+		} else if (index.equals(Constants.ES_INDEX_BILLING)) {
+			index = Constants.ES_INDEX_BILLING;
+			queryString = getSearchQueryBilling();
+			scrollSearchParams.put("CONTEXT", "billing"); 
+		} else {
+			index = "notDefinedIndex";
+			queryString = "noquery";
+		}
+		String scrollUrl = indexServiceHost + index + indexServiceHostSearch + "?scroll=1m";
+		HttpEntity<String> requestEntity = new HttpEntity<>(queryString, getHttpHeaders());
+		String str = null;
+		try {
+			ResponseEntity<Object> response = restTemplate.exchange(scrollUrl, HttpMethod.POST, requestEntity,
+					Object.class);
+			Map responseNode = new ObjectMapper().convertValue(response.getBody(), Map.class);
+			str = indexServiceHostSearch.replaceAll("[/]", "");
+			scrollSearchParams.put(Constants.ScrollSearch.SCROLL_ID, (String) responseNode.get("_scroll_id"));
+			scrollSearchParams.put(Constants.ScrollSearch.SEARCH_PATH, indexServiceHost + str + "/" + "scroll");
+			String queryForScrollId = "{\"scroll\":\"1m\",\"scroll_id\":" + "\"" + scrollSearchParams.get(Constants.ScrollSearch.SCROLL_ID) + "\"" + "}";
+			scrollSearchParams.put(Constants.ScrollSearch.QUERY, queryForScrollId); 
+		} catch (HttpClientErrorException e) {
+			LOGGER.error("client error while searching ES : " + e.getMessage());
+		}
+		return scrollSearchParams; 
+	}
+	
+	private HttpHeaders getHttpHeaders() { 
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		return headers;
 	}
 
 

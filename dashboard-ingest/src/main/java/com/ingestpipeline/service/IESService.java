@@ -107,5 +107,5 @@ public interface IESService {
         return Boolean.TRUE;
     }
 
-    Map searchIndex(String index, String query) throws Exception;
+    Boolean searchIndex(String index, String query) throws Exception;
 }
