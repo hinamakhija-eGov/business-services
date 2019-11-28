@@ -427,7 +427,7 @@ public class BillServicev2 {
 			/* Total tax and collection for the whole demand/bill-detail */
 			totalAmountForDemand = totalAmountForDemand.add(amountForAccDeatil);
 		}
-		
+
 		
 		Long billExpiryDate = getExpiryDateForDemand(demand.getBillExpiryTime());
 		
@@ -439,6 +439,7 @@ public class BillServicev2 {
 				.fromPeriod(startPeriod)
 				.toPeriod(endPeriod)
 				.tenantId(tenantId)
+				.additionalDetails(demand.getAdditionalDetails())
 				.build();
 	}
 
