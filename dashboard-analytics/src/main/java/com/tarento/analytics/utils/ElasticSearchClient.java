@@ -20,9 +20,9 @@ public class ElasticSearchClient {
 
     public  ElasticSearchClient(@Value("${services.esindexer.host.name}") String hostName,
 		@Value("${services.esindexer.host.port}") Integer port,
-        @Value("${top.performance.store.count}") Integer topPerformanceCount,
-        @Value("${es.transaction.index.name}") String transactionIndex,
-        @Value("${es.transaction.document.type}") String transactionType,
+        @Value("${top.performance.record.count}") Integer topPerformanceCount,
+        @Value("${es.index.name}") String transactionIndex,
+        @Value("${es.document.type}") String transactionType,
         @Value("${es.target.index.name}") String targetIndex,
         @Value("${es.target.document.type}") String targetType){
 	

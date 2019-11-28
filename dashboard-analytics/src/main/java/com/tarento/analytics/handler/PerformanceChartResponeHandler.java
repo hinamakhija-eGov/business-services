@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tarento.analytics.ConfigurationLoader;
 import com.tarento.analytics.dto.AggregateDto;
+import com.tarento.analytics.dto.AggregateRequestDto;
 import com.tarento.analytics.dto.Data;
 import com.tarento.analytics.dto.Plot;
 import org.slf4j.Logger;
@@ -23,26 +24,18 @@ public class PerformanceChartResponeHandler implements IResponseHandler {
 
     public static final Logger logger = LoggerFactory.getLogger(PerformanceChartResponeHandler.class);
 
-    @Autowired
-    ConfigurationLoader configurationLoader;
-
-    @Autowired
-    ObjectMapper mapper ;
-
-
     @Override
-    public AggregateDto translate(String chartId, ObjectNode aggregations) throws IOException {
+    public AggregateDto translate(AggregateRequestDto requestDto, ObjectNode aggregations) throws IOException {
 
         JsonNode aggregationNode = aggregations.get(AGGREGATIONS);
-        ObjectNode configNode = configurationLoader.get(API_CONFIG_JSON);
-        JsonNode chartNode = configNode.get(chartId);
+        JsonNode chartNode = requestDto.getChartNode();
         String symbol = chartNode.get(IResponseHandler.VALUE_TYPE).asText();
         String plotLabel = chartNode.get(PLOT_LABEL).asText();
         String order = chartNode.get(ORDER).asText();
         int limit = chartNode.get(LIMIT).asInt();
 
 
-        ArrayNode aggrsPaths = (ArrayNode) configNode.get(chartId).get(IResponseHandler.AGGS_PATH);
+        ArrayNode aggrsPaths = (ArrayNode) chartNode.get(IResponseHandler.AGGS_PATH);
         Map<String, Map<String, Double>> mappings = new LinkedHashMap<>();//HashMap<>();
 
         aggrsPaths.forEach(headerPath -> {
@@ -77,7 +70,7 @@ public class PerformanceChartResponeHandler implements IResponseHandler {
         plots.stream().parallel().forEach(item -> item.setLabel(plotLabel));
         Comparator<Plot> plotValueComparator = Comparator.comparing(Plot::getValue);
         plots.sort(plotValueComparator.reversed());
-        return getAggregatedDto(chartNode, getDataOnPerformingOrder(plots, limit, order, symbol));
+        return getAggregatedDto(chartNode, getDataOnPerformingOrder(plots, limit, order, symbol), requestDto.getVisualizationCode());
     }
 
     /**

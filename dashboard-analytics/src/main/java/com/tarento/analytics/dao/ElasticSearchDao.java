@@ -7,7 +7,7 @@ import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequest;
 
 import com.tarento.analytics.dto.AggregateRequestDto;
-import com.tarento.analytics.dto.AggregateRequestDtoV2;
+import com.tarento.analytics.dto.AggregateRequestDto;
 import com.tarento.analytics.dto.CummulativeDataRequestDto;
 import com.tarento.analytics.dto.SearchDto;
 import com.tarento.analytics.model.ElasticSearchDictator;
@@ -27,7 +27,7 @@ public interface ElasticSearchDao {
 	
 	public ElasticSearchDictator createSearchDictator(AggregateRequestDto dto, String indexName, String documentType, String filterDateField) throws Exception ;
 	*/
-	public ElasticSearchDictator createSearchDictatorV2(AggregateRequestDtoV2 dto, String indexName, String documentType, String filterDateField) throws Exception ;
+	public ElasticSearchDictator createSearchDictatorV2(AggregateRequestDto dto, String indexName, String documentType, String filterDateField) throws Exception ;
 		
 	public SearchRequest buildElasticSearchQuery(ElasticSearchDictator dictator);
 	

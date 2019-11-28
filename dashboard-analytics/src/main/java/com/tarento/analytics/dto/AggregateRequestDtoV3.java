@@ -1,11 +1,13 @@
 package com.tarento.analytics.dto;
 
+import java.util.List;
 import java.util.Map;
 
-public class AggregateRequestDtoV2 {
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+public class AggregateRequestDtoV3 {
 	
-	private String visualizationType; 
-	private String visualizationCode;
+	private List<Visualization> visualizations; 
 	private String moduleLevel; 
 	private String queryType;
 	private Map<String, Object> filters; 
@@ -13,7 +15,16 @@ public class AggregateRequestDtoV2 {
 	private Map<String, Object> aggregationFactors; 
 	private RequestDate requestDate; 
 	private String interval;
+	private ObjectNode chartNode;
 	
+	public ObjectNode getChartNode() {
+		return chartNode;
+	}
+
+	public void setChartNode(ObjectNode chartNode) {
+		this.chartNode = chartNode;
+	}
+
 	public String getModuleLevel() {
 		return moduleLevel;
 	}
@@ -25,18 +36,6 @@ public class AggregateRequestDtoV2 {
 	}
 	public void setEsFilters(Map<String, Object> esFilters) {
 		this.esFilters = esFilters;
-	}
-	public String getVisualizationCode() {
-		return visualizationCode;
-	}
-	public void setVisualizationCode(String visualizationCode) {
-		this.visualizationCode = visualizationCode;
-	}
-	public String getVisualizationType() {
-		return visualizationType;
-	}
-	public void setVisualizationType(String visualizationType) {
-		this.visualizationType = visualizationType;
 	}
 	public String getQueryType() {
 		return queryType;
@@ -67,8 +66,14 @@ public class AggregateRequestDtoV2 {
 	}
 	public void setInterval(String interval) {
 		this.interval = interval;
-	} 
-	
-	
+	}
 
+	public List<Visualization> getVisualizations() {
+		return visualizations;
+	}
+
+	public void setVisualizations(List<Visualization> visualizations) {
+		this.visualizations = visualizations;
+	}
+	
 }

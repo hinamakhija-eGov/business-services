@@ -28,8 +28,8 @@ public class ConfigurationLoader {
     @Autowired
     private ObjectMapper objectMapper;
     private static final String RESOURCE_LOCATION = "classpath*:schema/*.json";
-    public static final String ROLE_DASHBOARD_CONFIG = "RoleDashboardConfig.json";
-
+    public static final String ROLE_DASHBOARD_CONFIG = "RoleDashboardMappingsConf.json";
+    public static final String MASTER_DASHBOARD_CONFIG = "MasterDashboardConfig.json";
 
 
     /**

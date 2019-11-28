@@ -1,11 +1,12 @@
 package com.tarento.analytics.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tarento.analytics.ConfigurationLoader;
+import com.tarento.analytics.constant.Constants;
 import com.tarento.analytics.dto.AggregateDto;
+import com.tarento.analytics.dto.AggregateRequestDto;
 import com.tarento.analytics.dto.Data;
 import com.tarento.analytics.dto.Plot;
 import com.tarento.analytics.enums.ChartType;
@@ -15,9 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.time.*;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 /**
  * This handles ES response for single index, multiple index to represent data as line chart
@@ -30,36 +29,44 @@ import java.util.stream.Collectors;
 public class LineChartResponseHandler implements IResponseHandler {
     public static final Logger logger = LoggerFactory.getLogger(LineChartResponseHandler.class);
 
-    @Autowired
-    ConfigurationLoader configurationLoader;
 
     @Override
-    public AggregateDto translate(String chartId, ObjectNode aggregations) throws IOException {
+    public AggregateDto translate(AggregateRequestDto requestDto, ObjectNode aggregations) throws IOException {
 
         List<Data> dataList = new LinkedList<>();
 
+        //String json = "{\"ptindex-v1\":{\"Closed Application\":{\"buckets\":[{\"key_as_string\":\"2018-11-12T00:00:00.000Z\",\"key\":1541980800000,\"doc_count\":1,\"Applications Closed\":{\"buckets\":{\"closed\":{\"doc_count\":0,\"Count\":{\"value\":0}}}}}]},\"Total Application\":{\"buckets\":[{\"key_as_string\":\"2018-11-12T00:00:00.000Z\",\"key\":1541980800000,\"doc_count\":1,\"Count\":{\"value\":1}}]}},\"tlindex-v1\":{\"Closed Application\":{\"buckets\":[{\"key_as_string\":\"2019-04-29T00:00:00.000Z\",\"key\":1556496000000,\"doc_count\":6,\"Applications Closed\":{\"buckets\":{\"closed\":{\"doc_count\":0,\"Count\":{\"value\":0}},\"resolved\":{\"doc_count\":0,\"Count\":{\"value\":0}}}}}]},\"Total Application\":{\"buckets\":[{\"key\":1555891200000,\"doc_count\":1,\"Count\":{\"value\":1}},{\"key\":1556496000000,\"doc_count\":0,\"Count\":{\"value\":0}}]}},\"pgrindex-v1\":{\"Closed Application\":{\"buckets\":[{\"key\":1564963200000,\"doc_count\":438,\"Applications Closed\":{\"buckets\":{\"closed\":{\"doc_count\":5,\"Count\":{\"value\":5}}}}}]},\"Total Application\":{\"buckets\":[{\"key\":1564963200000,\"doc_count\":438,\"Count\":{\"value\":438}},{\"key\":1574035200000,\"doc_count\":3,\"Count\":{\"value\":3}}]}}}";
         JsonNode aggregationNode = aggregations.get(AGGREGATIONS);
-        ObjectNode configNode = configurationLoader.get(API_CONFIG_JSON);
-        JsonNode chartNode = configNode.get(chartId);
+        JsonNode chartNode = requestDto.getChartNode();
+        boolean isRequestInterval = requestDto.getInterval()!=null && !requestDto.getInterval().isEmpty();
+        String interval = isRequestInterval ? requestDto.getInterval(): chartNode.get(Constants.JsonPaths.INTERVAL).asText();
+        if(interval == null || interval.isEmpty()){
+            throw new RuntimeException("Interval must have value from config or request");
+        }
+
         String symbol = chartNode.get(IResponseHandler.VALUE_TYPE).asText();
         ArrayNode aggrsPaths = (ArrayNode) chartNode.get(IResponseHandler.AGGS_PATH);
-        Set<String> plotKeys = new HashSet<>();
+        Set<String> plotKeys = new LinkedHashSet<>();
+        boolean isCumulative = chartNode.get("isCumulative").asBoolean();
+
 
         aggrsPaths.forEach(headerPath -> {
             List<JsonNode> aggrNodes = aggregationNode.findValues(headerPath.asText());
+            System.out.println("unsorted "+aggrNodes);
 
             Map<String, Double> plotMap = new LinkedHashMap<>();
             List<Double> totalValues = new ArrayList<>();
-            aggrNodes.stream().parallel().forEach(aggrNode -> {
+            aggrNodes.stream().forEach(aggrNode -> {
                 if (aggrNode.findValues(IResponseHandler.BUCKETS).size() > 0) {
 
                     ArrayNode buckets = (ArrayNode) aggrNode.findValues(IResponseHandler.BUCKETS).get(0);
                     buckets.forEach(bucket -> {
                         String bkey = bucket.findValue(IResponseHandler.KEY).asText();
-                        String key = getWeekOfMonthOfYear(bkey);
+                        String key = getIntervalKey(bkey, Constants.Interval.valueOf(interval));
 
                         plotKeys.add(key);
-                        double value = bucket.findValue(IResponseHandler.VALUE).asDouble();
+                        double previousVal = !isCumulative ? 0.0 : (totalValues.size()>0 ? totalValues.get(totalValues.size()-1):0.0);
+                        double value = previousVal + bucket.findValue(IResponseHandler.VALUE).asDouble();
                         plotMap.put(key, plotMap.get(key) == null ? new Double("0") + value : plotMap.get(key) + value);
                         totalValues.add(value);
                     });
@@ -70,20 +77,18 @@ public class LineChartResponseHandler implements IResponseHandler {
                 Data data = new Data(headerPath.asText(), (totalValues==null || totalValues.isEmpty()) ? 0.0 : totalValues.stream().reduce(0.0, Double::sum), symbol);
                 data.setPlots(plots);
                 dataList.add(data);
-            }catch (Exception e) {
-                logger.info(" Legend/Header "+headerPath.asText() +" exception occurred "+e.getMessage());
+            } catch (Exception e) {
+                logger.error(" Legend/Header "+headerPath.asText() +" exception occurred "+e.getMessage());
             }
-
-
         });
 
         dataList.forEach(data -> {
-            appendMissingPlot(plotKeys, data, symbol);
+            appendMissingPlot(plotKeys, data, symbol, isCumulative);
         });
-        return getAggregatedDto(chartNode, dataList);
+        return getAggregatedDto(chartNode, dataList, requestDto.getVisualizationCode());
     }
 
-    private String getWeekOfMonthOfYear(String epocString) {
+    private String getIntervalKey(String epocString, Constants.Interval interval) {
         try {
             long epoch = Long.parseLong( epocString );
             Date expiry = new Date( epoch );
@@ -91,11 +96,22 @@ public class LineChartResponseHandler implements IResponseHandler {
             cal.setTime(expiry);
             
             String day = String.valueOf(cal.get(Calendar.DATE)); 
-            String month = monthNames(cal.get(Calendar.MONTH)+1); 
-            String dayMonth = day.concat("-").concat(month); 
+            String month = monthNames(cal.get(Calendar.MONTH)+1);
             String year =  ""+cal.get(Calendar.YEAR);
-            String weekMonth = "Week " + cal.get(Calendar.WEEK_OF_YEAR)  + " : " +  dayMonth;//+" of Month "+ (cal.get(Calendar.MONTH) + 1);
-            return dayMonth;
+
+            String intervalKey = "";
+            if(interval.equals(Constants.Interval.week)){
+                intervalKey = day.concat("-").concat(month).concat("-").concat(year);
+            } else if(interval.equals(Constants.Interval.year)){
+                intervalKey = year;
+            } else if(interval.equals(Constants.Interval.month)){
+                intervalKey = month.concat("-").concat(year);
+            } else {
+                throw new RuntimeException("Invalid interval");
+            }
+
+            //String weekMonth = "Week " + cal.get(Calendar.WEEK_OF_YEAR)  /*+ " : " +  dayMonth*/;//+" of Month "+ (cal.get(Calendar.MONTH) + 1);
+            return intervalKey;
         } catch (Exception e) {
             return epocString;
         }

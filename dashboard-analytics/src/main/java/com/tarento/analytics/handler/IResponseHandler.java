@@ -1,9 +1,7 @@
 package com.tarento.analytics.handler;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -13,9 +11,11 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import com.tarento.analytics.dto.AggregateDto;
+import com.tarento.analytics.dto.AggregateRequestDto;
 import com.tarento.analytics.dto.Data;
 import com.tarento.analytics.dto.Plot;
 import com.tarento.analytics.enums.ChartType;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,18 +48,23 @@ public interface IResponseHandler {
 	public static String BUCKETS = "buckets";
 	public static String KEY = "key";
 	public static String VALUE = "value";
+	
+	public final String PERCENTAGE = "percentage";
+    public final String DOC_COUNT = "doc_count"; 
+    
+    public static final String POST_AGGREGATION_THEORY = "postAggregationTheory";
 
 	public static Double BOUNDARY_VALUE = 50.0;
 
 	/**
 	 * Translate the consolidated/aggregated response
 	 *
-	 * @param chartId
+	 * @param requestDto
 	 * @param aggregations
 	 * @return
 	 * @throws IOException
 	 */
-	public AggregateDto translate(String chartId, ObjectNode aggregations) throws IOException;
+	public AggregateDto translate(AggregateRequestDto requestDto, ObjectNode aggregations) throws IOException;
 
 	/**
 	 * Prepare aggregated dato for a chart node
@@ -68,8 +73,9 @@ public interface IResponseHandler {
 	 * @param dataList - data plots object
 	 * @return
 	 */
-	default AggregateDto getAggregatedDto(JsonNode chartNode, List<Data> dataList) {
+	default AggregateDto getAggregatedDto(JsonNode chartNode, List<Data> dataList, String visualizationCode) {
 		AggregateDto aggregateDto = new AggregateDto();
+		aggregateDto.setVisualizationCode(visualizationCode);
 		aggregateDto.setDrillDownChartId(chartNode.get(DRILL_CHART).asText());
 		ChartType chartType = ChartType.fromValue(chartNode.get(CHART_TYPE).asText());
 		aggregateDto.setChartType(chartType);
@@ -131,19 +137,39 @@ public interface IResponseHandler {
 	}
 
 	/**
-	 * Adding missing plot elements to Data
+	 * Adding missing plot elements with cumulative data
 	 * @param plotKeys - all required plot key
 	 * @param data
 	 * @param symbol
 	 */
-	default void appendMissingPlot(Set<String> plotKeys, Data data, String symbol) {
+	default void appendMissingPlot(Set<String> plotKeys, Data data, String symbol, boolean isCumulative) {
 
-		Map<String, Plot> map = data.getPlots().stream().collect(Collectors.toMap(Plot::getName, Function.identity()));
-		plotKeys.removeAll(map.keySet());
-		plotKeys.forEach(plKey -> {
-			map.put(plKey, new Plot(plKey, new Double("0"), symbol));
-		});
+		//To maintain the sorted plots list order
+		Map<String, Plot> sortedMap = data.getPlots().stream()
+				.collect(Collectors.toMap(
+						Plot::getName,
+						plot -> plot,
+						(u,v) -> { throw new IllegalStateException(String.format("Duplicate key %s", u)); },
+						LinkedHashMap::new
+				));
 
+		logger.info(data.getHeaderName() + " existing keys: "+sortedMap.keySet()+ "& size:"+sortedMap.keySet().size());
+
+		Collection<String> allKeysMinusDataKeys = CollectionUtils.subtract(plotKeys, sortedMap.keySet());
+		logger.info(data.getHeaderName() +" missing keys: "+allKeysMinusDataKeys);
+
+
+		for(String plKey:allKeysMinusDataKeys){
+			sortedMap.put(plKey, new Plot(plKey, new Double("0"), symbol));
+			if(isCumulative){
+				List<String> keys = sortedMap.keySet().stream().collect(Collectors.toList());
+				int index = keys.indexOf(plKey);
+				double value = index>0 ? sortedMap.get(keys.get(index-1)).getValue():0.0;
+				sortedMap.get(plKey).setValue(value);
+			}
+		}
+		logger.info("after appending missing plots : "+ sortedMap);
+		data.setPlots(sortedMap.values().stream().collect(Collectors.toList()));
 	}
 
 }

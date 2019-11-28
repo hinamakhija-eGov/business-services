@@ -1,21 +1,24 @@
 package com.tarento.analytics.handler;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.tarento.analytics.ConfigurationLoader;
-import com.tarento.analytics.dto.AggregateDto;
-import com.tarento.analytics.dto.Data;
-import com.tarento.analytics.dto.Plot;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.tarento.analytics.dto.AggregateDto;
+import com.tarento.analytics.dto.AggregateRequestDto;
+import com.tarento.analytics.dto.Data;
+import com.tarento.analytics.dto.Plot;
 /**
  * This handles ES response for single index, multiple index to compute performance
  * Creates plots by performing ordered (ex: top n performance or last n performance)
@@ -28,19 +31,18 @@ import java.util.stream.Collectors;
 public class TableChartResponseHandler implements IResponseHandler {
     public static final Logger logger = LoggerFactory.getLogger(TableChartResponseHandler.class);
 
-    @Autowired
-    ConfigurationLoader configurationLoader;
 
+    // TODO remove the specific column names.
     private final String TOTAL_COLLECTION = "Total Collection";
     private final String TARGET_COLLECTION = "Target Collection";
     private final String TARGET_ACHIEVED = "Target Achieved";
 
 
     @Override
-    public AggregateDto translate(String chartId, ObjectNode aggregations) throws IOException {
+    public AggregateDto translate(AggregateRequestDto requestDto, ObjectNode aggregations) throws IOException {
 
         JsonNode aggregationNode = aggregations.get(AGGREGATIONS);
-        JsonNode chartNode = configurationLoader.get(API_CONFIG_JSON).get(chartId);
+        JsonNode chartNode = requestDto.getChartNode();
         String plotLabel = chartNode.get(PLOT_LABEL).asText();
         ArrayNode pathDataTypeMap = (ArrayNode) chartNode.get(TYPE_MAPPING);
         ArrayNode aggrsPaths = (ArrayNode) chartNode.get(IResponseHandler.AGGS_PATH);
@@ -96,7 +98,7 @@ public class TableChartResponseHandler implements IResponseHandler {
 
         });
         dataList.sort((o1, o2) -> ((Integer) o1.getHeaderValue()).compareTo((Integer) o2.getHeaderValue()));
-        return getAggregatedDto(chartNode, dataList);
+        return getAggregatedDto(chartNode, dataList, requestDto.getVisualizationCode());
     }
 
 }

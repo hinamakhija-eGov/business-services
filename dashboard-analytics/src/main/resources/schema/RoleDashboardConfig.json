@@ -11,6 +11,7 @@
           "name": "My Dashboard",
           "id": "home",
           "isActive": "",
+          "style" : "tabbed",
           "visualizations": [
             {
               "row": 1,
@@ -272,6 +273,7 @@
           "name": "Property Tax",
           "id": "propertyTax",
           "isActive":"",
+          "style" : "linear",
           "visualizations": [
             {
               "row": 1,

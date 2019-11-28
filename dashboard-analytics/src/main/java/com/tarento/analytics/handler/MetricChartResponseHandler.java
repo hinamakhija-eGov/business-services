@@ -1,19 +1,23 @@
 package com.tarento.analytics.handler;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.tarento.analytics.ConfigurationLoader;
-import com.tarento.analytics.dto.AggregateDto;
-import com.tarento.analytics.dto.Data;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.tarento.analytics.ConfigurationLoader;
+import com.tarento.analytics.dto.AggregateDto;
+import com.tarento.analytics.dto.AggregateRequestDto;
+import com.tarento.analytics.dto.Data;
+import com.tarento.analytics.helper.ComputeHelper;
+import com.tarento.analytics.helper.ComputeHelperFactory;
 
 /**
  * This handles ES response for single index, multiple index to represent single data value
@@ -28,27 +32,28 @@ public class MetricChartResponseHandler implements IResponseHandler{
 
     @Autowired
     ConfigurationLoader configurationLoader;
-    public final String PERCENTAGE = "percentage";
-
+    
+    @Autowired 
+    ComputeHelperFactory computeHelperFactory; 
 
     @Override
-    public AggregateDto translate(String chartId, ObjectNode aggregations) throws IOException {
+    public AggregateDto translate(AggregateRequestDto request, ObjectNode aggregations) throws IOException {
         List<Data> dataList = new ArrayList<>();
 
         JsonNode aggregationNode = aggregations.get(AGGREGATIONS);
-        JsonNode chartNode = configurationLoader.get(API_CONFIG_JSON).get(chartId);
+        JsonNode chartNode = configurationLoader.get(API_CONFIG_JSON).get(request.getVisualizationCode());
 
         List<Double> totalValues = new ArrayList<>();
         String chartName = chartNode.get(CHART_NAME).asText();
         String action = chartNode.get(ACTION).asText();
+        
         List<Double> percentageList = new ArrayList<>();
-
         ArrayNode aggrsPaths = (ArrayNode) chartNode.get(AGGS_PATH);
 
         aggrsPaths.forEach(headerPath -> {
             List<JsonNode> values =  aggregationNode.findValues(headerPath.asText());
             values.stream().parallel().forEach(value -> {
-                List<JsonNode> valueNodes = value.findValues(VALUE).isEmpty() ? value.findValues("doc_count") : value.findValues(VALUE);
+                List<JsonNode> valueNodes = value.findValues(VALUE).isEmpty() ? value.findValues(DOC_COUNT) : value.findValues(VALUE);
                 Double sum = valueNodes.stream().mapToDouble(o -> o.asDouble()).sum();
                 if(action.equals(PERCENTAGE)){
                     percentageList.add(sum);
@@ -62,12 +67,14 @@ public class MetricChartResponseHandler implements IResponseHandler{
         try{
             Data data = new Data(chartName, action.equals(PERCENTAGE)? percentageValue(percentageList) : (totalValues==null || totalValues.isEmpty())? 0.0 :totalValues.stream().reduce(0.0, Double::sum), symbol);
             dataList.add(data);
+            if(chartNode.get(POST_AGGREGATION_THEORY) != null) { 
+            	ComputeHelper computeHelper = computeHelperFactory.getInstance(chartNode.get(POST_AGGREGATION_THEORY).asText());
+            	computeHelper.compute(request, dataList); 
+            }
         }catch (Exception e){
-
             logger.info("data chart name = "+chartName +" ex occurred "+e.getMessage());
         }
 
-        return getAggregatedDto(chartNode, dataList);
+        return getAggregatedDto(chartNode, dataList, request.getVisualizationCode());
     }
-
 }

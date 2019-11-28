@@ -9,6 +9,7 @@ public interface PathRoutes {
 		
 		final String GET_CHART = "/getChart";
 		final String GET_CHART_V2 = "/getChartV2";
+		final String GET_CHART_V3 = "/getChartV3";
 		final String GET_DASHBOARD_CONFIG = "/getDashboardConfig"; 
 		final String GET_HOME_CONFIG = "/getHomeConfig";
 		final String GET_ALL_VISUALIZATIONS = "/getAllVisualizations"; 
@@ -17,6 +18,7 @@ public interface PathRoutes {
 		final String MAP_VISUALIZATION_ROLE = "/mapVisualizationToRole";
 		final String GET_HEADER_DATA = "/getDashboardHeader";
 		final String GET_FEEDBACK_MESSAGE="/getPulseFeedbackMessage";
+		final String TARGET_DISTRICT_ULB = "/targetDistrict";
 
 	}
 	

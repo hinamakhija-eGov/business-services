@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tarento.analytics.dto.AggregateRequestDto;
-import com.tarento.analytics.dto.AggregateRequestDtoV2;
+import com.tarento.analytics.dto.AggregateRequestDto;
 import com.tarento.analytics.exception.AINException;
 
 public interface QueryService {
@@ -24,7 +24,7 @@ public interface QueryService {
 /*	Aggregations getAggregateData(AggregateRequestDto aggregateDto, String orgId) throws AINException;
 	Aggregations getAggregateDataV2(AggregateRequestDtoV2 aggregateDto, String orgId) throws AINException, JsonParseException, JsonMappingException, IOException;
 	*/
-	ObjectNode getChartConfigurationQuery(AggregateRequestDtoV2 req, JsonNode query, String indexName); 
+	ObjectNode getChartConfigurationQuery(AggregateRequestDto req, JsonNode query, String indexName, String interval);
 	
 	
 }

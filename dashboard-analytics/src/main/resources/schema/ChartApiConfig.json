@@ -1,7 +1,7 @@
 {
   "_comment": "Starts Common Charts, applied across module",
   "totalApplication": {
-    "chartName": "Total Application",
+    "chartName": "DSS_TOTAL_APPLICATION",
     "queries": [
       {
         "module": "PT",
@@ -38,7 +38,7 @@
     "_comment": " totalApplication is the chartId"
   },
   "closedApplication": {
-    "chartName": "Closed Application",
+    "chartName": "DSS_CLOSED_APPLICATION",
     "queries": [
       {
         "module": "PT",
@@ -75,7 +75,7 @@
     "_comment": " totalApplication is the chartId"
   },
   "citizenRegistered": {
-    "chartName": "Citizen Registered",
+    "chartName": "DSS_CITIZEN_REGISTERED",
     "queries": [
       {
         "module": "PGR",
@@ -98,7 +98,7 @@
     "_comment": " totalApplication is the chartId"
   },
   "totalApplicationDeptWise": {
-    "chartName": "Total Application: Department Wise",
+    "chartName": "DSS_TOTAL_APPLICATIONS:_DEPARTMENT_WISE",
     "queries": [
       {
         "module": "PT",
@@ -137,28 +137,28 @@
     "_comment": " totalApplication is the chartId"
   },
   "totalApplication&ClosedApplication": {
-    "chartName": "Total Application & Closed Application",
+    "chartName": "DSS_TOTAL_APPLICATION_&_CLOSED_APPLICATION",
     "queries": [
       {
         "module": "PT",
         "dateRefField": "Data.@timestamp",
         "requestQueryMap": "{\r\n  \"district\" : \"Data.tenantData.city.districtCode\", \r\n\"tenantId\" : \"Data.tenantId\" \r\n}",
         "indexName": "ptindex-v1",
-        "aggrQuery": "{\"aggs\":{\"Total Application\":{\"date_histogram\":{\"field\":\"Data.@timestamp\",\"interval\":\"week\"},\"aggs\":{\"Count\":{\"value_count\":{\"field\":\"Data.propertyId.keyword\"}}}},\"Closed Application\":{\"date_histogram\":{\"field\":\"Data.@timestamp\",\"interval\":\"week\"},\"aggs\":{\"Applications Closed\":{\"filters\":{\"filters\":{\"closed\":{\"match\":{\"Data.status.keyword\":\"closed\"}}}},\"aggs\":{\"Count\":{\"value_count\":{\"field\":\"Data.propertyId.keyword\"}}}}}}}}"
+        "aggrQuery": "{\"aggs\":{\"Total Application\":{\"date_histogram\":{\"field\":\"Data.@timestamp\",\"interval\":\"intervalvalue\"},\"aggs\":{\"Count\":{\"value_count\":{\"field\":\"Data.propertyId.keyword\"}}}},\"Closed Application\":{\"date_histogram\":{\"field\":\"Data.@timestamp\",\"interval\":\"intervalvalue\"},\"aggs\":{\"Applications Closed\":{\"filters\":{\"filters\":{\"closed\":{\"match\":{\"Data.status.keyword\":\"closed\"}}}},\"aggs\":{\"Count\":{\"value_count\":{\"field\":\"Data.propertyId.keyword\"}}}}}}}}"
       },
       {
         "module": "TL",
         "dateRefField": "Data.@timestamp",
         "requestQueryMap": "{\r\n  \"district\" : \"Data.tenantData.city.districtCode\", \r\n\"tenantId\" : \"Data.tenantId\" \r\n}",
         "indexName": "tlindex-v1",
-        "aggrQuery": "{\"aggs\":{\"Total Application\":{\"date_histogram\":{\"field\":\"Data.tradelicense.applicationDate\",\"interval\":\"week\"},\"aggs\":{\"Count\":{\"value_count\":{\"field\":\"Data.tradelicense.applicationNumber.keyword\"}}}},\"Closed Application\":{\"date_histogram\":{\"field\":\"Data.tradelicense.@timestamp\",\"interval\":\"week\"},\"aggs\":{\"Applications Closed\":{\"filters\":{\"filters\":{\"closed\":{\"match\":{\"Data.status.keyword\":\"closed\"}},\"resolved\":{\"match\":{\"Data.status.keyword\":\"resolved\"}}}},\"aggs\":{\"Count\":{\"value_count\":{\"field\":\"Data.tradelicense.applicationNumber.keyword\"}}}}}}}}"
+        "aggrQuery": "{\"aggs\":{\"Total Application\":{\"date_histogram\":{\"field\":\"Data.tradelicense.applicationDate\",\"interval\":\"intervalvalue\"},\"aggs\":{\"Count\":{\"value_count\":{\"field\":\"Data.tradelicense.applicationNumber.keyword\"}}}},\"Closed Application\":{\"date_histogram\":{\"field\":\"Data.tradelicense.@timestamp\",\"interval\":\"intervalvalue\"},\"aggs\":{\"Applications Closed\":{\"filters\":{\"filters\":{\"closed\":{\"match\":{\"Data.status.keyword\":\"closed\"}},\"resolved\":{\"match\":{\"Data.status.keyword\":\"resolved\"}}}},\"aggs\":{\"Count\":{\"value_count\":{\"field\":\"Data.tradelicense.applicationNumber.keyword\"}}}}}}}}"
       },
       {
         "module": "PGR",
         "dateRefField": "Data.@timestamp",
         "requestQueryMap": "{\r\n  \"district\" : \"Data.tenantData.city.districtCode\", \r\n\"tenantId\" : \"Data.tenantId\" \r\n}",
         "indexName": "pgrindex-v1",
-        "aggrQuery": "{\"aggs\":{\"Total Application\":{\"date_histogram\":{\"field\":\"Data.dateOfComplaint\",\"interval\":\"week\"},\"aggs\":{\"Count\":{\"value_count\":{\"field\":\"Data.tenantId.keyword\"}}}},\"Closed Application\":{\"date_histogram\":{\"field\":\"Data.dateOfComplaint\",\"interval\":\"week\"},\"aggs\":{\"Applications Closed\":{\"filters\":{\"filters\":{\"closed\":{\"match\":{\"Data.status.keyword\":\"closed\"}}}},\"aggs\":{\"Count\":{\"value_count\":{\"field\":\"Data.tenantId.keyword\"}}}}}}}}"
+        "aggrQuery": "{\"aggs\":{\"Total Application\":{\"date_histogram\":{\"field\":\"Data.dateOfComplaint\",\"interval\":\"intervalvalue\"},\"aggs\":{\"Count\":{\"value_count\":{\"field\":\"Data.tenantId.keyword\"}}}},\"Closed Application\":{\"date_histogram\":{\"field\":\"Data.dateOfComplaint\",\"interval\":\"intervalvalue\"},\"aggs\":{\"Applications Closed\":{\"filters\":{\"filters\":{\"closed\":{\"match\":{\"Data.status.keyword\":\"closed\"}}}},\"aggs\":{\"Count\":{\"value_count\":{\"field\":\"Data.tenantId.keyword\"}}}}}}}}"
       }
     ],
     "chartType": "line",
@@ -170,19 +170,28 @@
       "Total Application",
       "Closed Application"
     ],
+    "isCumulative": false,
+    "interval": "month",
     "insight": {
     },
     "_comment": " "
   },
   "cumulativeCollection": {
-    "chartName": "Total Cumulative Collection Weekly",
+    "chartName": "DSS_TOTAL_CUMULATIVE_COLLECTION",
     "queries": [
       {
-        "module": "COMMON",
-        "requestQueryMap": "{\r\n  \"module\" : \"dataObject.Bill.billDetails.businessService.keyword\", \n\"tenantId\" : \"domainObject.tenantId\"}",
-        "dateRefField": "dataObject.@timestamp",
-        "indexName": "dss-collection_v1",
-        "aggrQuery": "{\"aggs\":{\"2019\":{\"date_histogram\":{\"field\":\"dataObject.Bill.billDetails.receiptDate\",\"interval\":\"week\"},\"aggs\":{\"Sum\":{\"sum\":{\"field\":\"dataObject.Bill.billDetails.amountPaid\"}}}}}}"
+        "module": "PT",
+        "dateRefField": "Data.Bill.billDetails.receiptDate",
+        "requestQueryMap": "{\r\n  \"module\" : \"Data.Bill.billDetails.businessService.keyword\", \n\"tenantId\" : \"Data.tenantId\"}",
+        "indexName": "collectionsindex-v1",
+        "aggrQuery": "{\"aggs\":{\"2019\":{\"date_histogram\":{\"field\":\"Data.Bill.billDetails.receiptDate\",\"interval\":\"intervalvalue\"},\"aggs\":{\"Sum\":{\"sum\":{\"field\":\"Data.Bill.billDetails.amountPaid\"}}}}}}"
+      },
+      {
+        "module": "TL",
+        "dateRefField": "Data.Bill.billDetails.receiptDate",
+        "requestQueryMap": "{\r\n  \"module\" : \"Data.Bill.billDetails.businessService.keyword\", \n\"tenantId\" : \"Data.tenantId\"}",
+        "indexName": "collectionsindex-v1",
+        "aggrQuery": "{\"aggs\":{\"2019\":{\"date_histogram\":{\"field\":\"Data.Bill.billDetails.receiptDate\",\"interval\":\"intervalvalue\"},\"aggs\":{\"Sum\":{\"sum\":{\"field\":\"Data.Bill.billDetails.amountPaid\"}}}}}}"
       }
     ],
     "chartType": "line",
@@ -193,49 +202,53 @@
     "aggregationPaths": [
       "2019"
     ],
+    "isCumulative": true,
+    "interval": "week",
     "insight": {
     },
     "_comment": " "
   },
   "targetCollection": {
-    "chartName": "Target Collection",
+    "chartName": "DSS_TARGET_COLLECTION",
     "queries": [
       {
         "module": "COMMON",
         "requestQueryMap": "{\"module\" : \"businessService.keyword\", \"tenantId\" : \"tenantIdForMunicipalCorporation.keyword\"}",
-        "dateRefField": "Timestamp",
+        "dateRefField": "",
         "indexName": "dss-target_v1",
         "aggrQuery": "{\"aggs\":{\"Target Collection\":{\"sum\":{\"field\":\"budgetProposedForMunicipalCorporation\"}}}}"
       }
     ],
     "chartType": "metric",
-    "valueType": "Amount",
+    "valueType": "amount",
     "action": "",
     "drillChart": "none",
     "documentType": "_doc",
     "aggregationPaths": [
       "Target Collection"
     ],
+    "isDayUnit": true,
+    "postAggregationTheory" : "repsonseToDifferenceOfDates",
     "insight": {
     },
     "_comment": " "
   },
   "targetAchieved": {
-    "chartName": "Target Achieved",
+    "chartName": "DSS_TARGET_ACHIEVED",
     "queries": [
       {
         "module": "COMMON",
         "requestQueryMap": "{\r\n  \"module\" : \"businessService.keyword\", \n\"tenantId\" : \"tenantIdForMunicipalCorporation\"}",
-        "dateRefField": "Timestamp",
+        "dateRefField": "",
         "indexName": "dss-target_v1",
         "aggrQuery": "{\"aggs\":{\"Actual collection\":{\"sum\":{\"field\":\"budgetProposedForMunicipalCorporation\"}}}}"
       },
       {
         "module": "COMMON",
-        "requestQueryMap": "{\r\n  \"module\" : \"dataObject.Bill.billDetails.businessService.keyword\", \n\"tenantId\" : \"domainObject.tenantId\"}",
-        "dateRefField": "dataObject.@timestamp",
-        "indexName": "dss-collection_v1",
-        "aggrQuery": "{\"aggs\":{\"Total Collection\":{\"sum\":{\"field\":\"dataObject.Bill.billDetails.amountPaid\"}}}}"
+        "requestQueryMap": "{\r\n  \"district\" : \"dataObject.tenantData.cityDistrictCode\", \"module\" : \"Data.Bill.billDetails.businessService.keyword\", \n\"tenantId\" : \"Data.tenantId\"}",
+        "dateRefField": "Data.Bill.billDetails.receiptDate",
+        "indexName": "collectionsindex-v1",
+        "aggrQuery": "{\"size\":1,\"query\":{\"bool\":{\"filter\":[{\"terms\":{\"Data.Bill.billDetails.businessService.keyword\":[\"TL\"],\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"aggs\":{\"Total Collection\":{\"sum\":{\"field\":\"Data.Bill.billDetails.amountPaid\"}}}}"
       }
 
     ],
@@ -253,14 +266,21 @@
     "_comment": " "
   },
   "totalCollection": {
-    "chartName": "Total Collection",
+    "chartName": "DSS_TOTAL_COLLECTION",
     "queries": [
       {
-        "module": "COMMON",
-        "indexName": "dss-collection_v1",
-        "aggrQuery": "{\"aggs\":{\"Total Collection\":{\"sum\":{\"field\":\"dataObject.Bill.billDetails.amountPaid\"}}}}",
-        "requestQueryMap": "{\"module\" : \"dataObject.Bill.billDetails.businessService.keyword\", \"tenantId\" : \"dataObject.tenantId\", \"district\" : \"dataObject.tenantData.cityDistrictCode\"}",
-        "dateRefField": "dataObject.Bill.billDetails.receiptDate"
+        "module": "PT",
+        "dateRefField": "Data.Bill.billDetails.receiptDate",
+        "requestQueryMap": "{\"module\" : \"Data.Bill.billDetails.businessService.keyword\", \"tenantId\" : \"Data.tenantId\", \"district\" : \"dataObject.tenantData.cityDistrictCode\"}",
+        "indexName": "collectionsindex-v1",
+        "aggrQuery": "{\"aggs\":{\"Total Collection\":{\"filter\":{\"term\":{\"Data.Bill.billDetails.businessService.keyword\":\"PT\"}},\"aggs\":{\"Tot Collection\":{\"sum\":{\"field\":\"Data.Bill.billDetails.amountPaid\"}}}}}}"
+      },
+      {
+        "module": "TL",
+        "dateRefField": "Data.Bill.billDetails.receiptDate",
+        "requestQueryMap": "{\"module\" : \"Data.Bill.billDetails.businessService.keyword\", \"tenantId\" : \"Data.tenantId\", \"district\" : \"dataObject.tenantData.cityDistrictCode\"}",
+        "indexName": "collectionsindex-v1",
+        "aggrQuery": "{\"aggs\":{\"Total Collection\":{\"filter\":{\"term\":{\"Data.Bill.billDetails.businessService.keyword\":\"TL\"}},\"aggs\":{\"Tot Collection\":{\"sum\":{\"field\":\"Data.Bill.billDetails.amountPaid\"}}}}}}"
       }
     ],
     "chartType": "metric",
@@ -276,14 +296,14 @@
     "_comment": " "
   },
   "totalCollectionDeptWise": {
-    "chartName": "Total Collection Department Wise",
+    "chartName": "DSS_TOTAL_CUMULATIVE_COLLECTION:_DEPARTMENT_WISE",
     "queries": [
       {
         "module": "COMMON",
-        "requestQueryMap": "{\"module\" : \"dataObject.Bill.billDetails.businessService.keyword\", \"tenantId\" : \"dataObject.tenantId\", \"district\" : \"dataObject.tenantData.cityDistrictCode\"}",
-        "dateRefField": "dataObject.@timestamp",
-        "indexName": "dss-collection_v1",
-        "aggrQuery": "{\"aggs\":{\"Deptment\":{\"terms\":{\"field\":\"dataObject.Bill.billDetails.businessService.keyword\"},\"aggs\":{\"total\":{\"sum\":{\"field\":\"dataObject.Bill.billDetails.amountPaid\"}}}}}}"
+        "requestQueryMap": "{\"module\" : \"Data.Bill.billDetails.businessService.keyword\", \"tenantId\" : \"Data.tenantId\", \"district\" : \"dataObject.tenantData.cityDistrictCode\"}",
+        "dateRefField": "Data.Bill.billDetails.receiptDate",
+        "indexName": "collectionsindex-v1",
+        "aggrQuery": "{\"aggs\":{\"Department\":{\"filter\":{\"terms\":{\"Data.Bill.billDetails.businessService.keyword\":[\"PT\",\"TL\"]}},\"aggs\":{\"Business Service\":{\"terms\":{\"field\":\"Data.Bill.billDetails.businessService.keyword\"},\"aggs\":{\"total\":{\"sum\":{\"field\":\"Data.Bill.billDetails.amountPaid\"}}}}}}}}"
       }
     ],
     "chartType": "pie",
@@ -292,28 +312,28 @@
     "documentType": "_doc",
     "action": "",
     "aggregationPaths": [
-      "Deptment"
+      "Business Service"
     ],
     "insight": {
     },
     "_comment": " "
   },
   "topPerformingUlbs": {
-    "chartName": "Top 3 Performing ULBs",
+    "chartName": "DSS_PT_TOP_3_PERFORMING_ULBS",
     "queries": [
       {
         "module": "COMMON",
         "requestQueryMap": "{\r\n  \"module\" : \"businessService.keyword\", \n\"tenantId\" : \"tenantIdForMunicipalCorporation\"}",
-        "dateRefField": "Timestamp",
+        "dateRefField": "",
         "indexName": "dss-target_v1",
-        "aggrQuery": "{\"aggs\":{\"Total Collection\":{\"terms\":{\"field\":\"tenantIdForMunicipalCorporation.keyword\"},\"aggs\":{\"Sum\":{\"sum\":{\"field\":\"dataObject.Bill.billDetails.amountPaid\"}}}},\"Target Collection\":{\"terms\":{\"field\":\"tenantIdForMunicipalCorporation.keyword\"},\"aggs\":{\"Sum\":{\"sum\":{\"field\":\"budgetProposedForMunicipalCorporation\"}}}}}}"
+        "aggrQuery": "{\"aggs\":{\"Target Collection\":{\"terms\":{\"field\":\"tenantIdForMunicipalCorporation.keyword\"},\"aggs\":{\"Sum\":{\"sum\":{\"field\":\"budgetProposedForMunicipalCorporation\"}}}}}}"
       },
       {
         "module": "COMMON",
-        "requestQueryMap": "{\r\n  \"module\" : \"dataObject.Bill.billDetails.businessService.keyword\", \n\"tenantId\" : \"domainObject.tenantId\"}",
-        "dateRefField": "dataObject.@timestamp",
-        "indexName": "dss-collection_v1",
-        "aggrQuery": "{\"aggs\":{\"Total Collection\":{\"terms\":{\"field\":\"domainObject.tenantId.keyword\"},\"aggs\":{\"Sum\":{\"sum\":{\"field\":\"dataObject.Bill.billDetails.amountPaid\"}}}},\"Target Collection\":{\"terms\":{\"field\":\"domainObject.tenantId.keyword\"},\"aggs\":{\"Sum\":{\"sum\":{\"field\":\"budgetProposedForMunicipalCorporation\"}}}}}}"
+        "requestQueryMap": "{\r\n  \"module\" : \"Data.Bill.billDetails.businessService.keyword\", \n\"tenantId\" : \"Data.tenantId\"}",
+        "dateRefField": "Data.Bill.billDetails.receiptDate",
+        "indexName": "collectionsindex-v1",
+        "aggrQuery": "{\"aggs\":{\"Total Collection\":{\"terms\":{\"field\":\"Data.tenantId.keyword\"},\"aggs\":{\"Sum\":{\"sum\":{\"field\":\"Data.Bill.billDetails.amountPaid\"}}}}}}"
       }
     ],
     "chartType": "perform",
@@ -332,21 +352,21 @@
     "_comment": " Top Performing Ulbs for target achieved"
   },
   "bottomPerformingUlbs": {
-    "chartName": "Bottom 3 Performing ULBs",
+    "chartName": "DSS_PT_BOTTOM_3_PERFORMING_ULBS",
     "queries": [
       {
         "module": "COMMON",
         "requestQueryMap": "{\"module\" : \"businessService.keyword\",\"tenantId\" : \"tenantIdForMunicipalCorporation\" }",
-        "dateRefField": "Timestamp",
+        "dateRefField": "",
         "indexName": "dss-target_v1",
         "aggrQuery": "{\"aggs\":{\"Total Collection\":{\"terms\":{\"field\":\"tenantIdForMunicipalCorporation.keyword\"},\"aggs\":{\"Sum\":{\"sum\":{\"field\":\"dataObject.Bill.billDetails.amountPaid\"}}}},\"Target Collection\":{\"terms\":{\"field\":\"tenantIdForMunicipalCorporation.keyword\"},\"aggs\":{\"Sum\":{\"sum\":{\"field\":\"budgetProposedForMunicipalCorporation\"}}}}}}"
       },
       {
         "module": "COMMON",
-        "requestQueryMap": "{\"module\" : \"dataObject.Bill.billDetails.businessService.keyword\", \"tenantId\" : \"domainObject.tenantId\" }",
-        "dateRefField": "dataObject.@timestamp",
-        "indexName": "dss-collection_v1",
-        "aggrQuery": "{\"aggs\":{\"Total Collection\":{\"terms\":{\"field\":\"domainObject.tenantId.keyword\"},\"aggs\":{\"Sum\":{\"sum\":{\"field\":\"dataObject.Bill.billDetails.amountPaid\"}}}},\"Target Collection\":{\"terms\":{\"field\":\"domainObject.tenantId.keyword\"},\"aggs\":{\"Sum\":{\"sum\":{\"field\":\"budgetProposedForMunicipalCorporation\"}}}}}}"
+        "requestQueryMap": "{\"module\" : \"Data.Bill.billDetails.businessService.keyword\", \"tenantId\" : \"Data.tenantId\" }",
+        "dateRefField": "Data.Bill.billDetails.receiptDate",
+        "indexName": "collectionsindex-v1",
+        "aggrQuery": "{\"aggs\":{\"Total Collection\":{\"terms\":{\"field\":\"Data.tenantId.keyword\"},\"aggs\":{\"Sum\":{\"sum\":{\"field\":\"Data.Bill.billDetails.amountPaid\"}}}}}}"
       }
     ],
     "chartType": "perform",
@@ -365,21 +385,28 @@
     "_comment": " Bottom Performing Ulbs for target achieved"
   },
   "topPerformingUlbsCompletionRate": {
-    "chartName": "Top 3 Performing ULBs",
+    "chartName": "DSS_PT_TOP_3_PERFORMING_ULBS",
     "queries": [
       {
         "module": "PGR",
         "requestQueryMap": "{\"module\" : \"businessService.keyword\",\"tenantId\" : \"Data.tenantId\" , \"district\" : \"Data.tenantData.city.districtCode\"}",
         "dateRefField": "Data.@timestamp",
         "indexName": "pgrindex-v1",
-        "aggrQuery": "{\"aggs\":{\"Closed Application\":{\"filter\":{\"term\":{\"Data.status.keyword\":\"resolved\"}},\"aggs\":{\"count\":{\"terms\":{\"field\":\"Data.tenantId.keyword\"},\"aggs\":{\"tenant_count\":{\"value_count\":{\"field\":\"Data.tenantId.keyword\"}}}}}},\"Total Application\":{\"terms\":{\"field\":\"Data.tenantId.keyword\"},\"aggs\":{\"tenant_count\":{\"value_count\":{\"field\":\"Data.tenantId.keyword\"}}}}}}"
+        "aggrQuery": "{\"aggs\":{\"Closed Application\":{\"filter\":{\"term\":{\"Data.status.keyword\":\"resolved\"}},\"aggs\":{\"count\":{\"terms\":{\"field\":\"Data.tenantId.keyword\",\"order\":{\"_key\":\"asc\"},\"size\":100},\"aggs\":{\"tenant_count\":{\"value_count\":{\"field\":\"Data.tenantId.keyword\"}}}}}},\"Total Application\":{\"terms\":{\"field\":\"Data.tenantId.keyword\",\"order\":{\"_key\":\"asc\"},\"size\":100},\"aggs\":{\"tenant_count\":{\"value_count\":{\"field\":\"Data.tenantId.keyword\"}}}}}}"
       },
       {
         "module": "PT",
         "requestQueryMap": "{\"module\" : \"businessService.keyword\",\"tenantId\" : \"Data.tenantId\" ,  \"district\" : \"Data.tenantData.city.districtCode\"}",
         "dateRefField": "Data.@timestamp",
         "indexName": "ptindex-v1",
-        "aggrQuery": "{\"aggs\":{\"Closed Application\":{\"filter\":{\"term\":{\"Data.status.keyword\":\"resolved\"}},\"aggs\":{\"count\":{\"terms\":{\"field\":\"Data.tenantId.keyword\"},\"aggs\":{\"tenant_count\":{\"value_count\":{\"field\":\"Data.tenantId.keyword\"}}}}}},\"Total Application\":{\"terms\":{\"field\":\"Data.tenantId.keyword\"},\"aggs\":{\"tenant_count\":{\"value_count\":{\"field\":\"Data.tenantId.keyword\"}}}}}}"
+        "aggrQuery": "{\"aggs\":{\"Closed Application\":{\"filter\":{\"exists\":{\"field\":\"Data.propertyId.keyword\"}},\"aggs\":{\"count\":{\"terms\":{\"field\":\"Data.tenantId.keyword\"},\"aggs\":{\"tenant_count\":{\"value_count\":{\"field\":\"Data.tenantId.keyword\"}}}}}},\"Total Application\":{\"terms\":{\"field\":\"Data.tenantId.keyword\"},\"aggs\":{\"tenant_count\":{\"value_count\":{\"field\":\"Data.tenantId.keyword\"}}}}}}"
+      },
+      {
+        "module": "TL",
+        "requestQueryMap": "{\"module\" : \"businessService.keyword\",\"tenantId\" : \"Data.tenantData.code\" ,  \"district\" : \"Data.tenantData.city.districtCode\"}",
+        "dateRefField": "Data.tradelicense.applicationdate",
+        "indexName": "tlindex-v1",
+        "aggrQuery": "{\"aggs\":{\"Closed Application\":{\"filter\":{\"exists\":{\"field\":\"Data.tradelicense.issueddate\"}},\"aggs\":{\"count\":{\"terms\":{\"field\":\"Data.tenantData.code.keyword\"},\"aggs\":{\"tenant_count\":{\"value_count\":{\"field\":\"Data.tenantData.code.keyword\"}}}}}},\"Total Application\":{\"filter\":{\"exists\":{\"field\":\"Data.tradelicense.applicationdate\"}},\"aggs\":{\"count\":{\"terms\":{\"field\":\"Data.tenantData.code.keyword\"},\"aggs\":{\"tenant_count\":{\"value_count\":{\"field\":\"Data.tenantData.code.keyword\"}}}}}}}}"
       }
     ],
     "chartType": "perform",
@@ -387,7 +414,7 @@
     "drillChart": "none",
     "documentType": "_doc",
     "action": "percentage",
-    "plotLabel": "Completion Rate",
+    "plotLabel": "DSS_COMPLETION_RATE",
     "order": "desc",
     "limit": 3,
     "aggregationPaths": [
@@ -399,7 +426,7 @@
     "_comment": " Top Performing Ulbs for Completion rate"
   },
   "bottomPerformingUlbsCompletionRate": {
-    "chartName": "Bottom 3 Performing ULBs",
+    "chartName": "DSS_PT_BOTTOM_3_PERFORMING_ULBS",
     "queries": [
       {
         "module": "PGR",
@@ -413,7 +440,14 @@
         "requestQueryMap": "{\"module\" : \"businessService.keyword\",\"tenantId\" : \"Data.tenantId\" ,\"district\" : \"Data.tenantData.city.districtCode\"}",
         "dateRefField": "Data.@timestamp",
         "indexName": "ptindex-v1",
-        "aggrQuery": "{\"aggs\":{\"Closed Application\":{\"filter\":{\"term\":{\"Data.status.keyword\":\"resolved\"}},\"aggs\":{\"count\":{\"terms\":{\"field\":\"Data.tenantId.keyword\"},\"aggs\":{\"tenant_count\":{\"value_count\":{\"field\":\"Data.tenantId.keyword\"}}}}}},\"Total Application\":{\"terms\":{\"field\":\"Data.tenantId.keyword\"},\"aggs\":{\"tenant_count\":{\"value_count\":{\"field\":\"Data.tenantId.keyword\"}}}}}}"
+        "aggrQuery": "{\"aggs\":{\"Closed Application\":{\"filter\":{\"exists\":{\"field\":\"Data.propertyId.keyword\"}},\"aggs\":{\"count\":{\"terms\":{\"field\":\"Data.tenantId.keyword\"},\"aggs\":{\"tenant_count\":{\"value_count\":{\"field\":\"Data.tenantId.keyword\"}}}}}},\"Total Application\":{\"terms\":{\"field\":\"Data.tenantId.keyword\"},\"aggs\":{\"tenant_count\":{\"value_count\":{\"field\":\"Data.tenantId.keyword\"}}}}}}"
+      },
+      {
+        "module": "TL",
+        "requestQueryMap": "{\"module\" : \"businessService.keyword\",\"tenantId\" : \"Data.tenantData.code\" ,  \"district\" : \"Data.tenantData.city.districtCode\"}",
+        "dateRefField": "Data.tradelicense.applicationdate",
+        "indexName": "tlindex-v1",
+        "aggrQuery": "{\"aggs\":{\"Closed Application\":{\"filter\":{\"exists\":{\"field\":\"Data.tradelicense.issueddate\"}},\"aggs\":{\"count\":{\"terms\":{\"field\":\"Data.tenantData.code.keyword\"},\"aggs\":{\"tenant_count\":{\"value_count\":{\"field\":\"Data.tenantData.code.keyword\"}}}}}},\"Total Application\":{\"filter\":{\"exists\":{\"field\":\"Data.tradelicense.applicationdate\"}},\"aggs\":{\"count\":{\"terms\":{\"field\":\"Data.tenantData.code.keyword\"},\"aggs\":{\"tenant_count\":{\"value_count\":{\"field\":\"Data.tenantData.code.keyword\"}}}}}}}}"
       }
     ],
     "chartType": "perform",
@@ -421,7 +455,7 @@
     "drillChart": "none",
     "documentType": "_doc",
     "action": "percentage",
-    "plotLabel": "Completion Rate",
+    "plotLabel": "DSS_COMPLETION_RATE",
     "order": "asc",
     "limit": 3,
     "aggregationPaths": [
@@ -432,14 +466,13 @@
     },
     "_comment": " Bottom Performing Ulbs for Completion rate"
   },
-  "_comment": "Starts PT specific Charts",
   "collectionByUsageType": {
-    "chartName": "Collection by Usage Type",
+    "chartName": "DSS_PT_COLLECTION_BY_USAGE_TYPE",
     "queries": [
       {
         "module": "COMMON",
         "requestQueryMap": "{\"module\" : \"dataObject.Bill.billDetails.businessService.keyword\", \"tenantId\" : \"dataObject.tenantId\", \"district\" : \"dataObject.tenantData.cityDistrictCode\" }",
-        "dateRefField": "dataObject.@timestamp",
+        "dateRefField": "dataObject.Bill.billDetails.receiptDate",
         "indexName": "dss-collection_v1",
         "aggrQuery": "{\"aggs\":{\"Usage Type\":{\"terms\":{\"field\":\"domainObject.propertyDetails.units.usageCategoryMajor.keyword\"},\"aggs\":{\"Total Collection\":{\"sum\":{\"field\":\"dataObject.Bill.billDetails.amountPaid\"}}}}}}"
       }
@@ -457,14 +490,14 @@
     "_comment": " collection/amount per usage type"
   },
   "propertiesByUsageType": {
-    "chartName": "Properties by Usage Type",
+    "chartName": "DSS_PT_PROPERTIES_BY_USAGE_TYPE",
     "queries": [
       {
-        "module": "COMMON",
-        "requestQueryMap": "{\"module\" : \"dataObject.Bill.billDetails.businessService.keyword\", \"tenantId\" : \"dataObject.tenantId\", \"district\" : \"dataObject.tenantData.cityDistrictCode\"}",
-        "dateRefField": "dataObject.@timestamp",
-        "indexName": "dss-collection_v1",
-        "aggrQuery": "{\"aggs\":{\"Usage Type\":{\"terms\":{\"field\":\"domainObject.propertyDetails.units.usageCategoryMajor.keyword\"},\"aggs\":{\"Assessed Properties\":{\"value_count\":{\"field\":\"domainObject.propertyDetails.assessmentNumber.keyword\"}}}}}}"
+        "module": "PT",
+        "requestQueryMap": "{\"module\" : \"dataObject.Bill.billDetails.businessService.keyword\", \"tenantId\" : \"Data.tenantId\", \"district\" : \"dataObject.tenantData.cityDistrictCode\"}",
+        "dateRefField": "Data.@timestamp",
+        "indexName": "ptindex-v1",
+        "aggrQuery": "{\"aggs\":{\"Usage Type\":{\"terms\":{\"field\":\"Data.propertyDetails.units.usageCategoryMajor.keyword\"},\"aggs\":{\"Assessed Properties\":{\"value_count\":{\"field\":\"Data.propertyDetails.assessmentNumber.keyword\"}}}}}}"
       }
     ],
     "chartType": "pie",
@@ -480,7 +513,7 @@
     "_comment": " properties having assessmentNumber per usage type"
   },
   "propertiesAssessed": {
-    "chartName": "Total Properties Accessed",
+    "chartName": "DSS_PT_TOTAL_PROPERTIES_ASSESSED",
     "queries": [
       {
         "module": "PT",
@@ -503,12 +536,12 @@
     "_comment": " totol properties having assessmentNumber "
   },
   "cumulativePropertiesAssessed": {
-    "chartName": "Total Cumulative Properties Accessed Weekly",
+    "chartName": "DSS_PT_CUMULATIVE_PROPERTIES_ASSESSED",
     "queries": [
       {
         "module": "PT",
         "indexName": "ptindex-v1",
-        "aggrQuery": "{\"aggs\":{\"2019\":{\"date_histogram\":{\"field\":\"Data.propertyDetails.assessmentDate\",\"interval\":\"week\"},\"aggs\":{\"Count\":{\"value_count\":{\"field\":\"Data.propertyDetails.assessmentNumber.keyword\"}}}}}}",
+        "aggrQuery": "{\"aggs\":{\"2019\":{\"date_histogram\":{\"field\":\"Data.propertyDetails.assessmentDate\",\"interval\":\"intervalvalue\"},\"aggs\":{\"Count\":{\"value_count\":{\"field\":\"Data.propertyDetails.assessmentNumber.keyword\"}}}}}}",
         "requestQueryMap": "{\"tenantId\" : \"Data.tenantId\" ,\"district\" : \"Data.tenantData.city.districtCode\"}",
         "dateRefField": "Data.@timestamp"
       }
@@ -521,19 +554,28 @@
     "aggregationPaths": [
       "2019"
     ],
+    "isCumulative": true,
+    "interval": "week",
     "insight": {
     },
     "_comment": " totol properties having assessmentNumber "
   },
   "activeUlbs": {
-    "chartName": "Total Active ULBs",
+    "chartName": "DSS_PT_TOTAL_ACTIVE_ULBS",
     "queries": [
       {
-        "module": "COMMON",
-        "requestQueryMap": "{\"module\" : \"dataObject.Bill.billDetails.businessService.keyword\", \"tenantId\" : \"dataObject.tenantId\", \"district\" : \"dataObject.tenantData.cityDistrictCode\" }",
-        "dateRefField": "dataObject.@timestamp",
-        "indexName": "dss-collection_v1",
-        "aggrQuery": "{\"aggs\":{\"Active ULBs\":{\"terms\":{\"field\":\"dataObject.tenantId.keyword\"},\"aggs\":{\"type_count\":{\"cardinality\":{\"field\":\"dataObject.tenantId.keyword\"}}}}}}"
+        "module": "PT",
+        "requestQueryMap": "{\"tenantId\" : \"Data.tenantId\"}",
+        "dateRefField": "Data.@timestamp",
+        "indexName": "ptindex-v1",
+        "aggrQuery": "{\"aggs\":{\"Active ULBs\":{\"terms\":{\"field\":\"Data.tenantId.keyword\"},\"aggs\":{\"type_count\":{\"cardinality\":{\"field\":\"Data.tenantId.keyword\"}}}}}}"
+      },
+      {
+        "module": "TL",
+        "requestQueryMap": "{\"tenantId\" : \"Data.tenantData.code\"}",
+        "dateRefField": "Data.tradelicense.applicationdate",
+        "indexName": "tlindex-v1",
+        "aggrQuery": "{\"aggs\":{\"Active ULBs\":{\"terms\":{\"field\":\"Data.tenantData.code.keyword\"},\"aggs\":{\"type_count\":{\"cardinality\":{\"field\":\"Data.tenantData.code.keyword\"}}}}}}"
       }
     ],
     "chartType": "metric",
@@ -549,7 +591,7 @@
     "_comment": " total ULBs count"
   },
   "demandCollectionIndexBoundaryRevenue": {
-    "chartName": "Demand & Collection Index Boundary",
+    "chartName": "DSS_PT_DEMAND_COLLECTION_BOUNDARY",
     "queries": [
       {
         "module": "COMMON",
@@ -605,7 +647,7 @@
   },
   "boundaryDrillDown": {
     "kind": "drillDown",
-    "chartName": "Demand & Collection Index Boundary",
+    "chartName": "Boundary",
     "queries": [
       {
         "fieldMapping": [
@@ -651,7 +693,7 @@
     "_comment": ""
   },
   "demandCollectionIndexUsageRevenue": {
-    "chartName": "Demand & Collection Index Usage Type",
+    "chartName": "DSS_PT_DEMAND_COLLECTION_USAGETYPE",
     "queries": [
       {
         "module": "COMMON",
@@ -698,9 +740,8 @@
     },
     "_comment": ""
   },
-  "_comment": "Starts TL specific Charts",
   "licenseIssued": {
-    "chartName": "Total Trade License Issued",
+    "chartName": "DSS_TL_LICENSE_ISSUED",
     "queries": [
       {
         "module": "TL",
@@ -721,5 +762,107 @@
     "insight": {
     },
     "_comment": " licenseIssued is the Chart ID"
+  },
+  "cumulativeLicenseIssued": {
+    "chartName": "DSS_TL_CUMULATIVE_LICENSE_ISSUED",
+    "queries": [
+      {
+        "module": "TL",
+        "indexName": "tlindex-v1",
+        "aggrQuery": "{\"aggs\":{\"2019\":{\"date_histogram\":{\"field\":\"Data.tradelicense.issueddate\",\"interval\":\"week\"},\"aggs\":{\"Count\":{\"value_count\":{\"field\":\"Data.tradelicense.issueddate\"}}}}}}",
+        "requestQueryMap": "{\"tenantId\" : \"Data.tenantData.code\" ,\"district\" : \"Data.tenantData.city.districtCode\"}",
+        "dateRefField": "Data.tradelicense.issueddate"
+      }
+    ],
+    "chartType": "line",
+    "valueType": "number",
+    "action": "",
+    "documentType": "_doc",
+    "drillChart": "none",
+    "aggregationPaths": [
+      "2019"
+    ],
+    "isCumulative": true,
+    "interval": "week",
+    "insight": {
+    },
+    "_comment": " Total Number of License having issued"
+  },
+  "licenseByLicenseType": {
+    "chartName": "DSS_TL_LICENSE_BY_TYPE",
+    "queries": [
+      {
+        "module": "TL",
+        "requestQueryMap": "{\"module\" : \"dataObject.Bill.billDetails.businessService.keyword\", \"tenantId\" : \"Data.tenantData.code\", \"district\" : \"dataObject.tenantData.cityDistrictCode\"}",
+        "dateRefField": "Data.tradelicense.issueddate",
+        "indexName": "tlindex-v1",
+        "aggrQuery": "{\"aggs\":{\"License Type\":{\"terms\":{\"field\":\"Data.tradelicense.licenseType.keyword\"},\"aggs\":{\"Licens Issued\":{\"value_count\":{\"field\":\"Data.tradelicense.licenseType.keyword\"}}}}}}"
+      }
+    ],
+    "chartType": "pie",
+    "valueType": "number",
+    "action": "",
+    "documentType": "_doc",
+    "drillChart": "none",
+    "aggregationPaths": [
+      "License Type"
+    ],
+    "insight": {
+    },
+    "_comment": " License Application which are issued by License Type"
+  },
+  "licenseApplicationByStatus": {
+    "chartName": "DSS_TL_LICENSE_BY_STATUS",
+    "queries": [
+      {
+        "module": "TL",
+        "requestQueryMap": "{\"module\" : \"dataObject.Bill.billDetails.businessService.keyword\", \"tenantId\" : \"Data.tenantData.code\", \"district\" : \"dataObject.tenantData.cityDistrictCode\"}",
+        "dateRefField": "Data.tradelicense.issueddate",
+        "indexName": "tlindex-v1",
+        "aggrQuery": "{\"aggs\":{\"Status\":{\"terms\":{\"field\":\"Data.tradelicense.status.keyword\"},\"aggs\":{\"License Issued\":{\"value_count\":{\"field\":\"Data.tradelicense.status.keyword\"}}}}}}"
+      }
+    ],
+    "chartType": "pie",
+    "valueType": "number",
+    "action": "",
+    "documentType": "_doc",
+    "drillChart": "none",
+    "aggregationPaths": [
+      "Status"
+    ],
+    "insight": {
+    },
+    "_comment": " License Application which are issued by License Type"
+  },
+  "slaAchieved": {
+    "chartName": "DSS_SLA_ACHIEVED",
+    "queries": [
+      {
+        "module": "COMMON",
+        "requestQueryMap": "{\r\n  \"module\" : \"businessService.keyword\", \n\"tenantId\" : \"Data.tenantId\"}",
+        "dateRefField": "Data.dateOfComplaint",
+        "indexName": "pgrindex-v1",
+        "aggrQuery": "{\"aggs\":{\"Total Application\":{\"value_count\":{\"field\":\"Data.tenantId.keyword\"}}}}"
+      },
+      {
+        "module": "COMMON",
+        "requestQueryMap": "{\r\n  \"module\" : \"businessService.keyword\", \n\"tenantId\" : \"Data.tenantId\"}",
+        "dateRefField": "Data.dateOfComplaint",
+        "indexName": "pgrindex-v1",
+        "aggrQuery": "{\"aggs\":{\"withinSLA\":{\"range\":{\"script\":{\"lang\":\"painless\",\"source\":\"doc['Data.slaHours'].value\"},\"ranges\":[{\"key\":\"Within SLA\",\"from\":0,\"to\":360}]}}}}"
+      }
+    ],
+    "chartType": "metric",
+    "valueType": "percentage",
+    "drillChart": "none",
+    "documentType": "_doc",
+    "action": "percentage",
+    "aggregationPaths": [
+      "Total Application",
+      "withinSLA"
+    ],
+    "insight": {
+    },
+    "_comment": " SLA Achieved Percentage "
   }
 }

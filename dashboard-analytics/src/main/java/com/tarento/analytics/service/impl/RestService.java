@@ -2,7 +2,6 @@ package com.tarento.analytics.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,37 +16,41 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static javax.servlet.http.HttpServletRequest.BASIC_AUTH;
 import static org.apache.commons.codec.CharEncoding.US_ASCII;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Component
-public class QueryServiceTemplate {
-    public static final Logger LOGGER = LoggerFactory.getLogger(QueryServiceTemplate.class);
+public class RestService {
+    public static final Logger LOGGER = LoggerFactory.getLogger(RestService.class);
 
-    @Value("${egov.services.esindexer.host.name}")
+    @Value("${services.esindexer.host}")
     private String indexServiceHost;
     @Value("${egov.services.esindexer.host.search}")
     private String indexServiceHostSearch;
     @Value("${services.esindexer.host}")
     private String dssindexServiceHost;
-    @Value("${egov-es-username}")
+    @Value("${egov.es.username}")
     private String userName;
-    @Value("${egov-es-password}")
+    @Value("${egov.es.password}")
     private String password;
 
-
     @Autowired
-    private RestTemplate restTemplate;
+    private RetryTemplate retryTemplate;
 
 
-    public JsonNode search(String index, String searchQuery) throws IOException {
+    /**
+     * search on Elastic search for a search query
+     * @param index           elastic search index name against which search operation
+     * @param searchQuery     search query as request body
+     * @return
+     * @throws IOException
+     */
+    public JsonNode search(String index, String searchQuery) {
 
-        //TODO remove the check for dssindexServiceHost
-        String url =(/*index.contains("dss") ? dssindexServiceHost :*/ indexServiceHost) + index + indexServiceHostSearch;
-        HttpHeaders headers = /*index.contains("dss") ? new HttpHeaders() :*/ getHttpHeaders();
+        String url =( indexServiceHost) + index + indexServiceHostSearch;
+        HttpHeaders headers = getHttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         LOGGER.info("Index Name : " + index); 
         LOGGER.info("Searching ES for Query: " + searchQuery); 
@@ -56,7 +59,7 @@ public class QueryServiceTemplate {
         JsonNode responseNode = null;
 
         try {
-            ResponseEntity<Object> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Object.class);
+            ResponseEntity<Object> response = retryTemplate.postForEntity(url, requestEntity);
             responseNode = new ObjectMapper().convertValue(response.getBody(), JsonNode.class);
             LOGGER.info("RestTemplate response :- "+responseNode);
 
@@ -66,6 +69,62 @@ public class QueryServiceTemplate {
         }
         return responseNode;
     }
+
+    /**
+     * makes a client rest api call of Http POST option
+     * @param uri
+     * @param authToken
+     * @param requestNode
+     * @return
+     * @throws IOException
+     */
+    public JsonNode post(String uri, String authToken, JsonNode requestNode) {
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer "+ authToken );
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        LOGGER.info("Request Node: " + requestNode);
+        HttpEntity<String> requestEntity = new HttpEntity<>("{}", headers);
+        JsonNode responseNode = null;
+
+        try {
+            ResponseEntity<Object> response = retryTemplate.postForEntity(uri,requestEntity);
+            responseNode = new ObjectMapper().convertValue(response.getBody(), JsonNode.class);
+            LOGGER.info("RestTemplate response :- "+responseNode);
+
+        } catch (HttpClientErrorException e) {
+            LOGGER.error("post client exception: " + e.getMessage());
+        }
+        return responseNode;
+    }
+
+    /**
+     * makes a client rest api call of Http GET option
+     * @param uri
+     * @param authToken
+     * @return
+     * @throws IOException
+     */
+    public JsonNode get(String uri, String authToken) {
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer "+ authToken );
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> headerEntity = new HttpEntity<>("{}", headers);
+
+        JsonNode responseNode = null;
+        try {
+            ResponseEntity<Object> response = retryTemplate.getForEntity(uri, headerEntity);
+            responseNode = new ObjectMapper().convertValue(response.getBody(), JsonNode.class);
+            LOGGER.info("RestTemplate response :- "+responseNode);
+
+        } catch (HttpClientErrorException e) {
+            LOGGER.error("get client exception: " + e.getMessage());
+        }
+        return responseNode;
+    }
+
 
     private HttpHeaders getHttpHeaders() {
         HttpHeaders headers = new HttpHeaders();

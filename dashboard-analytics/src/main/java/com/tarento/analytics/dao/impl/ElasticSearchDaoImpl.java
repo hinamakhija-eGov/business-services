@@ -60,8 +60,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tarento.analytics.constant.ElasticSearchConstants;
 import com.tarento.analytics.dao.ElasticSearchDao;
 import com.tarento.analytics.dto.AggregateRequestDto;
-import com.tarento.analytics.dto.AggregateRequestDtoV2;
-import com.tarento.analytics.dto.CummulativeDataRequestDto;
 import com.tarento.analytics.dto.SearchDto;
 import com.tarento.analytics.model.ElasticSearchDictator;
 import com.tarento.analytics.utils.ElasticProperties;
@@ -110,15 +108,11 @@ public class ElasticSearchDaoImpl implements ElasticSearchDao {
 	public static final Logger logger = LoggerFactory.getLogger(ElasticSearchDaoImpl.class);
 
 	public ElasticSearchDaoImpl(@Value("${services.esindexer.host.name}") String elasticHost,
-			@Value("${services.esindexer.host.port}") int elasticPort,
-			@Value("${services.esindexer.alternate.host.name}") String alternateHost,
-			@Value("${services.esindexer.alternate.host.port}") int alternatePort) throws MalformedURLException {
+			@Value("${services.esindexer.host.port}") int elasticPort) throws MalformedURLException {
 		this.elasticHost = elasticHost;
 		this.elasticPort = elasticPort;
-		this.alternateHost = alternateHost; 
-		this.alternatePort = alternatePort;
 		this.client = getClientForElastic();
-		this.alternateClient = getClientForAlternate(); 
+		 
 	}
 
 	@Override
@@ -1186,7 +1180,7 @@ public class ElasticSearchDaoImpl implements ElasticSearchDao {
 	}*/
 	
 	@Override
-	public ElasticSearchDictator createSearchDictatorV2(AggregateRequestDtoV2 dto, String indexName, String documentType,
+	public ElasticSearchDictator createSearchDictatorV2(AggregateRequestDto dto, String indexName, String documentType,
 			String filterDateField) throws Exception {
 		ElasticSearchDictator dictator = new ElasticSearchDictator();
 
@@ -1245,9 +1239,10 @@ public class ElasticSearchDaoImpl implements ElasticSearchDao {
 				valueList.add(dto.getRequestDate().getEndDate());
 				Map<String, List<Object>> queryInnerMap = new HashMap<>();
 
-				queryInnerMap.put(filterDateField, valueList);
-
-				queryMap.put(ElasticProperties.Query.RANGE_CONDITION, queryInnerMap);
+				if(StringUtils.isNotBlank(filterDateField)) { 
+					queryInnerMap.put(filterDateField, valueList);
+					queryMap.put(ElasticProperties.Query.RANGE_CONDITION, queryInnerMap);
+				}
 			}
 		}
 		dictator.setQueryMap(queryMap);

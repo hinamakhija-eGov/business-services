@@ -75,10 +75,13 @@ public class Constants {
 		final static String DATE_REF_FIELD = "dateRefField"; 
 		final static String AGGS = "aggs";
 		final static String AGGREGATIONS = "aggregations" ;
-		final static String MODULE = "module"; 
+		final static String MODULE = "module";
+		final static String INTERVAL_VAL = "intervalvalue";
+		final static String INTERVAL = "interval";
+
 	}
 	
-	public interface Filters { 
+	public interface Filters {
 		final static String MODULE = "module"; 
 		final static String FILTER_ALL = "*"; 
 	}
@@ -86,6 +89,23 @@ public class Constants {
 	public interface Catagory {
 		final static String SEVICE = "service";
 		final static String REVENUE = "revenue";
+	}
+
+	public interface DashBoardConfig {
+		final static String ROLES = "roles";
+		final static String ROLE_ID = "roleId";
+		final static String DASHBOARDS = "dashboards";
+		final static String VISUALISATIONS = "visualizations";
+		final static String NAME = "name";
+		final static String ID = "id";
+
+	}
+
+	public enum  Interval {
+		week, month, year
+	}
+	public interface PostAggregationTheories { 
+		final static String RESPONSE_DIFF_DATES = "repsonseToDifferenceOfDates"; 
 	}
 
 

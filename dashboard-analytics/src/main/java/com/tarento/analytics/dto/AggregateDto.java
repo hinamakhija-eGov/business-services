@@ -14,9 +14,19 @@ public class AggregateDto {
 
 	private ChartType chartType;
 	
+	private String visualizationCode; 
+	
 	private String chartFormat;
 
 	private String drillDownChartId;
+
+	public String getVisualizationCode() {
+		return visualizationCode;
+	}
+
+	public void setVisualizationCode(String visualizationCode) {
+		this.visualizationCode = visualizationCode;
+	}
 
 	public String getDrillDownChartId() {
 		return drillDownChartId;

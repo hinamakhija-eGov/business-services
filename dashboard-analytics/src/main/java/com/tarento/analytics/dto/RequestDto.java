@@ -2,10 +2,10 @@ package com.tarento.analytics.dto;
 
 import java.util.Map;
 
-public class RequestDtoV2 {
+public class RequestDto {
 
 	private Map<String, Object> headers;
-	private AggregateRequestDtoV2 aggregationRequestDto;
+	private AggregateRequestDto aggregationRequestDto;
 	
 	public Map<String, Object> getHeaders() {
 		return headers;
@@ -13,10 +13,10 @@ public class RequestDtoV2 {
 	public void setHeaders(Map<String, Object> headers) {
 		this.headers = headers;
 	}
-	public AggregateRequestDtoV2 getAggregationRequestDto() {
+	public AggregateRequestDto getAggregationRequestDto() {
 		return aggregationRequestDto;
 	}
-	public void setAggregationRequestDto(AggregateRequestDtoV2 aggregationRequestDto) {
+	public void setAggregationRequestDto(AggregateRequestDto aggregationRequestDto) {
 		this.aggregationRequestDto = aggregationRequestDto;
 	} 
 }

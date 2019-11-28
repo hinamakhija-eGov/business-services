@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tarento.analytics.ConfigurationLoader;
 import com.tarento.analytics.dto.AggregateDto;
+import com.tarento.analytics.dto.AggregateRequestDto;
 import com.tarento.analytics.dto.Data;
 import com.tarento.analytics.dto.Plot;
 import com.tarento.analytics.enums.ChartType;
@@ -29,18 +30,14 @@ import java.util.Map;
 public class PieChartResponseHandler implements IResponseHandler {
     public static final Logger logger = LoggerFactory.getLogger(PieChartResponseHandler.class);
 
-    @Autowired
-    ConfigurationLoader configurationLoader;
-    @Autowired
-    ObjectMapper mapper;
 
     @Override
-    public AggregateDto translate(String chartId, ObjectNode aggregations) throws IOException {
+    public AggregateDto translate(AggregateRequestDto requestDto, ObjectNode aggregations) throws IOException {
 
         List<Data> dataList = new ArrayList<>();
 
         JsonNode aggregationNode = aggregations.get(AGGREGATIONS);
-        JsonNode chartNode = configurationLoader.get(API_CONFIG_JSON).get(chartId);
+        JsonNode chartNode = requestDto.getChartNode();
         String headerKey = chartNode.get(CHART_NAME).asText();
         List<Plot> headerPlotList = new ArrayList<>();
         List<Double> totalValue = new ArrayList<>();
@@ -72,7 +69,7 @@ public class PieChartResponseHandler implements IResponseHandler {
         data.setPlots(headerPlotList);
         dataList.add(data);
 
-        return getAggregatedDto(chartNode, dataList);
+        return getAggregatedDto(chartNode, dataList, requestDto.getVisualizationCode());
 
     }
 }

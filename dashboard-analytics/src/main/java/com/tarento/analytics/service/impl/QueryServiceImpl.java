@@ -33,7 +33,7 @@ import com.tarento.analytics.ConfigurationLoader;
 import com.tarento.analytics.constant.Constants;
 import com.tarento.analytics.dao.ElasticSearchDao;
 import com.tarento.analytics.dto.AggregateRequestDto;
-import com.tarento.analytics.dto.AggregateRequestDtoV2;
+import com.tarento.analytics.dto.AggregateRequestDto;
 import com.tarento.analytics.enums.ChartType;
 import com.tarento.analytics.exception.AINException;
 import com.tarento.analytics.model.ElasticSearchDictator;
@@ -418,8 +418,10 @@ public class QueryServiceImpl implements QueryService {
 	}
 
 	@Override
-	public ObjectNode getChartConfigurationQuery(AggregateRequestDtoV2 request, JsonNode query, String indexName) {
+	public ObjectNode getChartConfigurationQuery(AggregateRequestDto request, JsonNode query, String indexName, String interval) {
 		String aggrQuery = query.get(Constants.JsonPaths.AGGREGATION_QUERY).asText();
+		if(interval!=null && !interval.isEmpty())
+			aggrQuery = aggrQuery.replace(Constants.JsonPaths.INTERVAL_VAL, interval);
 		String rqMs = query.get(Constants.JsonPaths.REQUEST_QUERY_MAP).asText();
 		String dateReferenceField = query.get(Constants.JsonPaths.DATE_REF_FIELD).asText(); 
 		JsonNode requestQueryMaps = null;
@@ -446,6 +448,7 @@ public class QueryServiceImpl implements QueryService {
 			SearchRequest searchRequest = elasticSearchDao.buildElasticSearchQuery(dictator);
 			JsonNode querySegment = mapper.readTree(searchRequest.source().toString());
 			objectNode = (ObjectNode) querySegment;
+			JsonNode aggrNode = mapper.readTree(aggrQuery).get(Constants.JsonPaths.AGGS);
 			objectNode.put(Constants.JsonPaths.AGGS, mapper.readTree(aggrQuery).get(Constants.JsonPaths.AGGS));
 		} catch (Exception ex) {
 			logger.error("Encountered an Exception while parsing the JSON : " + ex.getMessage());
