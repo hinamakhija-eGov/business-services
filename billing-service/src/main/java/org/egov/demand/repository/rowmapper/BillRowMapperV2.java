@@ -81,6 +81,7 @@ public class BillRowMapperV2 implements ResultSetExtractor<List<BillV2>>{
 					.toPeriod(rs.getLong("toperiod"))
 					.amount(rs.getBigDecimal("bd_totalamount"))
 					.expiryDate(rs.getLong("bd_expirydate"))
+					.additionalDetails(util.getJsonValue((PGobject) rs.getObject("bd_additionaldetails")))
 					.build();
 
 				billDetailMap.put(billDetail.getId(), billDetail);
