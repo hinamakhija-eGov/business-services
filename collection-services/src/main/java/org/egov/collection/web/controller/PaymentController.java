@@ -40,10 +40,7 @@
 
 package org.egov.collection.web.controller;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javax.validation.Valid;
 
@@ -52,8 +49,14 @@ import org.egov.collection.model.PaymentRequest;
 import org.egov.collection.model.PaymentResponse;
 import org.egov.collection.model.PaymentSearchCriteria;
 import org.egov.collection.model.enums.ReceiptStatus;
+import org.egov.collection.model.v1.ReceiptRequest_v1;
+import org.egov.collection.model.v1.ReceiptResponse_v1;
+import org.egov.collection.model.v1.ReceiptSearchCriteria_v1;
+import org.egov.collection.model.v1.Receipt_v1;
+import org.egov.collection.service.MigrationService;
 import org.egov.collection.service.PaymentService;
 import org.egov.collection.service.PaymentWorkflowService;
+import org.egov.collection.service.v1.CollectionService_v1;
 import org.egov.collection.util.PaymentValidator;
 import org.egov.collection.web.contract.PaymentWorkflowRequest;
 import org.egov.collection.web.contract.factory.RequestInfoWrapper;
@@ -87,6 +90,12 @@ public class PaymentController {
 
     @Autowired
     private PaymentValidator paymentValidator;
+
+    @Autowired
+    private MigrationService migrationService;
+
+    @Autowired
+    private CollectionService_v1 collectionService;
 
     @Value("#{'${search.ignore.status}'.split(',')}")
     private List<String> searchIgnoreStatus;
@@ -162,4 +171,57 @@ public class PaymentController {
         PaymentResponse paymentResponse = new PaymentResponse(responseInfo, payments);
         return new ResponseEntity<>(paymentResponse, HttpStatus.OK);
     }
+
+
+    @RequestMapping(value = "/_migrate", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<?> workflow(@RequestBody @Valid ReceiptRequest_v1 receiptRequest_v1) {
+        Payment payment = migrationService.migrateReceipt(receiptRequest_v1);
+        ResponseInfo responseInfo =new ResponseInfo();
+        PaymentResponse paymentResponse = new PaymentResponse(responseInfo, Arrays.asList(payment));
+
+       return new ResponseEntity<>(paymentResponse,HttpStatus.OK );
+
+
+        //return getSuccessResponse(response, receiptResponse_v1.getResponseInfo());
+    }
+
+    private ResponseEntity<ReceiptResponse_v1> getSuccessReceiptResponse(List<Receipt_v1> receipts, RequestInfo requestInfo) {
+        final ResponseInfo responseInfo = ResponseInfoFactory.createResponseInfoFromRequestInfo(requestInfo, true);
+        responseInfo.setStatus(HttpStatus.OK.toString());
+
+        ReceiptResponse_v1 receiptResponse = new ReceiptResponse_v1(responseInfo, receipts);
+        return new ResponseEntity<>(receiptResponse, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/receipts/_search", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<ReceiptResponse_v1> search(@ModelAttribute ReceiptSearchCriteria_v1 receiptSearchCriteria,
+                                             @RequestBody @Valid final RequestInfoWrapper requestInfoWrapper) {
+
+        final RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
+
+        // Only do this if there is no receipt number search
+        // Only do this when search ignore status has been defined in
+        // application.properties
+        // Only do this when status has not been already provided for the search
+        if ((receiptSearchCriteria.getReceiptNumbers() == null || receiptSearchCriteria.getReceiptNumbers().isEmpty())
+                && !searchIgnoreStatus.isEmpty()
+                && (receiptSearchCriteria.getStatus() == null || receiptSearchCriteria.getStatus().isEmpty())) {
+            // Do not return ignored status for receipts by default
+            Set<String> defaultStatus = new HashSet<>();
+            for (ReceiptStatus receiptStatus : ReceiptStatus.values()) {
+                if (!searchIgnoreStatus.contains(receiptStatus.toString())) {
+                    defaultStatus.add(receiptStatus.toString());
+                }
+            }
+
+            receiptSearchCriteria.setStatus(defaultStatus);
+        }
+
+        List<Receipt_v1> receipts = collectionService.getReceipts(requestInfo, receiptSearchCriteria);
+
+        return getSuccessReceiptResponse(receipts, requestInfo);
+    }
+
 }

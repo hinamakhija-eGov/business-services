@@ -1,3 +1,4 @@
+/*
 /*package org.egov.collection.repository.querybuilder;
 
 import static java.util.Objects.isNull;
