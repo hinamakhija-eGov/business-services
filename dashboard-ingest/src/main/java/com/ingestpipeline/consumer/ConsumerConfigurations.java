@@ -29,7 +29,7 @@ public class ConsumerConfigurations {
 	@Autowired
 	org.springframework.core.env.Environment env;
 
-    @Value("${kafka.config.bootstrap_server_config}")
+    @Value("${spring.kafka.bootstrap.servers}")
     private String serverConfig;
 
     @Value("${kafka.consumer.config.auto_commit}")
