@@ -1,19 +1,20 @@
 package com.ingestpipeline.util;
 
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.support.ResourcePatternUtils;
-import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.support.ResourcePatternUtils;
+import org.springframework.stereotype.Component;
 
 @Component("configLoader")
 public class ConfigLoader {
@@ -22,10 +23,10 @@ public class ConfigLoader {
     private Map<String, String> nameContentMap = new HashMap<>();
     @Autowired
     private ResourceLoader resourceLoader;
-    public static final String RESOURCE_LOCATION = "classpath*:config/*.json";
-
-
-
+    
+    @Value("${config.schema.paths}") 
+    private String RESOURCE_LOCATION;
+    
     /**
      * Loads config resources
      * @throws Exception

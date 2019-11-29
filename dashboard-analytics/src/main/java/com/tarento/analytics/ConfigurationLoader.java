@@ -6,6 +6,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
@@ -27,7 +28,11 @@ public class ConfigurationLoader {
     private ResourceLoader resourceLoader;
     @Autowired
     private ObjectMapper objectMapper;
-    private static final String RESOURCE_LOCATION = "classpath*:schema/*.json";
+    
+    @Value("${config.schema.paths}") 
+    private String RESOURCE_LOCATION; 
+    
+    // private static final String RESOURCE_LOCATION = "file://home/darshan/Tarento/DataPlatform/analytics2/analytics/src/main/resources/schema/*.json";
     public static final String ROLE_DASHBOARD_CONFIG = "RoleDashboardMappingsConf.json";
     public static final String MASTER_DASHBOARD_CONFIG = "MasterDashboardConfig.json";
 
