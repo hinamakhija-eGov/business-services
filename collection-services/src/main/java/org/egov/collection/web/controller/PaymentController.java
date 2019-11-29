@@ -44,6 +44,7 @@ import java.util.*;
 
 import javax.validation.Valid;
 
+import org.egov.collection.config.ApplicationProperties;
 import org.egov.collection.model.Payment;
 import org.egov.collection.model.PaymentRequest;
 import org.egov.collection.model.PaymentResponse;
@@ -53,6 +54,7 @@ import org.egov.collection.model.v1.ReceiptRequest_v1;
 import org.egov.collection.model.v1.ReceiptResponse_v1;
 import org.egov.collection.model.v1.ReceiptSearchCriteria_v1;
 import org.egov.collection.model.v1.Receipt_v1;
+import org.egov.collection.producer.CollectionProducer;
 import org.egov.collection.service.MigrationService;
 import org.egov.collection.service.PaymentService;
 import org.egov.collection.service.PaymentWorkflowService;
@@ -96,6 +98,13 @@ public class PaymentController {
 
     @Autowired
     private CollectionService_v1 collectionService;
+
+    @Autowired
+    private ApplicationProperties properties;
+
+    @Autowired
+    private CollectionProducer producer;
+
 
     @Value("#{'${search.ignore.status}'.split(',')}")
     private List<String> searchIgnoreStatus;
@@ -179,7 +188,8 @@ public class PaymentController {
         Payment payment = migrationService.migrateReceipt(receiptRequest_v1);
         ResponseInfo responseInfo =new ResponseInfo();
         PaymentResponse paymentResponse = new PaymentResponse(responseInfo, Arrays.asList(payment));
-
+        producer.producer(properties.getCreateReceiptTopicName(), properties
+                .getCreatePaymentTopicName(), paymentResponse);
        return new ResponseEntity<>(paymentResponse,HttpStatus.OK );
 
 

@@ -9,6 +9,7 @@ import org.egov.collection.model.AuditDetails;
 import org.egov.collection.model.Payment;
 import org.egov.collection.model.PaymentDetail;
 import org.egov.collection.model.RequestInfoWrapper;
+import org.egov.collection.model.enums.InstrumentStatusEnum;
 import org.egov.collection.model.enums.PaymentModeEnum;
 import org.egov.collection.model.enums.PaymentStatusEnum;
 import org.egov.collection.model.v1.*;
@@ -72,6 +73,7 @@ public class MigrationService {
         payment.setInstrumentDate(receipt.getInstrument().getInstrumentDate());
         payment.setInstrumentNumber(receipt.getInstrument().getInstrumentNumber());
         payment.setInstrumentStatus(receipt.getInstrument().getInstrumentStatus());
+        //payment.setInstrumentStatus(InstrumentStatusEnum.fromValue("NEW"));
         payment.setIfscCode(receipt.getInstrument().getIfscCode());
 
         AuditDetails auditDetails = getAuditDetail(receipt.getAuditDetails());
@@ -87,16 +89,19 @@ public class MigrationService {
         payment.setPayerAddress(receipt.getBill().get(0).getPayerAddress());
         payment.setPayerEmail(receipt.getBill().get(0).getPayerEmail());
         payment.setPayerId(receipt.getBill().get(0).getPayerId());
+
         if ((payment.getPaymentMode().toString()).equalsIgnoreCase(ONLINE.name()) ||
                 payment.getPaymentMode().toString().equalsIgnoreCase(CARD.name()))
             payment.setPaymentStatus(PaymentStatusEnum.DEPOSITED);
         else
             payment.setPaymentStatus(PaymentStatusEnum.NEW);
 
-        payment.setId(UUID.randomUUID().toString());
+        String id = UUID.randomUUID().toString();
+        payment.setId(id);
+        payment.getPaymentDetails().get(0).setId(id);
 
-        producer.producer(properties.getCreateReceiptTopicName(), properties
-                .getCreatePaymentTopicName(), payment);
+        /*producer.producer(properties.getCreateReceiptTopicName(), properties
+                .getCreatePaymentTopicName(), payment);*/
 
         return payment;
     }
@@ -104,7 +109,7 @@ public class MigrationService {
     private PaymentDetail getPaymentDetail(Receipt_v1 receipt, BigDecimal totalAmount, BigDecimal totalAmountPaid, AuditDetails auditDetails,RequestInfo requestInfo){
         PaymentDetail paymentDetail = new PaymentDetail();
 
-        paymentDetail.setId(UUID.randomUUID().toString());
+       // paymentDetail.setId(UUID.randomUUID().toString());
         paymentDetail.setTenantId(receipt.getTenantId());
         paymentDetail.setTotalDue(totalAmount.subtract(totalAmountPaid));
         paymentDetail.setTotalAmountPaid(totalAmountPaid);
@@ -265,7 +270,7 @@ public class MigrationService {
         builder.append("tenantId=").append(tenantId);
         builder.append("&service=").append(service);
         builder.append("&billNumber=").append(billNumber);
-        builder.append("&status=").append(status);
+
 
         /*
         String uri = UriComponentsBuilder
