@@ -61,8 +61,8 @@ public class ConsumerConfigurations {
         deserializer.setUseTypeMapperForKey(true);
 
         Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "task-group-notify");
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, serverConfig);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
     }
 
