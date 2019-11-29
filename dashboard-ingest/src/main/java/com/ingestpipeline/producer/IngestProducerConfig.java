@@ -18,7 +18,7 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
 @EnableKafka
 public class IngestProducerConfig {
 
-	@Value("${kafka.config.bootstrap_server_config}")
+	@Value("${spring.kafka.bootstrap.servers}")
 	private String serverConfig;
 
 	@Value("${kafka.producer.config.retries_config}")
@@ -41,24 +41,6 @@ public class IngestProducerConfig {
 		configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 		return new DefaultKafkaProducerFactory<>(configProps);
 	}
-/*	@Bean
-	public ProducerFactory<String, Object> producerFactory() {
-		return new DefaultKafkaProducerFactory<>(producerConfigs());
-	}
-
-	@Bean
-	public Map<String, Object> producerConfigs() {
-		final Map<String, Object> props = new HashMap<>();
-
-		props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, serverConfig);
-		props.put(ProducerConfig.RETRIES_CONFIG, retriesConfig);
-		props.put(ProducerConfig.BATCH_SIZE_CONFIG, batchSizeConfig);
-		props.put(ProducerConfig.LINGER_MS_CONFIG, lingerMsConfig);
-		props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, bufferMemoryConfig);
-		props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-		props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-		return props;
-	}*/
 
 	@Bean
 	public KafkaTemplate<String, Object> kafkaTemplate() {
