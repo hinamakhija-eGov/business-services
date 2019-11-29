@@ -11,7 +11,6 @@ import org.springframework.messaging.handler.annotation.Header;
 
 import com.ingestpipeline.model.IncomingData;
 import com.ingestpipeline.service.IngestService;
-import com.ingestpipeline.util.Constants;
 
 public class IngestConsumer{
 	public static final Logger LOGGER = LoggerFactory.getLogger(IngestConsumer.class);
@@ -19,8 +18,7 @@ public class IngestConsumer{
 	@Autowired
 	private IngestService ingestService; 
 	
-	@KafkaListener(topics = { Constants.KafkaTopics.TOPIC_ONE, Constants.KafkaTopics.TOPIC_TWO, 
-			Constants.KafkaTopics.TOPIC_THREE, Constants.KafkaTopics.TOPIC_FOUR})
+	@KafkaListener(topics = { "${kafka.topics.incoming.data}" })
 	public void processMessage(Map data,
 							   @Header(KafkaHeaders.RECEIVED_TOPIC) final String topic) {
 		LOGGER.info("##KafkaMessageAlert## : key:" + topic + ":" + "value:" + data.size());
