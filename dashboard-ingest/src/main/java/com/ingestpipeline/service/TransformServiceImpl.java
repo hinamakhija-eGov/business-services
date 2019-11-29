@@ -1,7 +1,5 @@
 package com.ingestpipeline.service;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -10,14 +8,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.bazaarvoice.jolt.Chainr;
 import com.bazaarvoice.jolt.JsonUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
 import com.ingestpipeline.model.DigressionPoint;
-import com.ingestpipeline.model.DigressionPointConfig;
 import com.ingestpipeline.util.ConfigLoader;
 import com.ingestpipeline.util.Constants;
 	
@@ -42,14 +38,22 @@ public class TransformServiceImpl implements TransformService {
 	public Boolean transformData(Map incomingData) {
 		String dataContext = incomingData.get(Constants.DATA_CONTEXT).toString(); 
 		String dataContextVersion = incomingData.get(Constants.DATA_CONTEXT_VERSION).toString(); 
+		ObjectMapper mapper = new ObjectMapper(); 
+		List chainrSpecJSON = null ;
+		try {
+			chainrSpecJSON = mapper.readValue(configLoader.get(OBJECTIVE.concat(SEPARATOR).concat(dataContext).concat(SEPARATOR).concat(dataContextVersion).concat(JSON_EXTENSION)), List.class);
+			
+		} catch (Exception e) {
+			LOGGER.error("Encountered an error : " + e.getMessage());
+		} 
 		String sourceUrl = CONFIGROOT.concat(OBJECTIVE.concat(SEPARATOR).concat(dataContext).concat(SEPARATOR).concat(dataContextVersion).concat(JSON_EXTENSION));
-		List chainrSpecJSON = JsonUtils.jsonToList(this.getClass().getClassLoader().getResourceAsStream(sourceUrl));
-		Map<String, Integer> deepRouteSpecSize = new HashMap<>();  
+		chainrSpecJSON = JsonUtils.jsonToList(this.getClass().getClassLoader().getResourceAsStream(sourceUrl));
+
+		/*Map<String, Integer> deepRouteSpecSize = new HashMap<>();  
 		
 		Object dataObject = incomingData.get(Constants.DATA_OBJECT); 
 		String digressConfig = configLoader.get(Constants.ConfigurationFileNames.DIGRESSION_POINTS);
 		Gson gson = new Gson(); 
-		ObjectMapper mapper = new ObjectMapper();
 		JsonNode mainNode = null;
 	    try {
 	    	mainNode = mapper.readTree(gson.toJson(dataObject));
@@ -73,21 +77,20 @@ public class TransformServiceImpl implements TransformService {
 				}
 			}
 		}
-		System.out.println(deepRouteSpecSize.toString());
 		
 		
 		for(int i=0; i< chainrSpecJSON.size() ; i++) { 
 			LinkedHashMap<Object, Object> chainSpec = (LinkedHashMap<Object, Object>) chainrSpecJSON.get(i);
 			for(Map.Entry<String, Integer> entry : deepRouteSpecSize.entrySet()) { 
-				/*String key = entry.getKey();
+				String key = entry.getKey();
 				int iterationsForKey = entry.getValue(); 
-				for()*/
+				for()
 			}
 			chainSpec.toString();
-		}
+		}*/
 		
 		
-       /* Chainr chainr = Chainr.fromSpec( chainrSpecJSON );
+       Chainr chainr = Chainr.fromSpec( chainrSpecJSON );
         Object inputJSON = incomingData.get(Constants.DATA_OBJECT);
         try { 
             Object transformedOutput = chainr.transform( inputJSON );
@@ -96,8 +99,7 @@ public class TransformServiceImpl implements TransformService {
         } catch (Exception e) { 
         	LOGGER.error("Encountered an error while tranforming the JSON : " + e.getMessage());
         	return Boolean.FALSE; 
-        }*/
-        return Boolean.FALSE;
+        }
 	}
 	
 	public Boolean digressData(Object dataObject, DigressionPoint digressionPoint) {
