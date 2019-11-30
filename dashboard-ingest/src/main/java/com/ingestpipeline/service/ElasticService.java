@@ -186,34 +186,47 @@ public class ElasticService implements IESService {
 	
 	@Override
 	public Boolean searchIndex(String index, String searchQuery) throws Exception {
-		Boolean status = Boolean.FALSE; 
 		LOGGER.info("searching ES for query: " + searchQuery + " on " + index);
 		
 		Map<String, String> scrollSearchParams = getScrollIdForScrollSearch(index); 
-		Map<String, List<Object>> documentMap = new HashMap<>();
-		int counter = 100; 
-		int iSize = 0; 
-		while (iSize >= 0 && iSize < counter) { 
-			documentMap = performScrollSearch(scrollSearchParams);
-			List<Object> listOfDocs = documentMap.get("hits");
-			iSize = listOfDocs.size(); 
-			for (Map.Entry<String, List<Object>> entry : documentMap.entrySet()) {
-				for (int i = 0; i < entry.getValue().size(); i++) {
-					Map innerMap = (Map) entry.getValue().get(i);
-					Gson gson = new Gson(); 
-					String json = gson.toJson(innerMap.get("_source"));
-				    ObjectMapper mapper = new ObjectMapper();
-					JsonNode dataNode = mapper.readTree(json); 
-					JsonNode dataObjectNode = dataNode.get("Data");
-					Map<Object, Object> dataMap = new Gson().fromJson(
-							dataObjectNode.toString(), new TypeToken<HashMap<Object, Object>>() {}.getType()
-						);
-					status = ingestService
-							.ingestToPipeline(setIncomingData(scrollSearchParams.get("CONTEXT"), "v1", dataObjectNode));
-				}
-			}
-		}
-		return status;
+		
+		new Thread(new Runnable() {
+	        public void run(){
+	        	int counter = 100; 
+	    		int iSize = 0; 
+	    		int iSumSize = 0; 
+	    		int totalLimitSize = 100000; 
+	        	Map<String, List<Object>> documentMap = new HashMap<>();
+	        	while (iSize >= 0 && iSize < counter && iSumSize < totalLimitSize) { 
+	    			documentMap = performScrollSearch(scrollSearchParams);
+	    			List<Object> listOfDocs = documentMap.get("hits");
+	    			iSize = listOfDocs.size();
+	    			iSumSize = iSize + iSumSize;
+	    			for (Map.Entry<String, List<Object>> entry : documentMap.entrySet()) {
+	    				for (int i = 0; i < entry.getValue().size(); i++) {
+	    					Map innerMap = (Map) entry.getValue().get(i);
+	    					Gson gson = new Gson(); 
+	    					String json = gson.toJson(innerMap.get("_source"));
+	    				    ObjectMapper mapper = new ObjectMapper();
+	    					JsonNode dataNode = null;
+							try {
+								dataNode = mapper.readTree(json);
+							} catch (IOException e) {
+								LOGGER.error("Encountered an exception while reading the JSON Node on Thread : " + e.getMessage());
+							} 
+	    					JsonNode dataObjectNode = dataNode.get("Data");
+	    					Map<Object, Object> dataMap = new Gson().fromJson(
+	    							dataObjectNode.toString(), new TypeToken<HashMap<Object, Object>>() {}.getType()
+	    						);
+							ingestService.ingestToPipeline(
+									setIncomingData(scrollSearchParams.get("CONTEXT"), "v1", dataObjectNode));
+	    				}
+	    			}
+	    		}
+	        }
+	    }).start();
+		
+		return Boolean.TRUE;
 	}
 	
 	private IncomingData setIncomingData(String index, String version, Object documentValue) {

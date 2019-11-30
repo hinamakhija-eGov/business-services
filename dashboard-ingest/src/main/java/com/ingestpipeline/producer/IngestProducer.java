@@ -17,7 +17,6 @@ public class IngestProducer {
 	private KafkaTemplate<String, Object> kafkaTemplate;
 	
 	public void pushToPipeline(Object object, String topic, String key) {
-		LOGGER.info("Request before pushing to Kafka Queue : " + new Gson().toJson(object));
 		LOGGER.info("Kafka Topic : " + topic + " Kafka Key : " + key);
 		kafkaTemplate.send(topic, key, object);
 	}

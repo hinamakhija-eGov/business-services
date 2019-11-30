@@ -8,17 +8,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.stereotype.Service;
 
 import com.ingestpipeline.model.IncomingData;
 import com.ingestpipeline.service.IngestService;
+import com.ingestpipeline.util.Constants;
 
+@Service
 public class IngestConsumer{
 	public static final Logger LOGGER = LoggerFactory.getLogger(IngestConsumer.class);
 	
 	@Autowired
 	private IngestService ingestService; 
 	
-	@KafkaListener(topics = { "${kafka.topics.incoming.data}" })
+	@KafkaListener(topics = { "${kafka.topics.incoming.data}" }, containerFactory = Constants.BeanContainerFactory.INCOMING_KAFKA_LISTENER)
 	public void processMessage(Map data,
 							   @Header(KafkaHeaders.RECEIVED_TOPIC) final String topic) {
 		LOGGER.info("##KafkaMessageAlert## : key:" + topic + ":" + "value:" + data.size());
@@ -30,5 +33,6 @@ public class IngestConsumer{
 			LOGGER.error("Exception Encountered while processing the received message : " + e.getMessage());
 		}
 	}
+	
 
 }

@@ -134,13 +134,13 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 				LOGGER.info("Query node "+ queryNode);
 				// Hit Elastic search: pull record for the constructed query
 				Map domainNode = elasticService.search(indexName, queryNode.toString());
-				LOGGER.info("Fetched record from ES of a businessType "+ businessTypeVal + ": " + domainNode);
+				LOGGER.debug("Fetched record from ES of a businessType "+ businessTypeVal + ": " + domainNode);
 
 				//transform the request(s) using schema(s), and reform the incoming object
 				Object transDomainResponse = enrichTransform.transform(domainNode, businessTypeVal.toString());
 
 				incomingData.put("domainObject", transDomainResponse);
-				LOGGER.info("Final transformed result to push : {}", incomingData.toString());
+				LOGGER.debug("Final transformed result to push : {}", incomingData.toString());
 
 				//Push that transformed incoming object to ES - Collection new index.
 				elasticService.push(incomingData);
