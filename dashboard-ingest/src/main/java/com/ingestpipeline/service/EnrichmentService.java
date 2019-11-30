@@ -9,6 +9,6 @@ import java.util.Map;
 @Service
 public interface EnrichmentService {
 	
-	Boolean enrichData(Map incomingData);
+	Map enrichData(Map incomingData);
 	
 }

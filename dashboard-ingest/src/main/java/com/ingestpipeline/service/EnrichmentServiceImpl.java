@@ -90,7 +90,7 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 	}
 
 	@Override
-	public Boolean enrichData(Map incomingData) {
+	public Map enrichData(Map incomingData) {
 		DomainConfig domainConfig = domainConfigFactory.getConfiguration(incomingData.get(DATA_CONTEXT).toString());
 		if(domainConfig instanceof CollectionDomainConfig) {
 			// prepare the query required based on incoming data businessType
@@ -142,9 +142,6 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 				incomingData.put("domainObject", transDomainResponse);
 				LOGGER.debug("Final transformed result to push : {}", incomingData.toString());
 
-				//Push that transformed incoming object to ES - Collection new index.
-				elasticService.push(incomingData);
-
 			}catch (Exception e) {
 				e.printStackTrace();
 				LOGGER.error("Pre-processing - Fetching record from ES for " + businessTypeVal + "failed: " +  e.getMessage());
@@ -170,7 +167,7 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 			});
 		} 
 
-		return Boolean.TRUE;
+		return incomingData;
 	}
 
 	private Boolean pushToElasticSearchIndex(Object object) {

@@ -197,7 +197,8 @@ public class ElasticService implements IESService {
 	    		int iSumSize = 0; 
 	    		int totalLimitSize = 100000; 
 	        	Map<String, List<Object>> documentMap = new HashMap<>();
-	        	while (iSize >= 0 && iSize < counter && iSumSize < totalLimitSize) { 
+	        	while (iSize >= 0 && iSize < counter && iSumSize < totalLimitSize) {
+	        		LOGGER.info("Sum Size is : " + iSumSize);
 	    			documentMap = performScrollSearch(scrollSearchParams);
 	    			List<Object> listOfDocs = documentMap.get("hits");
 	    			iSize = listOfDocs.size();
