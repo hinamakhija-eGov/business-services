@@ -994,7 +994,7 @@ public class ElasticSearchDaoImpl implements ElasticSearchDao {
 	}
 
 	private SearchSourceBuilder buildSearchSourceBuilder() {
-		return new SearchSourceBuilder().size(1);
+		return new SearchSourceBuilder().size(0);
 	}
 
 	private SearchSourceBuilder addQueryToSearchBuilder(SearchSourceBuilder builder, BoolQueryBuilder queryBuilder) {

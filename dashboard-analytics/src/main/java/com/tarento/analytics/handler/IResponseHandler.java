@@ -34,6 +34,18 @@ public interface IResponseHandler {
 	public static final String DRILL_CHART = "drillChart";
 	public static final String VALUE_TYPE = "valueType";
 	public static final String FILTER_KEYS = "filterKeys";
+	
+	// Table Chart Keys
+	public static final String SERIAL_NUMBER = "S.N.";
+	public static final String TABLE_TEXT = "text" ; 
+	public static final String TABLE_KEY = "Key"; 
+	
+
+    // TODO remove the specific column names.
+    public static final String TOTAL_COLLECTION = "Total Collection";
+    public static final String TARGET_COLLECTION = "Target Collection";
+    public static final String TARGET_ACHIEVED = "Target Achievement";
+	
 
 	public final String ASC = "asc";
 	public final String DESC = "desc";

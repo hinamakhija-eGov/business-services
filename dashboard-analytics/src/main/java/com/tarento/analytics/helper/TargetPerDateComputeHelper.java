@@ -30,13 +30,17 @@ public class TargetPerDateComputeHelper implements ComputeHelper {
 		if(request.getRequestDate()!= null && request.getRequestDate().getStartDate() != null && request.getRequestDate().getEndDate() !=null) {
 			try { 
 				Long sDate = Long.parseLong(request.getRequestDate().getStartDate());
+				logger.info("Start Date : " + String.valueOf(sDate));
 				Long eDate = Long.parseLong(request.getRequestDate().getEndDate());
+				logger.info("End Date : " + String.valueOf(eDate));
 				Calendar cal = Calendar.getInstance(); 
 				cal.setTime(new Date(eDate));
 				if(cal.get(Calendar.HOUR_OF_DAY) == LAST_HOUR && cal.get(Calendar.MINUTE) == LAST_MINUTE) { 
 					eDate = eDate + ROUND_OFF; 
 				}
+				logger.info("End Date after Round Off: " + String.valueOf(eDate));
 		        Long dateDifference = TimeUnit.DAYS.convert((eDate - sDate), TimeUnit.MILLISECONDS);
+		        if(dateDifference == 0l) dateDifference = dateDifference + 1l ;
 				for(Data eachData : data) { 
 						Double value = (Double) eachData.getHeaderValue();
 						logger.info("Value is : " + value + " :: Date Difference is : " + dateDifference);

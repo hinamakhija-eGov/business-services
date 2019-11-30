@@ -31,13 +31,6 @@ import com.tarento.analytics.dto.Plot;
 public class TableChartResponseHandler implements IResponseHandler {
     public static final Logger logger = LoggerFactory.getLogger(TableChartResponseHandler.class);
 
-
-    // TODO remove the specific column names.
-    private final String TOTAL_COLLECTION = "Total Collection";
-    private final String TARGET_COLLECTION = "Target Collection";
-    private final String TARGET_ACHIEVED = "Target Achieved";
-
-
     @Override
     public AggregateDto translate(AggregateRequestDto requestDto, ObjectNode aggregations) throws IOException {
 
@@ -73,13 +66,13 @@ public class TableChartResponseHandler implements IResponseHandler {
 
                 if (plotMap.size() > 0) {
                     Map<String, Plot> plots = new LinkedHashMap<>();
-                    Plot sno = new Plot("Sl no", null, "text");
+                    Plot sno = new Plot(SERIAL_NUMBER, null, TABLE_TEXT);
                     sno.setLabel("" + idx[0]++);
-                    Plot plotkey = new Plot(plotLabel.isEmpty() ? "Key" : plotLabel, null, "text");
+                    Plot plotkey = new Plot(plotLabel.isEmpty() ? TABLE_KEY : plotLabel, null, TABLE_TEXT);
                     plotkey.setLabel(key);
 
-                    plots.put("slno", sno);
-                    plots.put(plotLabel.isEmpty() ? "Key" : plotLabel, plotkey);
+                    plots.put(SERIAL_NUMBER, sno);
+                    plots.put(plotLabel.isEmpty() ? TABLE_KEY : plotLabel, plotkey);
                     plots.putAll(plotMap);
                     mappings.put(key, plots);
 
@@ -91,7 +84,7 @@ public class TableChartResponseHandler implements IResponseHandler {
         List<Data> dataList = new ArrayList<>();
         mappings.entrySet().stream().parallel().forEach(plotMap -> {
             List<Plot> plotList = plotMap.getValue().values().stream().parallel().collect(Collectors.toList());
-            Data data = new Data(plotMap.getKey(), new Integer(plotMap.getValue().get("slno").getLabel()), null);
+            Data data = new Data(plotMap.getKey(), new Integer(plotMap.getValue().get(SERIAL_NUMBER).getLabel()), null);
             data.setPlots(plotList);
             addComputedField(data, TARGET_ACHIEVED, TOTAL_COLLECTION, TARGET_COLLECTION);
             dataList.add(data);
