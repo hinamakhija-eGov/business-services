@@ -53,7 +53,13 @@ public class TableChartResponseHandler implements IResponseHandler {
                 aggrsPaths.forEach(headerPath -> {
                     JsonNode datatype = pathDataTypeMap.findValue(headerPath.asText());
                     JsonNode valueNode = bucket.findValue(headerPath.asText());
-                    Double value = valueNode == null ? 0.0 : valueNode.get(VALUE).asDouble();
+                    Double value = 0.0;
+                    if(valueNode.get(VALUE) != null) { 
+                    	value = valueNode == null ? 0.0 : valueNode.get(VALUE).asDouble();
+                    } else {
+                    	value = valueNode == null ? 0.0 : valueNode.get(DOC_COUNT).asDouble();
+                    }
+                    
                     Plot plot = new Plot(headerPath.asText(), value, datatype.asText());
                     if (mappings.containsKey(key)) {
                         double newval = mappings.get(key).get(headerPath.asText()) == null ? value : (mappings.get(key).get(headerPath.asText()).getValue() + value);
@@ -86,7 +92,9 @@ public class TableChartResponseHandler implements IResponseHandler {
             List<Plot> plotList = plotMap.getValue().values().stream().parallel().collect(Collectors.toList());
             Data data = new Data(plotMap.getKey(), new Integer(plotMap.getValue().get(SERIAL_NUMBER).getLabel()), null);
             data.setPlots(plotList);
-            addComputedField(data, TARGET_ACHIEVED, TOTAL_COLLECTION, TARGET_COLLECTION);
+            if(!requestDto.getVisualizationCode().equals(PGR_TABLE)) { 
+            	addComputedField(data, TARGET_ACHIEVED, TOTAL_COLLECTION, TARGET_COLLECTION);
+            }
             dataList.add(data);
 
         });

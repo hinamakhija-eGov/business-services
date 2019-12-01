@@ -102,7 +102,7 @@ public class Constants {
 	}
 
 	public enum  Interval {
-		week, month, year
+		week, month, year, day
 	}
 	public interface PostAggregationTheories { 
 		final static String RESPONSE_DIFF_DATES = "repsonseToDifferenceOfDates"; 

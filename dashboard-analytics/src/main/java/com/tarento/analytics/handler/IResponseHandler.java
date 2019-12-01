@@ -45,6 +45,8 @@ public interface IResponseHandler {
     public static final String TOTAL_COLLECTION = "Total Collection";
     public static final String TARGET_COLLECTION = "Target Collection";
     public static final String TARGET_ACHIEVED = "Target Achievement";
+    
+    public static final String PGR_TABLE = "pgrStatusByTenant"; 
 	
 
 	public final String ASC = "asc";
@@ -118,7 +120,6 @@ public interface IResponseHandler {
 
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			data.getPlots().add(new Plot(newfield, 0.0, "percentage"));
 		}
 
