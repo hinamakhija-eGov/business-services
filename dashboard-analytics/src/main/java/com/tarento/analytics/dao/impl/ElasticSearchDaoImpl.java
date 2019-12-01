@@ -1203,7 +1203,8 @@ public class ElasticSearchDaoImpl implements ElasticSearchDao {
 								valueString = String.valueOf(value);
 								valueString = valueString.replace("uat: ", ""); 
 							}
-							valueList.add(valueString);
+							if(StringUtils.isBlank(valueString)) valueList.add(value);
+							else valueList.add(valueString);
 						}
 					} else {
 						String valueString = ""; 
@@ -1211,7 +1212,8 @@ public class ElasticSearchDaoImpl implements ElasticSearchDao {
 							valueString = String.valueOf(entry.getValue());
 							valueString = valueString.replace("uat: ", "");
 						}
-						valueList.add(valueString);
+						if(StringUtils.isBlank(valueString)) valueList.add(entry.getValue());
+						else valueList.add(valueString);
 					}
 					if (!valueList.isEmpty()) {
 						String entryKey = entry.getKey();
