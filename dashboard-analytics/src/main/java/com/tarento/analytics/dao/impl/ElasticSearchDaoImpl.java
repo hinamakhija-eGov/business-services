@@ -1198,10 +1198,20 @@ public class ElasticSearchDaoImpl implements ElasticSearchDao {
 						List<Object> valueArray = (ArrayList<Object>) entry.getValue();
 
 						for (Object value : valueArray) {
-							valueList.add(value);
+							String valueString = ""; 
+							if(entry.getKey().equals("dataObject.tenantId")) { 
+								valueString = String.valueOf(value);
+								valueString = valueString.replace("uat: ", ""); 
+							}
+							valueList.add(valueString);
 						}
 					} else {
-						valueList.add(entry.getValue());
+						String valueString = ""; 
+						if(entry.getKey().equals("dataObject.tenantId")) { 
+							valueString = String.valueOf(entry.getValue());
+							valueString = valueString.replace("uat: ", "");
+						}
+						valueList.add(valueString);
 					}
 					if (!valueList.isEmpty()) {
 						String entryKey = entry.getKey();
