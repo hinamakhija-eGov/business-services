@@ -50,7 +50,6 @@ import org.egov.collection.model.PaymentRequest;
 import org.egov.collection.model.PaymentResponse;
 import org.egov.collection.model.PaymentSearchCriteria;
 import org.egov.collection.model.enums.ReceiptStatus;
-import org.egov.collection.model.v1.ReceiptRequest_v1;
 import org.egov.collection.model.v1.ReceiptResponse_v1;
 import org.egov.collection.model.v1.ReceiptSearchCriteria_v1;
 import org.egov.collection.model.v1.Receipt_v1;
@@ -70,12 +69,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -184,16 +178,11 @@ public class PaymentController {
 
     @RequestMapping(value = "/_migrate", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<?> workflow(@RequestBody @Valid ReceiptRequest_v1 receiptRequest_v1) {
-        Payment payment = migrationService.migrateReceipt(receiptRequest_v1);
-        ResponseInfo responseInfo =new ResponseInfo();
-        PaymentResponse paymentResponse = new PaymentResponse(responseInfo, Arrays.asList(payment));
-        producer.producer(properties.getCreateReceiptTopicName(), properties
-                .getCreatePaymentTopicName(), paymentResponse);
-       return new ResponseEntity<>(paymentResponse,HttpStatus.OK );
+    public ResponseEntity<?> workflow(@RequestBody @Valid RequestInfoWrapper requestInfoWrapper,
+                                      @RequestParam("batchSize") Integer batchSize) {
+        migrationService.migrate(requestInfoWrapper.getRequestInfo(), batchSize);
+       return new ResponseEntity<>(HttpStatus.OK );
 
-
-        //return getSuccessResponse(response, receiptResponse_v1.getResponseInfo());
     }
 
     private ResponseEntity<ReceiptResponse_v1> getSuccessReceiptResponse(List<Receipt_v1> receipts, RequestInfo requestInfo) {
@@ -204,34 +193,12 @@ public class PaymentController {
         return new ResponseEntity<>(receiptResponse, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/receipts/_search", method = RequestMethod.POST)
-    @ResponseBody
-    public ResponseEntity<ReceiptResponse_v1> search(@ModelAttribute ReceiptSearchCriteria_v1 receiptSearchCriteria,
-                                             @RequestBody @Valid final RequestInfoWrapper requestInfoWrapper) {
 
-        final RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
 
-        // Only do this if there is no receipt number search
-        // Only do this when search ignore status has been defined in
-        // application.properties
-        // Only do this when status has not been already provided for the search
-        if ((receiptSearchCriteria.getReceiptNumbers() == null || receiptSearchCriteria.getReceiptNumbers().isEmpty())
-                && !searchIgnoreStatus.isEmpty()
-                && (receiptSearchCriteria.getStatus() == null || receiptSearchCriteria.getStatus().isEmpty())) {
-            // Do not return ignored status for receipts by default
-            Set<String> defaultStatus = new HashSet<>();
-            for (ReceiptStatus receiptStatus : ReceiptStatus.values()) {
-                if (!searchIgnoreStatus.contains(receiptStatus.toString())) {
-                    defaultStatus.add(receiptStatus.toString());
-                }
-            }
 
-            receiptSearchCriteria.setStatus(defaultStatus);
-        }
+    //API migration script
+    // Call receipt search in batches of 50
+    // Get the response and send it to /_migrate API
 
-        List<Receipt_v1> receipts = collectionService.getReceipts(requestInfo, receiptSearchCriteria);
-
-        return getSuccessReceiptResponse(receipts, requestInfo);
-    }
 
 }

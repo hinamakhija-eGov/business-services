@@ -5,22 +5,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.collection.config.ApplicationProperties;
-import org.egov.collection.model.AuditDetails;
-import org.egov.collection.model.Payment;
-import org.egov.collection.model.PaymentDetail;
-import org.egov.collection.model.RequestInfoWrapper;
+import org.egov.collection.model.*;
 import org.egov.collection.model.enums.InstrumentStatusEnum;
 import org.egov.collection.model.enums.PaymentModeEnum;
 import org.egov.collection.model.enums.PaymentStatusEnum;
 import org.egov.collection.model.v1.*;
 import org.egov.collection.producer.CollectionProducer;
 import org.egov.collection.repository.ServiceRequestRepository;
+import org.egov.collection.service.v1.CollectionService_v1;
 import org.egov.collection.web.contract.Bill;
 import org.egov.collection.web.contract.BillAccountDetail;
 import org.egov.collection.web.contract.BillDetail;
 import org.egov.common.contract.request.RequestInfo;
+import org.egov.common.contract.response.ResponseInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
@@ -41,6 +41,9 @@ public class MigrationService {
     private CollectionProducer producer;
 
     @Autowired
+    private CollectionService_v1 collectionService;
+
+    @Autowired
     public MigrationService(ApplicationProperties properties, ServiceRequestRepository serviceRequestRepository,CollectionProducer producer) {
         this.properties = properties;
         this.serviceRequestRepository = serviceRequestRepository;
@@ -48,13 +51,35 @@ public class MigrationService {
     }
 
 
+    public void migrate(RequestInfo requestInfo, Integer batchSize){
+        Integer offset = 0;
+        while(true){
+            ReceiptSearchCriteria_v1 criteria_v1 = ReceiptSearchCriteria_v1.builder()
+                    .offset(offset).limit(batchSize).build();
+            List<Receipt_v1> receipts = collectionService.fetchReceipts(criteria_v1);
+            if(CollectionUtils.isEmpty(receipts))
+                break;
+            migrateReceipt(requestInfo, receipts);
+            offset += batchSize;
+        }
+        log.info("Total receipts migrated: " + offset);
+    }
 
-    public Payment migrateReceipt(ReceiptRequest_v1 receiptRequest){
+    public void migrateReceipt(RequestInfo requestInfo, List<Receipt_v1> receipts){
+        List<Payment> paymentList = new ArrayList<Payment>();
+        for(Receipt_v1 receipt : receipts){
+            Payment payment = getPayment(requestInfo,receipt);
+            paymentList.add(payment);
+        }
+        PaymentResponse paymentResponse = new PaymentResponse(new ResponseInfo(), paymentList);
+        producer.producer(properties.getCreateReceiptTopicName(), properties
+                .getCreatePaymentTopicName(), paymentResponse);
+    }
+    
+
+    private Payment getPayment(RequestInfo requestInfo,Receipt_v1 receipt){
+
         Payment payment = new Payment();
-        Receipt_v1 receipt = receiptRequest.getReceipt().get(0);
-        RequestInfo requestInfo = receiptRequest.getRequestInfo();
-
-
         payment.setTenantId(receipt.getTenantId());
         BigDecimal totalAmount = BigDecimal.valueOf(0);
         BigDecimal totalAmountPaid = BigDecimal.valueOf(0);
@@ -100,10 +125,9 @@ public class MigrationService {
         payment.setId(id);
         payment.getPaymentDetails().get(0).setId(id);
 
-        /*producer.producer(properties.getCreateReceiptTopicName(), properties
-                .getCreatePaymentTopicName(), payment);*/
 
         return payment;
+
     }
 
     private PaymentDetail getPaymentDetail(Receipt_v1 receipt, BigDecimal totalAmount, BigDecimal totalAmountPaid, AuditDetails auditDetails,RequestInfo requestInfo){

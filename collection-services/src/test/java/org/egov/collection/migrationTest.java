@@ -15,12 +15,12 @@ import java.io.IOException;
 
 public class migrationTest {
 
-    @Autowired
-    MigrationService migrationService;
+   /* @Autowired
+    MigrationService migrationService;*/
 
 
 
-    @Test
+  /*  @Test
     public void name(){
         Gson gson = new Gson();
         ReceiptRequest_v1 object = null;
@@ -35,8 +35,8 @@ public class migrationTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-    /*public void name(){
-        System.out.println("h");
     }*/
+    public void name(){
+        System.out.println("h");
+    }
 }
