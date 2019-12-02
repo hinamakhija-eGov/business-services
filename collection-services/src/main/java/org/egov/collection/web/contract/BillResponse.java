@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Builder
 public class BillResponse {
 
-	@JsonProperty("ResponseInfo")
+	@JsonProperty("ResposneInfo")
 	private ResponseInfo responseInfo = null;
 
 	@JsonProperty("Bill")

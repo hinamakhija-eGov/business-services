@@ -195,6 +195,7 @@ public class MigrationService {
                 BillResponse billResponse = mapper.convertValue(response, BillResponse.class);
                 return billResponse.getBill().get(0);
             }catch(Exception e) {
+                log.error("Exception: ",e);
                 return null;
             }
 
@@ -333,7 +334,7 @@ public class MigrationService {
         builder.append("tenantId=").append(tenantId);
         builder.append("&service=").append(service);
         builder.append("&billNumber=").append(billNumber);
-        
+
         return  builder;
 
     }
