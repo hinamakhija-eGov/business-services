@@ -108,7 +108,6 @@ public class CollectionResultSetExtractor_v1 implements ResultSetExtractor<List<
                         .transactionNumber(resultSet.getString("ins_transactionNumber"))
                         .instrumentType(InstrumentType.builder().name(resultSet.getString("ins_instrumenttype"))
                                 .build())
-                        .instrumentStatus(InstrumentStatusEnum.valueOf(resultSet.getString("ins_instrumentstatus")))
                         .ifscCode(resultSet.getString("ins_ifsccode"))
                         .bank(BankContract.builder().name(resultSet.getString("ins_bankid")).build())
                         .transactionType(TransactionType.valueOf(resultSet.getString("ins_transactiontype")))
@@ -122,6 +121,14 @@ public class CollectionResultSetExtractor_v1 implements ResultSetExtractor<List<
                         .instrumentNumber(resultSet.getString("ins_instrumentNumber"))
                         .tenantId(resultSet.getString("ins_tenantid"))
                         .build();
+
+                if(resultSet.getString("ins_instrumentstatus").equals("NEW")) {
+                    instrument.setInstrumentStatus(InstrumentStatusEnum.TO_BE_SUBMITTED);
+                }else if((resultSet.getString("ins_instrumentstatus").equals("CANCELLED"))){
+                    instrument.setInstrumentStatus(InstrumentStatusEnum.CANCELLED);
+                }else if((resultSet.getString("ins_instrumentstatus").equals("DEPOSITED"))){
+                    instrument.setInstrumentStatus(InstrumentStatusEnum.REMITTED);
+                }
 
                 AuditDetails_v1 auditDetails = AuditDetails_v1.builder()
                         .createdBy(resultSet.getString("rh_createdBy"))
