@@ -17,6 +17,7 @@ import org.egov.collection.service.v1.CollectionService_v1;
 import org.egov.collection.web.contract.Bill;
 import org.egov.collection.web.contract.BillAccountDetail;
 import org.egov.collection.web.contract.BillDetail;
+import org.egov.collection.web.contract.BillResponse;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.response.ResponseInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -154,15 +155,13 @@ public class MigrationService {
         paymentDetail.setReceiptDate(receipt.getReceiptDate());
         paymentDetail.setReceiptType(receipt.getBill().get(0).getBillDetails().get(0).getReceiptType());
         paymentDetail.setBusinessService(receipt.getBill().get(0).getBillDetails().get(0).getBusinessService());
-        String billId = getBillId(receipt.getBill().get(0),requestInfo);
 
-        if(StringUtils.isEmpty(billId)){
+        Bill bill = getBillFromV2(receipt.getBill().get(0),requestInfo);
+        if(null == bill){
             return null;
         }
-        paymentDetail.setBillId(billId);
-
-        Bill bill = getBill(receipt,billId,totalAmount,totalAmountPaid,auditDetails);
         paymentDetail.setBill(bill);
+        paymentDetail.setBillId(bill.getId());
 
         paymentDetail.setAuditDetails(auditDetails);
         paymentDetail.setAdditionalDetails((JsonNode)receipt.getBill().get(0).getAdditionalDetails());
@@ -180,7 +179,28 @@ public class MigrationService {
         return newAuditDetails;
     }
 
-    private Bill getBill(Receipt_v1 receipt, String billId, BigDecimal totalAmount, BigDecimal totalAmountPaid, AuditDetails auditDetails ){
+    private Bill getBillFromV2(Bill_v1 bill,RequestInfo requestInfo){
+            String billNumber = bill.getBillDetails().get(0).getBillNumber();
+            String tenantId = bill.getBillDetails().get(0).getTenantId();
+            String service = bill.getBillDetails().get(0).getBusinessService();
+            String status = bill.getBillDetails().get(0).getStatus();
+
+            StringBuilder url = getBillSearchURI(tenantId,billNumber,service,status);
+
+            RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
+
+            Object response = serviceRequestRepository.fetchResult(url,requestInfoWrapper);
+            ObjectMapper mapper = new ObjectMapper();
+            try{
+                BillResponse billResponse = mapper.convertValue(response, BillResponse.class);
+                return billResponse.getBill().get(0);
+            }catch(Exception e) {
+                return null;
+            }
+
+    }
+
+   /* private Bill getBill(Receipt_v1 receipt, String billId, BigDecimal totalAmount, BigDecimal totalAmountPaid, AuditDetails auditDetails ){
         Bill newBill = new Bill();
         Bill_v1 oldBill = receipt.getBill().get(0);
 
@@ -191,7 +211,11 @@ public class MigrationService {
         newBill.setPayerAddress(oldBill.getPayerAddress());
         newBill.setPayerEmail(oldBill.getPayerEmail());
         newBill.setPayerId(oldBill.getPayerId());
-        newBill.setStatus(Bill.StatusEnum.fromValue(oldBill.getBillDetails().get(0).getStatus()));
+        if(oldBill.getStatus().equals(null))
+            newBill.setStatus(Bill.StatusEnum.EXPIRED);
+        else
+            newBill.setStatus(Bill.StatusEnum.fromValue(oldBill.getBillDetails().get(0).getStatus()));
+
         newBill.setReasonForCancellation(oldBill.getBillDetails().get(0).getReasonForCancellation());
         newBill.setIsCancelled(oldBill.getIsCancelled());
         newBill.setAdditionalDetails((JsonNode) oldBill.getAdditionalDetails());
@@ -300,7 +324,7 @@ public class MigrationService {
         }
 
 
-    }
+    }*/
 
 
     private StringBuilder getBillSearchURI(String tenantId, String billNumber, String service,String status){
@@ -309,14 +333,7 @@ public class MigrationService {
         builder.append("tenantId=").append(tenantId);
         builder.append("&service=").append(service);
         builder.append("&billNumber=").append(billNumber);
-
-
-        /*
-        String uri = UriComponentsBuilder
-                .fromHttpUrl(properties.getBillingServiceHostName())
-                .path(properties.getSearchBill()).queryParam(tenantId,billNumber)
-                .build()
-                .toUriString();*/
+        
         return  builder;
 
     }
