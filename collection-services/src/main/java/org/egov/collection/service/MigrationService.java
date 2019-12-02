@@ -109,7 +109,12 @@ public class MigrationService {
         payment.setPaymentDetails(Arrays.asList(paymentDetail));
 
         payment.setPaidBy(receipt.getBill().get(0).getPaidBy());
-        payment.setMobileNumber(receipt.getBill().get(0).getMobileNumber());
+        if(receipt.getBill().get(0).getMobileNumber() == null){
+            payment.setMobileNumber("NA");
+        }else{
+            payment.setMobileNumber(receipt.getBill().get(0).getMobileNumber());
+        }
+
         payment.setPayerName(receipt.getBill().get(0).getPayerName());
         payment.setPayerAddress(receipt.getBill().get(0).getPayerAddress());
         payment.setPayerEmail(receipt.getBill().get(0).getPayerEmail());
