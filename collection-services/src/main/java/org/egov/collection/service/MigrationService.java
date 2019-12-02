@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.egov.collection.config.ApplicationProperties;
 import org.egov.collection.model.*;
 import org.egov.collection.model.enums.InstrumentStatusEnum;
@@ -69,7 +70,9 @@ public class MigrationService {
         List<Payment> paymentList = new ArrayList<Payment>();
         for(Receipt_v1 receipt : receipts){
             Payment payment = getPayment(requestInfo,receipt);
-            paymentList.add(payment);
+            if(null != payment){
+                paymentList.add(payment);
+            }
         }
         PaymentResponse paymentResponse = new PaymentResponse(new ResponseInfo(), paymentList);
         producer.producer(properties.getCollectionMigrationTopicName(), properties
@@ -106,7 +109,10 @@ public class MigrationService {
         payment.setAdditionalDetails((JsonNode)receipt.getBill().get(0).getAdditionalDetails());
 
         PaymentDetail paymentDetail = getPaymentDetail(receipt, totalAmount, totalAmountPaid, auditDetails,requestInfo);
-        payment.setPaymentDetails(Arrays.asList(paymentDetail));
+        if(null != paymentDetail){
+            payment.setPaymentDetails(Arrays.asList(paymentDetail));
+        }else
+            return null;
 
         payment.setPaidBy(receipt.getBill().get(0).getPaidBy());
         if(receipt.getBill().get(0).getMobileNumber() == null){
@@ -149,6 +155,10 @@ public class MigrationService {
         paymentDetail.setReceiptType(receipt.getBill().get(0).getBillDetails().get(0).getReceiptType());
         paymentDetail.setBusinessService(receipt.getBill().get(0).getBillDetails().get(0).getBusinessService());
         String billId = getBillId(receipt.getBill().get(0),requestInfo);
+
+        if(StringUtils.isEmpty(billId)){
+            return null;
+        }
         paymentDetail.setBillId(billId);
 
         Bill bill = getBill(receipt,billId,totalAmount,totalAmountPaid,auditDetails);
