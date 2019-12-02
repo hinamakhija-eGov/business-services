@@ -160,8 +160,7 @@ public class MigrationService {
         if(null == bill){
             return null;
         }
-        if(null == bill.getStatus())
-            bill.setStatus(Bill.StatusEnum.EXPIRED);
+
         paymentDetail.setBill(bill);
         paymentDetail.setBillId(bill.getId());
 
@@ -199,7 +198,13 @@ public class MigrationService {
                     log.info("No bills for billNumber: "+billNumber);
                     return null;
                 }else{
-                    return billResponse.getBill().get(0);
+                    Bill newBill = billResponse.getBill().get(0);
+                    if(null == newBill.getStatus())
+                        newBill.setStatus(Bill.StatusEnum.EXPIRED);
+                    for(BillDetail billDetail: newBill.getBillDetails()){
+                        billDetail.setAmountPaid(billDetail.getAmount());
+                    }
+                    return newBill;
                 }
             }catch(Exception e) {
                 log.error("Exception: ",e);
