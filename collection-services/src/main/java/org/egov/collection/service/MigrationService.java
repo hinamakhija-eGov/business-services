@@ -72,10 +72,10 @@ public class MigrationService {
             paymentList.add(payment);
         }
         PaymentResponse paymentResponse = new PaymentResponse(new ResponseInfo(), paymentList);
-        producer.producer(properties.getCreateReceiptTopicName(), properties
-                .getCreatePaymentTopicName(), paymentResponse);
+        producer.producer(properties.getCollectionMigrationTopicName(), properties
+                .getCollectionMigrationTopicKey(), paymentResponse);
     }
-    
+
 
     private Payment getPayment(RequestInfo requestInfo,Receipt_v1 receipt){
 

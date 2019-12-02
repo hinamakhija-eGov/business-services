@@ -196,4 +196,18 @@ public class ApplicationProperties {
 
 
 
+    //migration
+
+
+    @Value("${kafka.topics.collection.migrate.name}")
+    private String collectionMigrationTopicName;
+
+    @Value("${kafka.topics.collection.migrate.key}")
+    private String collectionMigrationTopicKey;
+
+
+
+
+
+
 }
