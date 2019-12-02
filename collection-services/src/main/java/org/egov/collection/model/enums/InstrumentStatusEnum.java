@@ -14,8 +14,8 @@ public enum InstrumentStatusEnum {
     REMITTED("REMITTED", InstrumentStatusEnum.Category.OPEN),
     REJECTED("REJECTED", InstrumentStatusEnum.Category.CLOSED),
     CANCELLED("CANCELLED", InstrumentStatusEnum.Category.CLOSED),
-    DISHONOURED("DISHONOURED", InstrumentStatusEnum.Category.CLOSED);
-    //NEW("NEW", InstrumentStatusEnum.Category.OPEN);
+    DISHONOURED("DISHONOURED", InstrumentStatusEnum.Category.CLOSED),
+    NEW("NEW", InstrumentStatusEnum.Category.OPEN);
 
 
     private String value;
