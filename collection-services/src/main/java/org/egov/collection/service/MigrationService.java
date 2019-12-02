@@ -160,6 +160,8 @@ public class MigrationService {
         if(null == bill){
             return null;
         }
+        if(null == bill.getStatus())
+            bill.setStatus(Bill.StatusEnum.EXPIRED);
         paymentDetail.setBill(bill);
         paymentDetail.setBillId(bill.getId());
 
@@ -193,7 +195,12 @@ public class MigrationService {
             ObjectMapper mapper = new ObjectMapper();
             try{
                 BillResponse billResponse = mapper.convertValue(response, BillResponse.class);
-                return billResponse.getBill().get(0);
+                if(CollectionUtils.isEmpty(billResponse.getBill())){
+                    log.info("No bills for billNumber: "+billNumber);
+                    return null;
+                }else{
+                    return billResponse.getBill().get(0);
+                }
             }catch(Exception e) {
                 log.error("Exception: ",e);
                 return null;
