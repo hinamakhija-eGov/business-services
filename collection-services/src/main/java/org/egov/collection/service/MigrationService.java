@@ -65,28 +65,28 @@ public class MigrationService {
 
     public void migrate(RequestInfo requestInfo, Integer batchSize) throws JsonProcessingException {
         Integer offset = 0;
+        Map<String, Long> billAndBillDetails = new HashMap<>();
         while(true){
             ReceiptSearchCriteria_v1 criteria_v1 = ReceiptSearchCriteria_v1.builder()
                     .offset(offset).limit(batchSize).build();
             List<Receipt_v1> receipts = collectionService.fetchReceipts(criteria_v1);
             if(CollectionUtils.isEmpty(receipts))
                 break;
-            migrateReceipt(requestInfo, receipts);
+            migrateReceipt(requestInfo, receipts, billAndBillDetails);
             offset += batchSize;
         }
+        log.info("BillAndBillDetails: "+billAndBillDetails);
         log.info("Total receipts migrated: " + offset);
     }
 
-    public void migrateReceipt(RequestInfo requestInfo, List<Receipt_v1> receipts){
+    public void migrateReceipt(RequestInfo requestInfo, List<Receipt_v1> receipts, Map<String, Long> billAndBillDetails){
         List<Payment> paymentList = new ArrayList<Payment>();
-        Map<String, Long> billAndBillDetails = new HashMap<>();
         for(Receipt_v1 receipt : receipts){
             Payment payment = transformToPayment(requestInfo,receipt, billAndBillDetails);
             if(null != payment){
                 paymentList.add(payment);
             }
         }
-        log.info("BillAndBillDetails: "+billAndBillDetails);
         PaymentResponse paymentResponse = new PaymentResponse(new ResponseInfo(), paymentList);
         producer.producer(properties.getCollectionMigrationTopicName(), properties
                 .getCollectionMigrationTopicKey(), paymentResponse);
@@ -155,6 +155,7 @@ public class MigrationService {
         PaymentDetail paymentDetail = getPaymentDetail(receipt, totalAmount, totalAmountPaid, auditDetails,requestInfo);
     	
         paymentDetail.setBill(newBill);
+        paymentDetail.setPaymentId(payment.getId());
     	paymentDetail.setBillId(newBill.getId());
         paymentDetail.setTotalDue(totalAmount.subtract(totalAmountPaid));
         paymentDetail.setTotalAmountPaid(totalAmountPaid);

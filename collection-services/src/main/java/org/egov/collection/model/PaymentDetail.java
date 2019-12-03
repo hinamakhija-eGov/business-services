@@ -24,6 +24,10 @@ public class PaymentDetail {
     @Size(max=64)
     @JsonProperty("tenantId")
     private String tenantId;
+    
+    @Size(max=64)
+    @JsonProperty("paymentId")
+    private String paymentId;
 
     @JsonProperty("totalDue")
     private BigDecimal totalDue;
