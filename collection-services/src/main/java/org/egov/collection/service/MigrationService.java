@@ -59,9 +59,13 @@ public class MigrationService {
             ReceiptSearchCriteria_v1 criteria_v1 = ReceiptSearchCriteria_v1.builder()
                     .offset(offset).limit(batchSize).build();
             List<Receipt_v1> receipts = collectionService.fetchReceipts(criteria_v1);
+            for(Receipt_v1 receiptV1 : receipts){
+                log.info(String.valueOf(receiptV1));
+            }
+
             if(CollectionUtils.isEmpty(receipts))
                 break;
-            migrateReceipt(requestInfo, receipts);
+           // migrateReceipt(requestInfo, receipts);
             offset += batchSize;
         }
         log.info("Total receipts migrated: " + offset);
