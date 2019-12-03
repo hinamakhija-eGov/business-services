@@ -44,6 +44,7 @@ import java.util.*;
 
 import javax.validation.Valid;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.egov.collection.config.ApplicationProperties;
 import org.egov.collection.model.Payment;
 import org.egov.collection.model.PaymentRequest;
@@ -179,7 +180,7 @@ public class PaymentController {
     @RequestMapping(value = "/_migrate", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<?> workflow(@RequestBody @Valid RequestInfoWrapper requestInfoWrapper,
-                                      @RequestParam("batchSize") Integer batchSize) {
+                                      @RequestParam("batchSize") Integer batchSize) throws JsonProcessingException {
         migrationService.migrate(requestInfoWrapper.getRequestInfo(), batchSize);
        return new ResponseEntity<>(HttpStatus.OK );
 
