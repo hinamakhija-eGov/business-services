@@ -1,5 +1,6 @@
 package org.egov.collection.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
@@ -53,16 +54,14 @@ public class MigrationService {
     }
 
 
-    public void migrate(RequestInfo requestInfo, Integer batchSize){
+    public void migrate(RequestInfo requestInfo, Integer batchSize) throws JsonProcessingException {
         Integer offset = 0;
+        ObjectMapper mapper = new ObjectMapper();
         while(true){
             ReceiptSearchCriteria_v1 criteria_v1 = ReceiptSearchCriteria_v1.builder()
                     .offset(offset).limit(batchSize).build();
             List<Receipt_v1> receipts = collectionService.fetchReceipts(criteria_v1);
-            for(Receipt_v1 receiptV1 : receipts){
-                log.info(String.valueOf(receiptV1));
-            }
-
+            log.info("Receipts: "+mapper.writeValueAsString(receipts));
             if(CollectionUtils.isEmpty(receipts))
                 break;
            // migrateReceipt(requestInfo, receipts);
