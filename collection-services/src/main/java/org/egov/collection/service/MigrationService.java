@@ -113,6 +113,7 @@ public class MigrationService {
 
         BigDecimal totalAmount = newBill.getTotalAmount();
         BigDecimal totalAmountPaid = receipt.getInstrument().getAmount();
+        newBill.setAmountPaid(totalAmountPaid);
         
         for(BillDetail billDetail : newBill.getBillDetails()) {
         	billDetail.setAmountPaid(totalAmountPaid);
@@ -152,7 +153,7 @@ public class MigrationService {
         payment.setAuditDetails(auditDetails);
         payment.setAdditionalDetails((JsonNode)receipt.getBill().get(0).getAdditionalDetails());
 
-        PaymentDetail paymentDetail = getPaymentDetail(receipt, totalAmount, totalAmountPaid, auditDetails,requestInfo);
+        PaymentDetail paymentDetail = getPaymentDetail(receipt, auditDetails, requestInfo);
     	
         paymentDetail.setBill(newBill);
         paymentDetail.setPaymentId(payment.getId());
@@ -165,7 +166,7 @@ public class MigrationService {
 
     }
 
-    private PaymentDetail getPaymentDetail(Receipt_v1 receipt, BigDecimal totalAmount, BigDecimal totalAmountPaid, AuditDetails auditDetails, RequestInfo requestInfo){
+    private PaymentDetail getPaymentDetail(Receipt_v1 receipt, AuditDetails auditDetails, RequestInfo requestInfo){
         
         PaymentDetail paymentDetail = new PaymentDetail();
 
