@@ -56,15 +56,13 @@ public class MigrationService {
 
     public void migrate(RequestInfo requestInfo, Integer batchSize) throws JsonProcessingException {
         Integer offset = 0;
-        ObjectMapper mapper = new ObjectMapper();
         while(true){
             ReceiptSearchCriteria_v1 criteria_v1 = ReceiptSearchCriteria_v1.builder()
                     .offset(offset).limit(batchSize).build();
             List<Receipt_v1> receipts = collectionService.fetchReceipts(criteria_v1);
-            log.info("Receipts: "+mapper.writeValueAsString(receipts));
             if(CollectionUtils.isEmpty(receipts))
                 break;
-           // migrateReceipt(requestInfo, receipts);
+            migrateReceipt(requestInfo, receipts);
             offset += batchSize;
         }
         log.info("Total receipts migrated: " + offset);
@@ -73,7 +71,7 @@ public class MigrationService {
     public void migrateReceipt(RequestInfo requestInfo, List<Receipt_v1> receipts){
         List<Payment> paymentList = new ArrayList<Payment>();
         for(Receipt_v1 receipt : receipts){
-            Payment payment = getPayment(requestInfo,receipt);
+            Payment payment = transformToPayment(requestInfo,receipt);
             if(null != payment){
                 paymentList.add(payment);
             }
@@ -83,20 +81,29 @@ public class MigrationService {
                 .getCollectionMigrationTopicKey(), paymentResponse);
     }
 
+    private Payment transformToPayment(RequestInfo requestInfo, Receipt_v1 receipt) {
+    	Bill bill = getBillFromV2(receipt.getBill().get(0),requestInfo);
+        if(null == bill) 
+            return null;
+        else {
+        	return getPayment(requestInfo, receipt, bill);
+        }
+    }
+    
 
-    private Payment getPayment(RequestInfo requestInfo,Receipt_v1 receipt){
+    private Payment getPayment(RequestInfo requestInfo, Receipt_v1 receipt, Bill newBill){
 
         Payment payment = new Payment();
-        payment.setTenantId(receipt.getTenantId());
-        BigDecimal totalAmount = BigDecimal.valueOf(0);
-        BigDecimal totalAmountPaid = BigDecimal.valueOf(0);
-        //calculating TotalDue amount
-        for(Bill_v1 bill: receipt.getBill()){
-            for(BillDetail_v1 billdetail: bill.getBillDetails()){
-                totalAmount = totalAmount.add(billdetail.getTotalAmount());
-                totalAmountPaid = totalAmountPaid.add(billdetail.getAmountPaid());
-            }
+
+        BigDecimal totalAmount = newBill.getTotalAmount();
+        BigDecimal totalAmountPaid = receipt.getInstrument().getAmount();
+        
+        for(BillDetail billDetail : newBill.getBillDetails()) {
+        	billDetail.setAmountPaid(totalAmountPaid);
         }
+        
+        payment.setId(UUID.randomUUID().toString());
+        payment.setTenantId(receipt.getTenantId());
         payment.setTotalDue(totalAmount.subtract(totalAmountPaid));
         payment.setTotalAmountPaid(totalAmountPaid);
         payment.setTransactionNumber(receipt.getInstrument().getTransactionNumber());
@@ -105,67 +112,54 @@ public class MigrationService {
         payment.setInstrumentDate(receipt.getInstrument().getInstrumentDate());
         payment.setInstrumentNumber(receipt.getInstrument().getInstrumentNumber());
         payment.setInstrumentStatus(receipt.getInstrument().getInstrumentStatus());
-        //payment.setInstrumentStatus(InstrumentStatusEnum.fromValue("NEW"));
         payment.setIfscCode(receipt.getInstrument().getIfscCode());
-
-        AuditDetails auditDetails = getAuditDetail(receipt.getAuditDetails());
-        payment.setAuditDetails(auditDetails);
-        payment.setAdditionalDetails((JsonNode)receipt.getBill().get(0).getAdditionalDetails());
-
-        PaymentDetail paymentDetail = getPaymentDetail(receipt, totalAmount, totalAmountPaid, auditDetails,requestInfo);
-        if(null != paymentDetail){
-            payment.setPaymentDetails(Arrays.asList(paymentDetail));
-        }else
-            return null;
-
         payment.setPaidBy(receipt.getBill().get(0).getPaidBy());
+        payment.setPayerName(receipt.getBill().get(0).getPayerName());
+        payment.setPayerAddress(receipt.getBill().get(0).getPayerAddress());
+        payment.setPayerEmail(receipt.getBill().get(0).getPayerEmail());
+        payment.setPayerId(receipt.getBill().get(0).getPayerId());
+        
         if(receipt.getBill().get(0).getMobileNumber() == null){
             payment.setMobileNumber("NA");
         }else{
             payment.setMobileNumber(receipt.getBill().get(0).getMobileNumber());
         }
-
-        payment.setPayerName(receipt.getBill().get(0).getPayerName());
-        payment.setPayerAddress(receipt.getBill().get(0).getPayerAddress());
-        payment.setPayerEmail(receipt.getBill().get(0).getPayerEmail());
-        payment.setPayerId(receipt.getBill().get(0).getPayerId());
-
+        
         if ((payment.getPaymentMode().toString()).equalsIgnoreCase(ONLINE.name()) ||
                 payment.getPaymentMode().toString().equalsIgnoreCase(CARD.name()))
             payment.setPaymentStatus(PaymentStatusEnum.DEPOSITED);
         else
             payment.setPaymentStatus(PaymentStatusEnum.NEW);
 
-        String id = UUID.randomUUID().toString();
-        payment.setId(id);
-        payment.getPaymentDetails().get(0).setId(id);
 
+        AuditDetails auditDetails = getAuditDetail(receipt.getAuditDetails());
+        payment.setAuditDetails(auditDetails);
+        payment.setAdditionalDetails((JsonNode)receipt.getBill().get(0).getAdditionalDetails());
+
+        PaymentDetail paymentDetail = getPaymentDetail(receipt, totalAmount, totalAmountPaid, auditDetails,requestInfo);
+    	
+        paymentDetail.setBill(newBill);
+    	paymentDetail.setBillId(newBill.getId());
+        paymentDetail.setTotalDue(totalAmount.subtract(totalAmountPaid));
+        paymentDetail.setTotalAmountPaid(totalAmountPaid);
+        payment.setPaymentDetails(Arrays.asList(paymentDetail));
 
         return payment;
 
     }
 
-    private PaymentDetail getPaymentDetail(Receipt_v1 receipt, BigDecimal totalAmount, BigDecimal totalAmountPaid, AuditDetails auditDetails,RequestInfo requestInfo){
+    private PaymentDetail getPaymentDetail(Receipt_v1 receipt, BigDecimal totalAmount, BigDecimal totalAmountPaid, AuditDetails auditDetails, RequestInfo requestInfo){
+        
         PaymentDetail paymentDetail = new PaymentDetail();
 
-       // paymentDetail.setId(UUID.randomUUID().toString());
+        paymentDetail.setId(UUID.randomUUID().toString());
         paymentDetail.setTenantId(receipt.getTenantId());
-        paymentDetail.setTotalDue(totalAmount.subtract(totalAmountPaid));
-        paymentDetail.setTotalAmountPaid(totalAmountPaid);
         paymentDetail.setReceiptNumber(receipt.getReceiptNumber());
         paymentDetail.setManualReceiptNumber(receipt.getBill().get(0).getBillDetails().get(0).getManualReceiptNumber());
         paymentDetail.setManualReceiptDate(receipt.getBill().get(0).getBillDetails().get(0).getManualReceiptDate());
         paymentDetail.setReceiptDate(receipt.getReceiptDate());
         paymentDetail.setReceiptType(receipt.getBill().get(0).getBillDetails().get(0).getReceiptType());
         paymentDetail.setBusinessService(receipt.getBill().get(0).getBillDetails().get(0).getBusinessService());
-
-        Bill bill = getBillFromV2(receipt.getBill().get(0),requestInfo);
-        if(null == bill){
-            return null;
-        }
-
-        paymentDetail.setBill(bill);
-        paymentDetail.setBillId(bill.getId());
 
         paymentDetail.setAuditDetails(auditDetails);
         paymentDetail.setAdditionalDetails((JsonNode)receipt.getBill().get(0).getAdditionalDetails());
@@ -204,9 +198,7 @@ public class MigrationService {
                     Bill newBill = billResponse.getBill().get(0);
                     if(null == newBill.getStatus())
                         newBill.setStatus(Bill.StatusEnum.EXPIRED);
-                    for(BillDetail billDetail: newBill.getBillDetails()){
-                        billDetail.setAmountPaid(billDetail.getAmount());
-                    }
+                    
                     return newBill;
                 }
             }catch(Exception e) {
@@ -215,132 +207,6 @@ public class MigrationService {
             }
 
     }
-
-   /* private Bill getBill(Receipt_v1 receipt, String billId, BigDecimal totalAmount, BigDecimal totalAmountPaid, AuditDetails auditDetails ){
-        Bill newBill = new Bill();
-        Bill_v1 oldBill = receipt.getBill().get(0);
-
-        newBill.setId(billId);
-        newBill.setMobileNumber(oldBill.getMobileNumber());
-        newBill.setPaidBy(oldBill.getPaidBy());
-        newBill.setPayerName(oldBill.getPayerName());
-        newBill.setPayerAddress(oldBill.getPayerAddress());
-        newBill.setPayerEmail(oldBill.getPayerEmail());
-        newBill.setPayerId(oldBill.getPayerId());
-        if(oldBill.getStatus().equals(null))
-            newBill.setStatus(Bill.StatusEnum.EXPIRED);
-        else
-            newBill.setStatus(Bill.StatusEnum.fromValue(oldBill.getBillDetails().get(0).getStatus()));
-
-        newBill.setReasonForCancellation(oldBill.getBillDetails().get(0).getReasonForCancellation());
-        newBill.setIsCancelled(oldBill.getIsCancelled());
-        newBill.setAdditionalDetails((JsonNode) oldBill.getAdditionalDetails());
-
-        BillDetail billDetails = getBillDetail(receipt, billId,auditDetails);
-        newBill.setBillDetails(Arrays.asList(billDetails));
-
-        newBill.setTenantId(oldBill.getTenantId());
-        newBill.setAuditDetails(auditDetails);
-        newBill.setCollectionModesNotAllowed(oldBill.getBillDetails().get(0).getCollectionModesNotAllowed());
-        newBill.setPartPaymentAllowed(oldBill.getBillDetails().get(0).getPartPaymentAllowed());
-        newBill.setIsAdvanceAllowed(oldBill.getBillDetails().get(0).getIsAdvanceAllowed());
-        newBill.setMinimumAmountToBePaid(oldBill.getBillDetails().get(0).getMinimumAmount());
-        newBill.setBusinessService(oldBill.getBillDetails().get(0).getBusinessService());
-        newBill.setTotalAmount(totalAmount);
-        newBill.setConsumerCode(oldBill.getBillDetails().get(0).getConsumerCode());
-        newBill.setBillNumber(oldBill.getBillDetails().get(0).getBillNumber());
-        newBill.setBillDate(oldBill.getBillDetails().get(0).getBillDate());
-        newBill.setAmountPaid(totalAmountPaid);
-
-
-
-        return newBill;
-
-    }
-
-    private BillDetail getBillDetail(Receipt_v1 receipt, String billId, AuditDetails auditDetails){
-        BillDetail newBillDetail = new BillDetail();
-        BillDetail_v1 oldBillDetail = receipt.getBill().get(0).getBillDetails().get(0);
-
-        newBillDetail.setBillDescription(oldBillDetail.getBillDescription());
-        newBillDetail.setDisplayMessage(oldBillDetail.getDisplayMessage());
-        newBillDetail.setCallBackForApportioning(oldBillDetail.getCallBackForApportioning());
-        newBillDetail.setCancellationRemarks(oldBillDetail.getCancellationRemarks());
-        newBillDetail.setId(oldBillDetail.getId());
-        newBillDetail.setId(oldBillDetail.getId());
-        newBillDetail.setTenantId(oldBillDetail.getTenantId());
-        newBillDetail.setDemandId(oldBillDetail.getDemandId());
-        newBillDetail.setBillId(billId);
-        newBillDetail.setAmount(oldBillDetail.getTotalAmount());
-        newBillDetail.setAmountPaid(oldBillDetail.getAmountPaid());
-        newBillDetail.setFromPeriod(oldBillDetail.getFromPeriod());
-        newBillDetail.setToPeriod(oldBillDetail.getToPeriod());
-        newBillDetail.setAdditionalDetails(oldBillDetail.getAdditionalDetails());
-        newBillDetail.setChannel(oldBillDetail.getChannel());
-        newBillDetail.setVoucherHeader(oldBillDetail.getVoucherHeader());
-        newBillDetail.setBoundary(oldBillDetail.getBoundary());
-        newBillDetail.setManualReceiptNumber(oldBillDetail.getManualReceiptNumber());
-        newBillDetail.setManualReceiptDate(oldBillDetail.getManualReceiptDate());
-
-        List<BillAccountDetail> billAccountDetail = getBillAccountDetail(oldBillDetail.getBillAccountDetails(), auditDetails);
-        newBillDetail.setBillAccountDetails(billAccountDetail);
-
-
-        newBillDetail.setCollectionType(oldBillDetail.getCollectionType());
-        newBillDetail.setAuditDetails(auditDetails);
-        newBillDetail.setExpiryDate(oldBillDetail.getExpiryDate());
-
-
-        return newBillDetail;
-    }
-
-    private List<BillAccountDetail> getBillAccountDetail(List<BillAccountDetail_v1> billAccountDetails, AuditDetails auditDetails){
-        List<BillAccountDetail> newBillAccountDetails= new ArrayList<BillAccountDetail>();
-
-        for(BillAccountDetail_v1 oldBillAccountDetail : billAccountDetails){
-            BillAccountDetail newBillAccountDetail = new BillAccountDetail();
-            newBillAccountDetail.setId(oldBillAccountDetail.getId());
-            newBillAccountDetail.setTenantId(oldBillAccountDetail.getTenantId());
-            newBillAccountDetail.setBillDetailId(oldBillAccountDetail.getBillDetail());
-            newBillAccountDetail.setDemandDetailId(oldBillAccountDetail.getDemandDetailId());
-            newBillAccountDetail.setOrder(oldBillAccountDetail.getOrder());
-            newBillAccountDetail.setAmount(oldBillAccountDetail.getAmount());
-            newBillAccountDetail.setAdjustedAmount(oldBillAccountDetail.getAdjustedAmount());
-            newBillAccountDetail.setIsActualDemand(oldBillAccountDetail.getIsActualDemand());
-            newBillAccountDetail.setTaxHeadCode(oldBillAccountDetail.getTaxHeadCode());
-            newBillAccountDetail.setAdditionalDetails(oldBillAccountDetail.getAdditionalDetails());
-            newBillAccountDetail.setPurpose(oldBillAccountDetail.getPurpose());
-            newBillAccountDetail.setAuditDetails(auditDetails);
-            newBillAccountDetails.add(newBillAccountDetail);
-        }
-
-        return  newBillAccountDetails;
-    }
-
-
-
-
-    private String getBillId(Bill_v1 bill,RequestInfo requestInfo){
-        String billNumber = bill.getBillDetails().get(0).getBillNumber();
-        String tenantId = bill.getBillDetails().get(0).getTenantId();
-        String service = bill.getBillDetails().get(0).getBusinessService();
-        String status = bill.getBillDetails().get(0).getStatus();
-
-        StringBuilder url = getBillSearchURI(tenantId,billNumber,service,status);
-
-        RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
-
-        Object response = serviceRequestRepository.fetchResult(url,requestInfoWrapper);
-        ObjectMapper mapper = new ObjectMapper();
-        try{
-            String billId = JsonPath.read(mapper.writeValueAsString(response), "$.Bill[0].id");
-            return billId;
-        }catch(Exception e){
-            return null;
-        }
-
-
-    }*/
 
 
     private StringBuilder getBillSearchURI(String tenantId, String billNumber, String service,String status){
