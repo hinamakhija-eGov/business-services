@@ -1,22 +1,32 @@
 package org.egov.collection.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.JsonPath;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import static org.egov.collection.model.enums.InstrumentTypesEnum.CARD;
+import static org.egov.collection.model.enums.InstrumentTypesEnum.ONLINE;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import org.egov.collection.config.ApplicationProperties;
-import org.egov.collection.model.*;
-import org.egov.collection.model.enums.InstrumentStatusEnum;
+import org.egov.collection.model.AuditDetails;
+import org.egov.collection.model.Payment;
+import org.egov.collection.model.PaymentDetail;
+import org.egov.collection.model.PaymentResponse;
+import org.egov.collection.model.RequestInfoWrapper;
 import org.egov.collection.model.enums.PaymentModeEnum;
 import org.egov.collection.model.enums.PaymentStatusEnum;
-import org.egov.collection.model.v1.*;
+import org.egov.collection.model.v1.AuditDetails_v1;
+import org.egov.collection.model.v1.Bill_v1;
+import org.egov.collection.model.v1.ReceiptSearchCriteria_v1;
+import org.egov.collection.model.v1.Receipt_v1;
 import org.egov.collection.producer.CollectionProducer;
 import org.egov.collection.repository.ServiceRequestRepository;
 import org.egov.collection.service.v1.CollectionService_v1;
 import org.egov.collection.web.contract.Bill;
-import org.egov.collection.web.contract.BillAccountDetail;
 import org.egov.collection.web.contract.BillDetail;
 import org.egov.collection.web.contract.BillResponse;
 import org.egov.common.contract.request.RequestInfo;
@@ -24,13 +34,12 @@ import org.egov.common.contract.response.ResponseInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.math.BigDecimal;
-import java.util.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static org.egov.collection.model.enums.InstrumentTypesEnum.CARD;
-import static org.egov.collection.model.enums.InstrumentTypesEnum.ONLINE;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -70,22 +79,29 @@ public class MigrationService {
 
     public void migrateReceipt(RequestInfo requestInfo, List<Receipt_v1> receipts){
         List<Payment> paymentList = new ArrayList<Payment>();
+        Map<String, Long> billAndBillDetails = new HashMap<>();
         for(Receipt_v1 receipt : receipts){
-            Payment payment = transformToPayment(requestInfo,receipt);
+            Payment payment = transformToPayment(requestInfo,receipt, billAndBillDetails);
             if(null != payment){
                 paymentList.add(payment);
             }
         }
+        log.info("BillAndBillDetails: "+billAndBillDetails);
         PaymentResponse paymentResponse = new PaymentResponse(new ResponseInfo(), paymentList);
         producer.producer(properties.getCollectionMigrationTopicName(), properties
                 .getCollectionMigrationTopicKey(), paymentResponse);
     }
 
-    private Payment transformToPayment(RequestInfo requestInfo, Receipt_v1 receipt) {
+    private Payment transformToPayment(RequestInfo requestInfo, Receipt_v1 receipt, Map<String, Long> billAndBillDetails) {
     	Bill bill = getBillFromV2(receipt.getBill().get(0),requestInfo);
         if(null == bill) 
             return null;
         else {
+        	if(null != billAndBillDetails.get(bill.getId()))
+        		billAndBillDetails.put(bill.getId(), billAndBillDetails.get(bill.getId()) + 1L);
+        	else
+        		billAndBillDetails.put(bill.getId(), 1L);
+        	
         	return getPayment(requestInfo, receipt, bill);
         }
     }
