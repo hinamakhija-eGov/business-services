@@ -25,9 +25,9 @@ public class PaymentDetail {
     @JsonProperty("tenantId")
     private String tenantId;
     
-    @Size(max=64)
+    /*@Size(max=64)
     @JsonProperty("paymentId")
-    private String paymentId;
+    private String paymentId;*/
 
     @JsonProperty("totalDue")
     private BigDecimal totalDue;

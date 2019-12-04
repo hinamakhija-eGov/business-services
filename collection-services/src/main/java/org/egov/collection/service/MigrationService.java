@@ -25,6 +25,7 @@ import org.egov.collection.model.v1.ReceiptSearchCriteria_v1;
 import org.egov.collection.model.v1.Receipt_v1;
 import org.egov.collection.producer.CollectionProducer;
 import org.egov.collection.repository.ServiceRequestRepository;
+import org.egov.collection.repository.rowmapper.BillIdRowMapper;
 import org.egov.collection.service.v1.CollectionService_v1;
 import org.egov.collection.web.contract.Bill;
 import org.egov.collection.web.contract.BillDetail;
@@ -32,6 +33,7 @@ import org.egov.collection.web.contract.BillResponse;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.response.ResponseInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -54,6 +56,12 @@ public class MigrationService {
 
     @Autowired
     private CollectionService_v1 collectionService;
+
+    @Autowired
+    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    @Autowired
+    private BillIdRowMapper billIdRowMapper;
 
     @Autowired
     public MigrationService(ApplicationProperties properties, ServiceRequestRepository serviceRequestRepository,CollectionProducer producer) {
@@ -156,7 +164,7 @@ public class MigrationService {
         PaymentDetail paymentDetail = getPaymentDetail(receipt, auditDetails, requestInfo);
     	
         paymentDetail.setBill(newBill);
-        paymentDetail.setPaymentId(payment.getId());
+        //paymentDetail.setPaymentId(payment.getId());
     	paymentDetail.setBillId(newBill.getId());
         paymentDetail.setTotalDue(totalAmount.subtract(totalAmountPaid));
         paymentDetail.setTotalAmountPaid(totalAmountPaid);
@@ -196,12 +204,13 @@ public class MigrationService {
     }
 
     private Bill getBillFromV2(Bill_v1 bill,RequestInfo requestInfo){
-            String billNumber = bill.getBillDetails().get(0).getBillNumber();
+           String billDetailId = bill.getBillDetails().get(0).getBillNumber();
+           String billId = getBillIdFromBillDetail(billDetailId);
             String tenantId = bill.getBillDetails().get(0).getTenantId();
             String service = bill.getBillDetails().get(0).getBusinessService();
             String status = bill.getBillDetails().get(0).getStatus();
 
-            StringBuilder url = getBillSearchURI(tenantId,billNumber,service,status);
+            StringBuilder url = getBillSearchURI(tenantId,billId,service,status);
 
             RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
 
@@ -210,7 +219,7 @@ public class MigrationService {
             try{
                 BillResponse billResponse = mapper.convertValue(response, BillResponse.class);
                 if(CollectionUtils.isEmpty(billResponse.getBill())){
-                    log.info("No bills for billNumber: "+billNumber);
+                    log.info("No bills for billId: "+billId);
                     return null;
                 }else{
                     Bill newBill = billResponse.getBill().get(0);
@@ -227,15 +236,29 @@ public class MigrationService {
     }
 
 
-    private StringBuilder getBillSearchURI(String tenantId, String billNumber, String service,String status){
+    private StringBuilder getBillSearchURI(String tenantId, String billId, String service,String status){
         StringBuilder builder = new StringBuilder(properties.getBillingServiceHostName());
         builder.append(properties.getSearchBill()).append("?");
         builder.append("tenantId=").append(tenantId);
         builder.append("&service=").append(service);
-        builder.append("&billNumber=").append(billNumber);
+        builder.append("&billId=").append(billId);
 
         return  builder;
 
+    }
+
+    private String getBillIdFromBillDetail(String billDetailId){
+        String query = "SELECT billid FROM egbs_billdetail_v1 WHERE id = :id";
+        Map<String, Object> preparedStatementValues = new HashMap<>();
+        preparedStatementValues.put("id", billDetailId);
+        String billId = null;
+        try{
+            billId = namedParameterJdbcTemplate.query(query, preparedStatementValues, billIdRowMapper);
+            return billId;
+        }catch(Exception e){
+            log.error("Couldn't fetch the billId: ",e);
+            return null;
+        }
     }
 
 
