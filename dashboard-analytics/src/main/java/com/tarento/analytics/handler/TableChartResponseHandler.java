@@ -52,24 +52,19 @@ public class TableChartResponseHandler implements IResponseHandler {
 
                 aggrsPaths.forEach(headerPath -> {
                     JsonNode datatype = pathDataTypeMap.findValue(headerPath.asText());
-                    JsonNode valueNode = null;
-                    if(bucket.findValue(headerPath.asText()) != null) { 
-                    	valueNode = bucket.findValue(headerPath.asText());
-                        Double value = 0.0;
-                        if(valueNode.get(VALUE) != null) { 
-                        	value = valueNode == null ? 0.0 : valueNode.get(VALUE).asDouble();
-                        } else {
-                        	value = valueNode == null ? 0.0 : valueNode.get(DOC_COUNT).asDouble();
-                        }
-                        
-                        Plot plot = new Plot(headerPath.asText(), value, datatype.asText());
-                        if (mappings.containsKey(key)) {
-                            double newval = mappings.get(key).get(headerPath.asText()) == null ? value : (mappings.get(key).get(headerPath.asText()).getValue() + value);
-                            plot.setValue(newval);
-                            mappings.get(key).put(headerPath.asText(), plot);
-                        } else {
-                            plotMap.put(headerPath.asText(), plot);
-                        }
+                    JsonNode valueNode = bucket.findValue(headerPath.asText());
+                    //Double value = (null == valueNode || null == valueNode.get(VALUE)) ? 0.0 : valueNode.get(VALUE).asDouble();
+                    Double doc_value = 0.0;
+                    if(valueNode!=null)
+                        doc_value = (null == valueNode.findValue(DOC_COUNT)) ? 0.0 : valueNode.findValue(DOC_COUNT).asDouble();
+                    Double value = (null == valueNode || null == valueNode.findValue(VALUE)) ? doc_value : valueNode.findValue(VALUE).asDouble();
+                    Plot plot = new Plot(headerPath.asText(), value, datatype.asText());
+                    if (mappings.containsKey(key)) {
+                        double newval = mappings.get(key).get(headerPath.asText()) == null ? value : (mappings.get(key).get(headerPath.asText()).getValue() + value);
+                        plot.setValue(newval);
+                        mappings.get(key).put(headerPath.asText(), plot);
+                    } else {
+                        plotMap.put(headerPath.asText(), plot);
                     }
                 });
 
@@ -93,10 +88,13 @@ public class TableChartResponseHandler implements IResponseHandler {
         List<Data> dataList = new ArrayList<>();
         mappings.entrySet().stream().parallel().forEach(plotMap -> {
             List<Plot> plotList = plotMap.getValue().values().stream().parallel().collect(Collectors.toList());
-            Data data = new Data(plotMap.getKey(), new Integer(plotMap.getValue().get(SERIAL_NUMBER).getLabel()), null);
+            Data data = new Data(plotMap.getKey(), Integer.parseInt(String.valueOf(plotMap.getValue().get(SERIAL_NUMBER).getLabel())), null);
             data.setPlots(plotList);
-            if(!requestDto.getVisualizationCode().equals(PGR_TABLE)) { 
-            	addComputedField(data, TARGET_ACHIEVED, TOTAL_COLLECTION, TARGET_COLLECTION);
+            if(!requestDto.getVisualizationCode().equals(PGR_TABLE) && !requestDto.getVisualizationCode().equals(TAX_HEADS_BREAKUP)
+                    && !requestDto.getVisualizationCode().equals(TL_BOUNDARY) && !requestDto.getVisualizationCode().equals(TL_BOUNDARY_DRILL)
+                    && !requestDto.getVisualizationCode().equals(PGR_DEPARTMENT) && !requestDto.getVisualizationCode().equals(PGR_CATAGORY_DRILL)
+                    && !requestDto.getVisualizationCode().equals(PGR_WARD_DRILL)) {
+                addComputedField(data, TARGET_ACHIEVED, TOTAL_COLLECTION, TARGET_COLLECTION);
             }
             dataList.add(data);
 

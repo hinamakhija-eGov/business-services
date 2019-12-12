@@ -1,23 +1,29 @@
 package com.tarento.analytics.handler;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.tarento.analytics.ConfigurationLoader;
 import com.tarento.analytics.constant.Constants;
 import com.tarento.analytics.dto.AggregateDto;
 import com.tarento.analytics.dto.AggregateRequestDto;
 import com.tarento.analytics.dto.Data;
 import com.tarento.analytics.dto.Plot;
-import com.tarento.analytics.enums.ChartType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
 /**
  * This handles ES response for single index, multiple index to represent data as line chart
  * Creates plots by merging/computing(by summation) index values for same key
@@ -38,8 +44,8 @@ public class LineChartResponseHandler implements IResponseHandler {
         //String json = "{\"ptindex-v1\":{\"Closed Application\":{\"buckets\":[{\"key_as_string\":\"2018-11-12T00:00:00.000Z\",\"key\":1541980800000,\"doc_count\":1,\"Applications Closed\":{\"buckets\":{\"closed\":{\"doc_count\":0,\"Count\":{\"value\":0}}}}}]},\"Total Application\":{\"buckets\":[{\"key_as_string\":\"2018-11-12T00:00:00.000Z\",\"key\":1541980800000,\"doc_count\":1,\"Count\":{\"value\":1}}]}},\"tlindex-v1\":{\"Closed Application\":{\"buckets\":[{\"key_as_string\":\"2019-04-29T00:00:00.000Z\",\"key\":1556496000000,\"doc_count\":6,\"Applications Closed\":{\"buckets\":{\"closed\":{\"doc_count\":0,\"Count\":{\"value\":0}},\"resolved\":{\"doc_count\":0,\"Count\":{\"value\":0}}}}}]},\"Total Application\":{\"buckets\":[{\"key\":1555891200000,\"doc_count\":1,\"Count\":{\"value\":1}},{\"key\":1556496000000,\"doc_count\":0,\"Count\":{\"value\":0}}]}},\"pgrindex-v1\":{\"Closed Application\":{\"buckets\":[{\"key\":1564963200000,\"doc_count\":438,\"Applications Closed\":{\"buckets\":{\"closed\":{\"doc_count\":5,\"Count\":{\"value\":5}}}}}]},\"Total Application\":{\"buckets\":[{\"key\":1564963200000,\"doc_count\":438,\"Count\":{\"value\":438}},{\"key\":1574035200000,\"doc_count\":3,\"Count\":{\"value\":3}}]}}}";
         JsonNode aggregationNode = aggregations.get(AGGREGATIONS);
         JsonNode chartNode = requestDto.getChartNode();
-        boolean isRequestInterval = requestDto.getInterval()!=null && !requestDto.getInterval().isEmpty();
-        String interval = isRequestInterval ? requestDto.getInterval(): chartNode.get(Constants.JsonPaths.INTERVAL).asText();
+        boolean isRequestInterval = null == requestDto.getRequestDate() ? false : requestDto.getRequestDate().getInterval()!=null && !requestDto.getRequestDate().getInterval().isEmpty();
+        String interval = isRequestInterval ? requestDto.getRequestDate().getInterval(): chartNode.get(Constants.JsonPaths.INTERVAL).asText();
         if(interval == null || interval.isEmpty()){
             throw new RuntimeException("Interval must have value from config or request");
         }
@@ -52,7 +58,6 @@ public class LineChartResponseHandler implements IResponseHandler {
 
         aggrsPaths.forEach(headerPath -> {
             List<JsonNode> aggrNodes = aggregationNode.findValues(headerPath.asText());
-            System.out.println("unsorted "+aggrNodes);
 
             Map<String, Double> plotMap = new LinkedHashMap<>();
             List<Double> totalValues = new ArrayList<>();
@@ -66,13 +71,13 @@ public class LineChartResponseHandler implements IResponseHandler {
 
                         plotKeys.add(key);
                         double previousVal = !isCumulative ? 0.0 : (totalValues.size()>0 ? totalValues.get(totalValues.size()-1):0.0);
-                        double value = 0.0; 
-                        if(bucket.findValue(IResponseHandler.VALUE) != null) { 
-                        	value = previousVal + bucket.findValue(IResponseHandler.VALUE).asDouble();
-                        } else { 
-                        	value = previousVal + bucket.findValue(IResponseHandler.DOC_COUNT).asDouble();
+                        double value = 0.0;
+                        if(bucket.findValue(IResponseHandler.VALUE) != null) {
+                            value = previousVal + bucket.findValue(IResponseHandler.VALUE).asDouble();
+                        } else {
+                            value = previousVal + bucket.findValue(IResponseHandler.DOC_COUNT).asDouble();
                         }
-                        
+
                         plotMap.put(key, plotMap.get(key) == null ? new Double("0") + value : plotMap.get(key) + value);
                         totalValues.add(value);
                     });
@@ -80,12 +85,12 @@ public class LineChartResponseHandler implements IResponseHandler {
             });
             List<Plot> plots = plotMap.entrySet().stream().map(e -> new Plot(e.getKey(), e.getValue(), symbol)).collect(Collectors.toList());
             try{
-                Data data; 
-                
-                if(!isCumulative) { 
-                	data = new Data(headerPath.asText(), (totalValues==null || totalValues.isEmpty()) ? 0.0 : totalValues.stream().reduce(0.0, Double::sum), symbol);
+                Data data;
+
+                if(!isCumulative) {
+                    data = new Data(headerPath.asText(), (totalValues==null || totalValues.isEmpty()) ? 0.0 : totalValues.stream().reduce(0.0, Double::sum), symbol);
                 } else {
-                	data = new Data(headerPath.asText(), (totalValues==null || totalValues.isEmpty()) ? 0.0 : plots.get(plots.size()-1), symbol);
+                    data = new Data(headerPath.asText(), (totalValues==null || totalValues.isEmpty()) ? 0.0 : plots.get(plots.size()-1), symbol);
                 }
                 data.setPlots(plots);
                 dataList.add(data);
@@ -106,8 +111,8 @@ public class LineChartResponseHandler implements IResponseHandler {
             Date expiry = new Date( epoch );
             Calendar cal = Calendar.getInstance();
             cal.setTime(expiry);
-            
-            String day = String.valueOf(cal.get(Calendar.DATE)); 
+
+            String day = String.valueOf(cal.get(Calendar.DATE));
             String month = monthNames(cal.get(Calendar.MONTH)+1);
             String year =  ""+cal.get(Calendar.YEAR);
 
@@ -128,33 +133,33 @@ public class LineChartResponseHandler implements IResponseHandler {
             return epocString;
         }
     }
-    
-    private String monthNames(int month) { 
-    	if(month == 1)  
-    		return "Jan";
-    	else if(month == 2)  
-    		return "Feb";
-    	else if(month == 3)  
-    		return "Mar";
-    	else if(month == 4)  
-    		return "Apr";
-    	else if(month == 5)  
-    		return "May";
-    	else if(month == 6)  
-    		return "Jun";
-    	else if(month == 7)  
-    		return "Jul";
-    	else if(month == 8)  
-    		return "Aug";
-    	else if(month == 9)  
-    		return "Sep";
-    	else if(month == 10)  
-    		return "Oct";
-    	else if(month == 11)  
-    		return "Nov";
-    	else if(month == 12)  
-    		return "Dec";
-    	else 
-    		return "Month";
+
+    private String monthNames(int month) {
+        if(month == 1)
+            return "Jan";
+        else if(month == 2)
+            return "Feb";
+        else if(month == 3)
+            return "Mar";
+        else if(month == 4)
+            return "Apr";
+        else if(month == 5)
+            return "May";
+        else if(month == 6)
+            return "Jun";
+        else if(month == 7)
+            return "Jul";
+        else if(month == 8)
+            return "Aug";
+        else if(month == 9)
+            return "Sep";
+        else if(month == 10)
+            return "Oct";
+        else if(month == 11)
+            return "Nov";
+        else if(month == 12)
+            return "Dec";
+        else
+            return "Month";
     }
 }

@@ -56,6 +56,7 @@ public class MetadataServiceImpl implements MetadataService {
 	 @Value("${egov.mdms-service.target.url}")
 	 private String mdmsServiceTargetUrl;
 
+
 	@Override
 	public ArrayNode getDashboardConfiguration(String dashboardId, String catagory, List<RoleDto> roleIds) throws AINException, IOException {
 
@@ -75,23 +76,31 @@ public class MetadataServiceImpl implements MetadataService {
 				role.get(Constants.DashBoardConfig.DASHBOARDS).forEach(db -> {
 					ObjectNode copyDashboard = objectMapper.createObjectNode();
 
+					JsonNode name = JsonNodeFactory.instance.textNode("");
+					JsonNode id = JsonNodeFactory.instance.textNode("");
 					if (db.get(Constants.DashBoardConfig.ID).asText().equalsIgnoreCase(dashboardId)) {
-						dasboardNodes.forEach(dbNode -> {
-
+						//dasboardNodes.forEach(dbNode -> {
+						for(JsonNode dbNode : dasboardNodes){
 							if (dbNode.get(Constants.DashBoardConfig.ID).asText().equalsIgnoreCase(dashboardId)) {
+								logger.info("dbNode: " + dbNode);
+								name = dbNode.get(Constants.DashBoardConfig.NAME);
+								id = dbNode.get(Constants.DashBoardConfig.ID);
+
 								if (catagory != null) {
 									dbNode.get(Constants.DashBoardConfig.VISUALISATIONS).forEach(visual -> {
 										if (visual.get(Constants.DashBoardConfig.NAME).asText().equalsIgnoreCase(catagory))
 											visArray.add(visual);
 									});
-								} else { 
+								} else {
 									dbNode.get(Constants.DashBoardConfig.VISUALISATIONS).forEach(visual -> {
 										visArray.add(visual);
 									});
 								}
 							}
+							copyDashboard.set(Constants.DashBoardConfig.NAME, name);
+							copyDashboard.set(Constants.DashBoardConfig.ID, id);
 							copyDashboard.set(Constants.DashBoardConfig.VISUALISATIONS, visArray);
-						});
+						}//);
 						dbArray.add(copyDashboard);
 					}
 				});
@@ -99,6 +108,7 @@ public class MetadataServiceImpl implements MetadataService {
 		});
 		return dbArray;
 	}
+
 /*	@Override
 	public ArrayNode getDashboardConfiguration(String dashboardId, String catagory, List<RoleDto> roleIds) throws AINException, IOException {
 

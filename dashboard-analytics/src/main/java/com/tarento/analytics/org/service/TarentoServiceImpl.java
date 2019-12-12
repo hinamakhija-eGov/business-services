@@ -30,7 +30,7 @@ import com.tarento.analytics.service.impl.RestService;
 
 @Component
 public class TarentoServiceImpl implements ClientService {
-	
+
 	public static final Logger logger = LoggerFactory.getLogger(TarentoServiceImpl.class);
 
 	@Autowired
@@ -57,23 +57,23 @@ public class TarentoServiceImpl implements ClientService {
 		ObjectNode chartNode = (ObjectNode) node.get(chartId);
 		ChartType chartType = ChartType.fromValue(chartNode.get(Constants.JsonPaths.CHART_TYPE).asText());
 		boolean isDefaultPresent = chartType.equals(ChartType.LINE) && chartNode.get(Constants.JsonPaths.INTERVAL)!=null;
-		boolean isRequestContainsInterval = request.getInterval()!=null && !request.getInterval().isEmpty() ;
+		boolean isRequestContainsInterval = null == request.getRequestDate() ? false : (request.getRequestDate().getInterval()!=null && !request.getRequestDate().getInterval().isEmpty()) ;
 		//String interval = isDefaultPresent ? chartNode.get(Constants.JsonPaths.INTERVAL).asText(): isRequestContainsInterval? request.getInterval():"";
-		String interval = isRequestContainsInterval? request.getInterval(): (isDefaultPresent ? chartNode.get(Constants.JsonPaths.INTERVAL).asText():"");
+		String interval = isRequestContainsInterval? request.getRequestDate().getInterval(): (isDefaultPresent ? chartNode.get(Constants.JsonPaths.INTERVAL).asText():"");
 
 		ArrayNode queries = (ArrayNode) chartNode.get(Constants.JsonPaths.QUERIES);
 		queries.forEach(query -> {
 			String module = query.get(Constants.JsonPaths.MODULE).asText();
-			if(request.getModuleLevel().equals(Constants.Modules.HOME_REVENUE) || 
+			if(request.getModuleLevel().equals(Constants.Modules.HOME_REVENUE) ||
 					request.getModuleLevel().equals(Constants.Modules.HOME_SERVICES) ||
 					query.get(Constants.JsonPaths.MODULE).asText().equals(Constants.Modules.COMMON) ||
 					request.getModuleLevel().equals(module)) {
-				
+
 				String indexName = query.get(Constants.JsonPaths.INDEX_NAME).asText();
 				ObjectNode objectNode = queryService.getChartConfigurationQuery(request, query, indexName, interval);
 				try {
 					JsonNode aggrNode = restService.search(indexName,objectNode.toString());
-					if(nodes.has(indexName)) { 
+					if(nodes.has(indexName)) {
 						indexName = indexName + "_1";
 					}
 					nodes.set(indexName,aggrNode.get(Constants.JsonPaths.AGGREGATIONS));
@@ -94,12 +94,14 @@ public class TarentoServiceImpl implements ClientService {
 		return aggregateDto;
 	}
 
+
+
 	@Override
 	public List<DashboardHeaderDto> getHeaderData(CummulativeDataRequestDto requestDto, List<RoleDto> roles) throws AINException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	
+
 
 }

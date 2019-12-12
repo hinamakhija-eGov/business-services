@@ -46,7 +46,17 @@ public interface IResponseHandler {
     public static final String TARGET_COLLECTION = "Target Collection";
     public static final String TARGET_ACHIEVED = "Target Achievement";
     
-    public static final String PGR_TABLE = "pgrStatusByTenant"; 
+    public static final String PGR_TABLE = "pgrStatusByTenant";
+	public static final String TAX_HEADS_BREAKUP = "taxHeadsBreakup";
+	public static final String TL_BOUNDARY = "licenseIssuedBoundaryRevenue";
+	public static final String TL_BOUNDARY_DRILL ="licenseIssuedBoundaryDrillDown";
+	public static final String PGR_DEPARTMENT = "pgrStatusByDepartment";
+	public static final String PGR_CATAGORY_DRILL = "pgrStatusCategoryDrillDown";
+	public static final String PGR_WARD_DRILL = "pgrStatusWardDrillDown";
+	public static final String PT_TAX_BOUNDARY="taxHeadsBreakupRevenue";
+	public static final String PT_TAX_BOUNDARY_DRILL="taxHeadsBreakupBoundaryDrill";
+	public static final String PT_TAX_USAGE="taxHeadsBreakupUsage";
+	public static final String PT_TAX_USAGE_DRILL="taxHeadsBreakupRevenue";
 	
 
 	public final String ASC = "asc";

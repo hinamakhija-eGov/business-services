@@ -4,6 +4,13 @@ public class RequestDate {
 	private String targetDate;
 	private String startDate;
 	private String endDate;
+	private String interval;
+	public String getInterval() {
+		return interval;
+	}
+	public void setInterval(String interval) {
+		this.interval = interval;
+	}
 	public String getTargetDate() {
 		return targetDate;
 	}
