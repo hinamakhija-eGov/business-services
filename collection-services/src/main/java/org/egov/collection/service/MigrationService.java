@@ -105,6 +105,9 @@ public class MigrationService {
         if(null == bill) 
             return null;
         else {
+        	if(null == bill.getBillNumber()) {
+        		bill.setBillNumber("NA");
+        	}
         	if(null != billAndBillDetails.get(bill.getId()))
         		billAndBillDetails.put(bill.getId(), billAndBillDetails.get(bill.getId()) + 1L);
         	else
