@@ -164,7 +164,7 @@ public class MigrationService {
         PaymentDetail paymentDetail = getPaymentDetail(receipt, auditDetails, requestInfo);
     	
         paymentDetail.setBill(newBill);
-        //paymentDetail.setPaymentId(payment.getId());
+        paymentDetail.setPaymentId(payment.getId());
     	paymentDetail.setBillId(newBill.getId());
         paymentDetail.setTotalDue(totalAmount.subtract(totalAmountPaid));
         paymentDetail.setTotalAmountPaid(totalAmountPaid);

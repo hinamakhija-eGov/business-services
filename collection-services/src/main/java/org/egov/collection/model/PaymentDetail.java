@@ -1,13 +1,20 @@
 package org.egov.collection.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
-import lombok.*;
-import org.egov.collection.web.contract.Bill;
+import java.math.BigDecimal;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.math.BigDecimal;
+
+import org.egov.collection.web.contract.Bill;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 
 @Data
@@ -25,9 +32,8 @@ public class PaymentDetail {
     @JsonProperty("tenantId")
     private String tenantId;
     
-    /*@Size(max=64)
-    @JsonProperty("paymentId")
-    private String paymentId;*/
+    @Size(max=64)
+    private String paymentId;
 
     @JsonProperty("totalDue")
     private BigDecimal totalDue;
