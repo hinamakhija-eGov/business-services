@@ -90,10 +90,9 @@ public class TableChartResponseHandler implements IResponseHandler {
             List<Plot> plotList = plotMap.getValue().values().stream().parallel().collect(Collectors.toList());
             Data data = new Data(plotMap.getKey(), Integer.parseInt(String.valueOf(plotMap.getValue().get(SERIAL_NUMBER).getLabel())), null);
             data.setPlots(plotList);
-            if(!requestDto.getVisualizationCode().equals(PGR_TABLE) && !requestDto.getVisualizationCode().equals(TAX_HEADS_BREAKUP)
-                    && !requestDto.getVisualizationCode().equals(TL_BOUNDARY) && !requestDto.getVisualizationCode().equals(TL_BOUNDARY_DRILL)
-                    && !requestDto.getVisualizationCode().equals(PGR_DEPARTMENT) && !requestDto.getVisualizationCode().equals(PGR_CATAGORY_DRILL)
-                    && !requestDto.getVisualizationCode().equals(PGR_WARD_DRILL)) {
+            if(requestDto.getVisualizationCode().equals(PT_BOUNDARY) || requestDto.getVisualizationCode().equals(PT_BOUNDARY_DRILL)
+                    || requestDto.getVisualizationCode().equals(TL_BOUNDARY) || requestDto.getVisualizationCode().equals(TL_BOUNDARY_DRILL)
+            ) {
                 addComputedField(data, TARGET_ACHIEVED, TOTAL_COLLECTION, TARGET_COLLECTION);
             }
             dataList.add(data);

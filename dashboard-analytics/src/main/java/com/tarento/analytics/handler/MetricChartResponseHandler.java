@@ -55,7 +55,7 @@ public class MetricChartResponseHandler implements IResponseHandler{
             values.stream().parallel().forEach(value -> {
                 List<JsonNode> valueNodes = value.findValues(VALUE).isEmpty() ? value.findValues(DOC_COUNT) : value.findValues(VALUE);
                 Double sum = valueNodes.stream().mapToDouble(o -> o.asDouble()).sum();
-                if(action.equals(PERCENTAGE)){
+                if(action.equals(PERCENTAGE) && aggrsPaths.size()==2){
                     percentageList.add(sum);
                 } else {
                     totalValues.add(sum);
@@ -65,7 +65,7 @@ public class MetricChartResponseHandler implements IResponseHandler{
 
         String symbol = chartNode.get(IResponseHandler.VALUE_TYPE).asText();
         try{
-            Data data = new Data(chartName, action.equals(PERCENTAGE)? percentageValue(percentageList) : (totalValues==null || totalValues.isEmpty())? 0.0 :totalValues.stream().reduce(0.0, Double::sum), symbol);
+            Data data = new Data(chartName, action.equals(PERCENTAGE) && aggrsPaths.size()==2? percentageValue(percentageList) : (totalValues==null || totalValues.isEmpty())? 0.0 :totalValues.stream().reduce(0.0, Double::sum), symbol);
             dataList.add(data);
             if(chartNode.get(POST_AGGREGATION_THEORY) != null) { 
             	ComputeHelper computeHelper = computeHelperFactory.getInstance(chartNode.get(POST_AGGREGATION_THEORY).asText());
