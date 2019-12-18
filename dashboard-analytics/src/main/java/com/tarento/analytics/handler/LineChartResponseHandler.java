@@ -71,12 +71,7 @@ public class LineChartResponseHandler implements IResponseHandler {
 
                         plotKeys.add(key);
                         double previousVal = !isCumulative ? 0.0 : (totalValues.size()>0 ? totalValues.get(totalValues.size()-1):0.0);
-                        double value = 0.0;
-                        if(bucket.findValue(IResponseHandler.VALUE) != null) {
-                            value = previousVal + bucket.findValue(IResponseHandler.VALUE).asDouble();
-                        } else {
-                            value = previousVal + bucket.findValue(IResponseHandler.DOC_COUNT).asDouble();
-                        }
+                        double value = previousVal + ((bucket.findValue(IResponseHandler.VALUE) != null) ? bucket.findValue(IResponseHandler.VALUE).asDouble():bucket.findValue(IResponseHandler.DOC_COUNT).asDouble());
 
                         plotMap.put(key, plotMap.get(key) == null ? new Double("0") + value : plotMap.get(key) + value);
                         totalValues.add(value);
@@ -85,13 +80,15 @@ public class LineChartResponseHandler implements IResponseHandler {
             });
             List<Plot> plots = plotMap.entrySet().stream().map(e -> new Plot(e.getKey(), e.getValue(), symbol)).collect(Collectors.toList());
             try{
-                Data data;
+                Data data = new Data(headerPath.asText(), (totalValues==null || totalValues.isEmpty()) ? 0.0 : totalValues.stream().reduce(0.0, Double::sum), symbol);
+
+/*                Data data;
 
                 if(!isCumulative) {
                     data = new Data(headerPath.asText(), (totalValues==null || totalValues.isEmpty()) ? 0.0 : totalValues.stream().reduce(0.0, Double::sum), symbol);
                 } else {
                     data = new Data(headerPath.asText(), (totalValues==null || totalValues.isEmpty()) ? 0.0 : plots.get(plots.size()-1), symbol);
-                }
+                }*/
                 data.setPlots(plots);
                 dataList.add(data);
             } catch (Exception e) {

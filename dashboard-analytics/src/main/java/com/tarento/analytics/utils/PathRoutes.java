@@ -6,7 +6,8 @@ public interface PathRoutes {
 		final String DASHBOARD_ROOT_PATH = "/dashboard";
 
 		final String TEST_PATH = "/test";
-		
+		final String FILE_PATH = "/files";
+
 		final String GET_CHART = "/getChart";
 		final String GET_CHART_V2 = "/getChartV2";
 		final String GET_CHART_V3 = "/getChartV3";

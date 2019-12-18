@@ -2,9 +2,11 @@ package com.tarento.analytics.controllers;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.tarento.analytics.service.AmazonS3ClientService;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.slf4j.Logger;
@@ -13,14 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.ServletWebRequest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -39,6 +34,7 @@ import com.tarento.analytics.org.service.ClientService;
 import com.tarento.analytics.service.MetadataService;
 import com.tarento.analytics.utils.PathRoutes;
 import com.tarento.analytics.utils.ResponseGenerator;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping(PathRoutes.DashboardApi.DASHBOARD_ROOT_PATH)
@@ -48,10 +44,44 @@ public class DashboardController {
 
 	@Autowired
 	private MetadataService metadataService;
-
+	@Autowired
+	private AmazonS3ClientService amazonS3ClientService;
 
     @Autowired
 	private ClientService clientService;
+
+	@RequestMapping(value = PathRoutes.DashboardApi.FILE_PATH, method = RequestMethod.POST)
+	public Map<String, String> uploadFile(@RequestPart(value = "file") MultipartFile file)
+	{
+		Map<String, String> response = new HashMap<>();
+		try{
+			String imgUrl = this.amazonS3ClientService.uploadFileToS3Bucket(file, true);
+			response.put("message", "file [" + file.getOriginalFilename() + "] uploading request submitted successfully.");
+			response.put("url", imgUrl);
+		}catch (Exception e){
+			logger.error("S3 file upload : "+e.getMessage());
+			response.put("message", e.getMessage());
+			response.put("url", "");
+		}
+
+		return response;
+	}
+
+	@DeleteMapping(value = PathRoutes.DashboardApi.FILE_PATH)
+	public Map<String, String> deleteFile(@RequestParam("file_name") String fileName)
+	{
+		Map<String, String> response = new HashMap<>();
+		try{
+			this.amazonS3ClientService.deleteFileFromS3Bucket(fileName);
+			response.put("message", "file [" + fileName + "] removing request submitted successfully.");
+		}catch (Exception e ){
+			logger.error("S3 file upload : "+e.getMessage());
+			response.put("message", e.getMessage());
+
+		}
+		return response;
+
+	}
 
 	@GetMapping(value = PathRoutes.DashboardApi.TEST_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
 	public String getTest() throws JsonProcessingException {
