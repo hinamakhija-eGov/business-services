@@ -2,31 +2,25 @@
   "_comment": "Master dashboard which holds all the possible visualisation. Note new dashboards/visualisations can be added",
   "dashboards": [
     {
-      "name": "State Wide Urban Real-Time Executive (SURE) Dashboard",
+      "name": "State Urban Real-Time Executive (SURE) Dashboard",
       "id": "home",
       "isActive": "",
-      "style": "tabbed",
+      "style": "",
       "visualizations": [
         {
-          "row": 1,
           "name": "DSS_REVENUE",
           "vizArray": [
             {
               "id": 111,
               "name": "Overview",
-              "dimensions": {
-                "height": 350,
-                "width": 5
-              },
               "vizType": "metric-collection",
-              "label": "Overview",
-              "noUnit": false,
+              "noUnit": true,
               "charts": [
                 {
                   "id": "todaysCollection",
                   "name": "DSS_TOTAL_COLLECTION_TODAY",
                   "code": "",
-                  "chartType": "metric",
+                  "chartType": "",
                   "filter": "",
                   "headers": []
                 },
@@ -152,7 +146,7 @@
           "vizArray": [
             {
               "id": 131,
-              "name": "",
+              "name": "Overview",
               "dimensions": {
                 "height": 450,
                 "width": 5
@@ -302,6 +296,14 @@
               "noUnit": true,
               "label": "Overview",
               "charts": [
+                {
+                  "id": "todaysCollectionPT",
+                  "name": "DSS_TOTAL_COLLECTION_TODAY",
+                  "code": "",
+                  "chartType": "metric",
+                  "filter": "",
+                  "headers": []
+                },
                 {
                   "id": "totalCollection",
                   "name": "DSS_TOTAL_COLLECTION",
@@ -624,7 +626,6 @@
           "name": "DSS_REVENUE",
           "vizArray": [
             {
-              "id": 311,
               "name": "Overview",
               "dimensions": {
                 "height": 350,
@@ -634,6 +635,14 @@
               "label": "Overview",
               "noUnit": true,
               "charts": [
+                {
+                  "id": "todaysCollectionTL",
+                  "name": "DSS_TOTAL_COLLECTION_TODAY",
+                  "code": "",
+                  "chartType": "metric",
+                  "filter": "",
+                  "headers": []
+                },
                 {
                   "id": "totalCollection",
                   "name": "DSS_TOTAL_COLLECTION",
