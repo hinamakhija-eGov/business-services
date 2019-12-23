@@ -8,8 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.tarento.analytics.helper.ComputedFieldHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -31,11 +33,14 @@ import com.tarento.analytics.dto.Plot;
 public class TableChartResponseHandler implements IResponseHandler {
     public static final Logger logger = LoggerFactory.getLogger(TableChartResponseHandler.class);
 
+    @Autowired
+    ComputedFieldHelper computedFieldHelper;
     @Override
     public AggregateDto translate(AggregateRequestDto requestDto, ObjectNode aggregations) throws IOException {
 
         JsonNode aggregationNode = aggregations.get(AGGREGATIONS);
         JsonNode chartNode = requestDto.getChartNode();
+        String postAggrTheoryName = chartNode.get(POST_AGGREGATION_THEORY) == null ? "" :  chartNode.get(POST_AGGREGATION_THEORY).asText();
         String plotLabel = chartNode.get(PLOT_LABEL).asText();
         ArrayNode pathDataTypeMap = (ArrayNode) chartNode.get(TYPE_MAPPING);
         ArrayNode aggrsPaths = (ArrayNode) chartNode.get(IResponseHandler.AGGS_PATH);
@@ -90,10 +95,12 @@ public class TableChartResponseHandler implements IResponseHandler {
             List<Plot> plotList = plotMap.getValue().values().stream().parallel().collect(Collectors.toList());
             Data data = new Data(plotMap.getKey(), Integer.parseInt(String.valueOf(plotMap.getValue().get(SERIAL_NUMBER).getLabel())), null);
             data.setPlots(plotList);
-            if(requestDto.getVisualizationCode().equals(PT_BOUNDARY) || requestDto.getVisualizationCode().equals(PT_BOUNDARY_DRILL)
-                    || requestDto.getVisualizationCode().equals(TL_BOUNDARY) || requestDto.getVisualizationCode().equals(TL_BOUNDARY_DRILL)
-            ) {
-                addComputedField(data, TARGET_ACHIEVED, TOTAL_COLLECTION, TARGET_COLLECTION);
+
+            if(requestDto.getVisualizationCode().equals(PT_DDR_BOUNDARY) || requestDto.getVisualizationCode().equals(PT_BOUNDARY) || requestDto.getVisualizationCode().equals(PT_BOUNDARY_DRILL)
+                    || requestDto.getVisualizationCode().equals(TL_DDR_BOUNDARY) || requestDto.getVisualizationCode().equals(TL_BOUNDARY) || requestDto.getVisualizationCode().equals(TL_BOUNDARY_DRILL)) {
+
+                computedFieldHelper.set(requestDto, postAggrTheoryName);
+                computedFieldHelper.add(data,TARGET_ACHIEVED, TOTAL_COLLECTION, TARGET_COLLECTION );
             }
             dataList.add(data);
 

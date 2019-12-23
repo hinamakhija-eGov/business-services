@@ -39,6 +39,16 @@ public class ResponseHandlerFactory {
         return null;
     }
 
+    @Autowired
+    private TablePostResponseHandler tablePostResponseHandler;
+    public IPostResponseHandler get(ChartType chartType){
+
+        if(chartType == chartType.TABLE){
+            return tablePostResponseHandler;
+        }
+        return null;
+    }
+
 }
 
 

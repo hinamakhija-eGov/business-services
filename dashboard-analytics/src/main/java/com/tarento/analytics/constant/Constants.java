@@ -78,6 +78,7 @@ public class Constants {
 		final static String MODULE = "module";
 		final static String INTERVAL_VAL = "intervalvalue";
 		final static String INTERVAL = "interval";
+		final static String IS_POST_RESPONSE_HANDLER = "isPostResponseHandler";
 
 	}
 	

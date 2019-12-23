@@ -14,4 +14,6 @@ import com.tarento.analytics.dto.Data;
 public interface ComputeHelper {
 
 	public List<Data> compute(AggregateRequestDto request, List<Data> data);
+	public Double compute(AggregateRequestDto request, double value);
+
 }

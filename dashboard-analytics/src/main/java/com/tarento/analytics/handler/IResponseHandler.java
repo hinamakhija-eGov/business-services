@@ -46,8 +46,10 @@ public interface IResponseHandler {
     public static final String TARGET_COLLECTION = "Target Collection";
     public static final String TARGET_ACHIEVED = "Target Achievement";
 
-    public static final String PT_BOUNDARY = "demandCollectionIndexBoundaryRevenue";
+	public static final String PT_DDR_BOUNDARY = "demandCollectionIndexDDRRevenue";
+	public static final String PT_BOUNDARY = "demandCollectionIndexBoundaryRevenue";
     public static final String PT_BOUNDARY_DRILL = "boundaryDrillDown";
+	public static final String TL_DDR_BOUNDARY = "licenseIssuedDDRRevenue";
     public static final String TL_BOUNDARY = "licenseIssuedBoundaryRevenue";
     public static final String TL_BOUNDARY_DRILL = "licenseIssuedBoundaryDrillDown";
 
