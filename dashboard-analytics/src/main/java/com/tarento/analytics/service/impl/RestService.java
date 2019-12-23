@@ -81,11 +81,15 @@ public class RestService {
     public JsonNode post(String uri, String authToken, JsonNode requestNode) {
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer "+ authToken );
+        if(authToken != null && !authToken.isEmpty())
+            headers.add("Authorization", "Bearer "+ authToken );
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         LOGGER.info("Request Node: " + requestNode);
-        HttpEntity<String> requestEntity = new HttpEntity<>("{}", headers);
+        HttpEntity<String> requestEntity = null;
+        if(requestNode != null ) requestEntity = new HttpEntity<>(requestNode.toString(), headers);
+        else requestEntity = new HttpEntity<>("{}", headers);
+
         JsonNode responseNode = null;
 
         try {

@@ -100,6 +100,12 @@ public class Constants {
 		final static String ID = "id";
 
 	}
+	public interface MDMSKeys {
+		final static String DISTRICT_CODE = "districtCode";
+		final static String DDR_NAME = "ddrName";
+		final static String TENANTS = "tenants";
+		final static String KEY = "key";
+	}
 
 	public enum  Interval {
 		week, month, year, day
