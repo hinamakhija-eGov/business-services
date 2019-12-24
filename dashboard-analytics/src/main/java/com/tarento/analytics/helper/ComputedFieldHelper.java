@@ -37,13 +37,17 @@ public class ComputedFieldHelper {
 
                 data.getPlots().add(new Plot(newfield, 0.0, "percentage"));
             } else {
+                double wholeValue = plotMap.get(wholeField).getValue();
                 double fieldValue = plotMap.get(partField).getValue() / plotMap.get(wholeField).getValue() * 100;
 
                 if(postAggrTheoryName != null && !postAggrTheoryName.isEmpty()) {
                     //logger.info("Chart name: "+aggregateRequestDto.getVisualizationCode()+" :: postAggrTheoryName : "+postAggrTheoryName);
                     ComputeHelper computeHelper = computeHelperFactory.getInstance(postAggrTheoryName);
                     fieldValue = computeHelper.compute(aggregateRequestDto, fieldValue);
+                    wholeValue = computeHelper.compute(aggregateRequestDto, wholeValue);
+
                 }
+                data.getPlots().stream().filter(plot -> wholeField.equalsIgnoreCase(plot.getName())).findAny().orElse(null).setValue(wholeValue);
                 data.getPlots().add(new Plot(newfield, fieldValue, "percentage"));
 
             }
