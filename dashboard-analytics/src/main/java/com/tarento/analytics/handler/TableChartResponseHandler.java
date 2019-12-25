@@ -93,16 +93,19 @@ public class TableChartResponseHandler implements IResponseHandler {
         List<Data> dataList = new ArrayList<>();
         mappings.entrySet().stream().parallel().forEach(plotMap -> {
             List<Plot> plotList = plotMap.getValue().values().stream().parallel().collect(Collectors.toList());
-            Data data = new Data(plotMap.getKey(), Integer.parseInt(String.valueOf(plotMap.getValue().get(SERIAL_NUMBER).getLabel())), null);
-            data.setPlots(plotList);
+            List<Plot> filterPlot = plotList.stream().filter(c -> (!c.getName().equalsIgnoreCase(SERIAL_NUMBER) && !c.getName().equalsIgnoreCase(plotLabel) && c.getValue() != 0.0)).collect(Collectors.toList());
+            if(filterPlot.size()>0){
+                Data data = new Data(plotMap.getKey(), Integer.parseInt(String.valueOf(plotMap.getValue().get(SERIAL_NUMBER).getLabel())), null);
+                data.setPlots(plotList);
 
-            if(requestDto.getVisualizationCode().equals(PT_DDR_BOUNDARY) || requestDto.getVisualizationCode().equals(PT_BOUNDARY) || requestDto.getVisualizationCode().equals(PT_BOUNDARY_DRILL)
-                    || requestDto.getVisualizationCode().equals(TL_DDR_BOUNDARY) || requestDto.getVisualizationCode().equals(TL_BOUNDARY) || requestDto.getVisualizationCode().equals(TL_BOUNDARY_DRILL)) {
+                if(requestDto.getVisualizationCode().equals(PT_DDR_BOUNDARY) || requestDto.getVisualizationCode().equals(PT_BOUNDARY) || requestDto.getVisualizationCode().equals(PT_BOUNDARY_DRILL)
+                        || requestDto.getVisualizationCode().equals(TL_DDR_BOUNDARY) || requestDto.getVisualizationCode().equals(TL_BOUNDARY) || requestDto.getVisualizationCode().equals(TL_BOUNDARY_DRILL)) {
 
-                computedFieldHelper.set(requestDto, postAggrTheoryName);
-                computedFieldHelper.add(data,TARGET_ACHIEVED, TOTAL_COLLECTION, TARGET_COLLECTION );
+                    computedFieldHelper.set(requestDto, postAggrTheoryName);
+                    computedFieldHelper.add(data,TARGET_ACHIEVED, TOTAL_COLLECTION, TARGET_COLLECTION );
+                }
+                dataList.add(data);
             }
-            dataList.add(data);
 
         });
         dataList.sort((o1, o2) -> ((Integer) o1.getHeaderValue()).compareTo((Integer) o2.getHeaderValue()));
