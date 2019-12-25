@@ -78,7 +78,7 @@ public class Constants {
 		final static String MODULE = "module";
 		final static String INTERVAL_VAL = "intervalvalue";
 		final static String INTERVAL = "interval";
-		final static String IS_POST_RESPONSE_HANDLER = "isPostResponseHandler";
+		final static String IS_MDMS_ENABALED = "isMdmsEnabled";
 
 	}
 	
@@ -102,6 +102,7 @@ public class Constants {
 
 	}
 	public interface MDMSKeys {
+		final static String CODE = "code";
 		final static String DISTRICT_CODE = "districtCode";
 		final static String DDR_NAME = "ddrName";
 		final static String TENANTS = "tenants";
@@ -115,5 +116,9 @@ public class Constants {
 		final static String RESPONSE_DIFF_DATES = "repsonseToDifferenceOfDates"; 
 	}
 
+	public enum ClienServiceType {
+		DEFAULT_CLIENT ,
+		MDMS_CLIENT
+	}
 
 }

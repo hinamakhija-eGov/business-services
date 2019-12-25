@@ -90,9 +90,6 @@ public class TarentoServiceImpl implements ClientService {
 		AggregateDto aggregateDto = new AggregateDto();
 		if(aggrObjectNode.fields().hasNext()){
 
-			boolean postHandlerRequired = chartNode.get(Constants.JsonPaths.IS_POST_RESPONSE_HANDLER) != null && chartNode.get(Constants.JsonPaths.IS_POST_RESPONSE_HANDLER).asBoolean();
-			if(postHandlerRequired)
-				responseHandlerFactory.get(chartType).postResponse(aggrObjectNode);
 			aggregateDto = responseHandler.translate(request, aggrObjectNode);
 		}
 		return aggregateDto;

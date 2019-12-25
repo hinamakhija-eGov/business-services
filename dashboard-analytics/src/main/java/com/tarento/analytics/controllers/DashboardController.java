@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.tarento.analytics.org.service.ClientServiceFactory;
 import com.tarento.analytics.service.AmazonS3ClientService;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
@@ -47,8 +48,11 @@ public class DashboardController {
 	@Autowired
 	private AmazonS3ClientService amazonS3ClientService;
 
-    @Autowired
-	private ClientService clientService;
+/*    @Autowired
+	private ClientService clientService;*/
+
+	@Autowired
+	private ClientServiceFactory clientServiceFactory;
 
 	@RequestMapping(value = PathRoutes.DashboardApi.FILE_PATH, method = RequestMethod.POST)
 	public Map<String, String> uploadFile(@RequestPart(value = "file") MultipartFile file)
@@ -88,49 +92,6 @@ public class DashboardController {
 		return ResponseGenerator.successResponse("success");
 
 	}
-
-/*
-	//TODO: intgrate with user Auth
-	@RequestMapping(value = PathRoutes.DashboardApi.GET_CHART_V2 + /{chartId}, method = RequestMethod.POST)
-	public ResponseEntity getVisualizationChartV2(@RequestBody RequestDtoV2 requestDto, @RequestHeader(value = "x-user-info", required = false) String xUserInfo, ServletWebRequest request) {
-
-		*/
-/*logger.info("Request Detail:" + requestDto);
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		UserDto user = gson.fromJson(xUserInfo, UserDto.class);*//*
-
-
-		// TODO: move to userAuth helper
-		UserDto user = new UserDto();
-		logger.info("user"+xUserInfo);
-		
-		AggregateRequestDtoV2 requestInfo = requestDto.getAggregationRequestDto();
-		requestInfo.setVisualizationCode(chartId);
-		Map<String, Object> headers = requestDto.getHeaders();
-		//requestInfo.getFilters().putAll(headers);
-		ResponseEntity responseEntity = null;
-		try {
-			if (headers.isEmpty() || headers.get("tenantId") == null) {
-				logger.error("Please provide header details");
-				responseEntity = new ResponseEntity(new ResponseDto(HttpStatus.BAD_REQUEST.value(), "header or tenantId is missing", null), HttpStatus.BAD_REQUEST);
-
-			} else {
-				// To be removed once the development is complete
-				if(StringUtils.isBlank(requestInfo.getModuleLevel())) {
-					requestInfo.setModuleLevel(Constants.Modules.HOME_REVENUE);
-				}
-
-				AggregateDto responseData = clientService.getAggregatedData(requestInfo, user.getRoles());
-				responseEntity = new ResponseEntity(new ResponseDto(HttpStatus.OK.value(), "success", responseData), HttpStatus.OK);
-			}
-
-		} catch (Exception e) {
-			logger.error("error while executing api getVisualizationChart", e.getMessage());
-			responseEntity = new ResponseEntity(new ResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		return responseEntity;
-	}
-*/
 
 	@RequestMapping(value = PathRoutes.DashboardApi.GET_DASHBOARD_CONFIG + "/{dashboardId}", method = RequestMethod.GET)
 	public String getDashboardConfiguration(@PathVariable String dashboardId, @RequestParam(value="catagory", required = false) String catagory, @RequestHeader(value = "x-user-info", required = false) String xUserInfo)
@@ -183,15 +144,9 @@ public class DashboardController {
 				requestInfo.setModuleLevel(Constants.Modules.HOME_REVENUE);
 			}
 
-			Object responseData = clientService.getAggregatedData(requestInfo, user.getRoles());
+			Object responseData = clientServiceFactory.get(requestInfo.getVisualizationCode()).getAggregatedData(requestInfo, user.getRoles());
 			response = ResponseGenerator.successResponse(responseData);
-			/*ValidationReport report = validationManager.validateVisualizationRequestV2(requestDto);
-			if (report.isSuccess()) {
-				Object responseData = clientService.getAggregatedDataV2(requestInfo, user.getRoles());
-				response = ResponseGenerator.successResponse(responseData);
-			}else{
-				throw new AINException(ErrorCode.ERR320, report.getField()+","+ report.getValue());
-			}*/
+
 		} catch (AINException e) {
 			logger.error("error while executing api getVisualizationChart");
 			response = ResponseGenerator.failureResponse(e.getErrorCode(), e.getErrorMessage());
@@ -199,13 +154,16 @@ public class DashboardController {
 		return response;
 	}
 	
+/*
 	@RequestMapping(value = PathRoutes.DashboardApi.GET_CHART_V3, method = RequestMethod.POST)
 	public String getVisualizationChartV3(@RequestBody RequestDtoV3 requestDtoV3, @RequestHeader(value = "x-user-info", required = false) String xUserInfo, ServletWebRequest request)
 			throws IOException {
 
-		/*logger.info("Request Detail:" + requestDto);
+		*/
+/*logger.info("Request Detail:" + requestDto);
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		UserDto user = gson.fromJson(xUserInfo, UserDto.class);*/
+		UserDto user = gson.fromJson(xUserInfo, UserDto.class);*//*
+
 
 		UserDto user = new UserDto();
 		logger.info("user"+xUserInfo);
@@ -246,44 +204,8 @@ public class DashboardController {
 		}
 		return response;
 	}
-
-
-	/*//TODO: integrate with user Auth
-	@RequestMapping(value = PathRoutes.DashboardApi.GET_DASHBOARD_CONFIG + "/{dashboardId}", method = RequestMethod.GET)
-	public ResponseEntity getDashboardConfiguration(@PathVariable String dashboardId, @RequestParam(value="catagory", required = false) String catagory, @RequestHeader(value = "x-user-info", required = false) String xUserInfo) {
-
-		//Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		//TODO- to remove the hard coded stuffs once integrated and comes from
-
-		try {
-			UserDto user = new UserDto();
-			user.setId(new Long("10007"));
-			user.setOrgId("1");
-			user.setCountryCode("");
-			RoleDto role = new RoleDto();
-			role.setId(new Long("6"));
-			role.setName("HR User");
-			List<RoleDto> roles = new ArrayList<>();
-			roles.add(role);
-			user.setRoles(roles);
-
-			if(null == catagory || catagory.isEmpty())
-				return new ResponseEntity(new ResponseDto(HttpStatus.BAD_REQUEST.value(), "invalid catagory!", null), HttpStatus.BAD_REQUEST);
-
-			Object response = metadataService.getDashboardConfiguration(dashboardId, catagory, user.getRoles());
-			return new ResponseEntity(new ResponseDto(HttpStatus.OK.value(), "success", response), HttpStatus.OK);
-
-		} catch (Exception e) {
-			return new ResponseEntity(new ResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
-
-		}
-	}
 */
-	@RequestMapping(value = PathRoutes.DashboardApi.TARGET_DISTRICT_ULB, method = RequestMethod.GET,produces = "application/json")
-	public ResponseEntity<String> getTargetDistrictUlb() throws Exception {
-		JSONArray response = metadataService.getTargetDistrict();
-		return new ResponseEntity<>(response.toString(), HttpStatus.OK);
-	}
+
 
 
 }
