@@ -114,7 +114,9 @@ public class LineChartResponseHandler implements IResponseHandler {
             String year =  ""+cal.get(Calendar.YEAR);
 
             String intervalKey = "";
-            if(interval.equals(Constants.Interval.week)){
+            if(interval.equals(Constants.Interval.day)) {
+                intervalKey = day.concat("-").concat(month);
+            } else if(interval.equals(Constants.Interval.week)){
                 intervalKey = day.concat("-").concat(month);
             } else if(interval.equals(Constants.Interval.year)){
                 intervalKey = year;
