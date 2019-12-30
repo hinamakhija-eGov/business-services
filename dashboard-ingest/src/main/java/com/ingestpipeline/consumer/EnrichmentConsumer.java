@@ -46,20 +46,34 @@ public class EnrichmentConsumer implements KafkaConsumer {
 			@Header(KafkaHeaders.RECEIVED_TOPIC) final String topic) {
 		LOGGER.info("##KafkaMessageAlert## : key:" + topic + ":" + "value:" + incomingData.size());
 
+		if(incomingData.size()>1) {
+			for(Object key : incomingData.keySet()){
+				push((Map)incomingData.get(key));
+			}
+		} else {
+			push(incomingData);
+		}
+
+	}
+
+	private void push(Map incomingData) {
+
 		try {
 			Map updatedIncomingData = enrichmentService.enrichData(incomingData);
-			if(esPushDirect) { 
+
+			if(esPushDirect) {
 				elasticService.push(incomingData);
-			} else { 
+			} else {
 				ingestProducer.pushToPipeline(incomingData, enrichedDataTopic, enrichedDataKey);
 			}
-			if(updatedIncomingData == null) { 
+			if(updatedIncomingData == null) {
 				ingestProducer.pushToPipeline(incomingData, ERROR_INTENT, ERROR_INTENT);
 			}
 		} catch (final Exception e) {
 			e.printStackTrace();
 			LOGGER.error("Exception Encountered while processing the received message : " + e.getMessage());
 		}
+
 	}
 
 }

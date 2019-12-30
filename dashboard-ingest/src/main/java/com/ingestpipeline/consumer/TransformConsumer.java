@@ -5,6 +5,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -19,9 +20,15 @@ import com.ingestpipeline.util.Constants;
 public class TransformConsumer implements KafkaConsumer {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(TransformConsumer.class);
-	public static final String INTENT = "transform"; 
+	public static final String INTENT = "transform";
+
 	@Autowired
-	private TransformService transformService;
+	@Qualifier(Constants.Qualifiers.TRANSFORM_COLLECTION_SERVICE)
+	private TransformService collectiontransformService;
+
+	@Autowired
+	@Qualifier(Constants.Qualifiers.TRANSFORM_SERVICE)
+	private TransformService defaulttransformService;
 
 	@Autowired
 	private IngestProducer ingestProducer;
@@ -35,7 +42,15 @@ public class TransformConsumer implements KafkaConsumer {
 							   @Header(KafkaHeaders.RECEIVED_TOPIC) final String topic) {
 		LOGGER.info("##KafkaMessageAlert## : key:" + topic + ":" + "value:" + incomingData.size());
 		try {
-			boolean isTransformed = transformService.transformData(incomingData);
+			boolean isTransformed = false;
+			String dataContext = incomingData.get(Constants.DATA_CONTEXT).toString();
+			if(dataContext.equals(Constants.TransformationType.COLLECTION)) {
+
+				isTransformed = collectiontransformService.transformData(incomingData);
+			} else {
+
+				isTransformed = defaulttransformService.transformData(incomingData);
+			}
 			if (isTransformed) {
 				ingestProducer.pushToPipeline(incomingData, applicationProperties.getTransactionTransformationTopic(), applicationProperties.getTransactionTransformationKey());
 			} /*else {

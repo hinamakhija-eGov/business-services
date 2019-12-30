@@ -21,6 +21,8 @@ import java.util.Map;
 
 public interface IESService {
 
+    public final String DOC_PATH = "/_doc/";
+
     /**
      * Holds client for each indices.
      */

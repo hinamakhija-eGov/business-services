@@ -24,7 +24,8 @@ public interface Constants {
 		final String INGEST_SERVICE = "ingestService"; 
 		final String VALIDATOR_SERVICE = "validatorService";
 		final String TRANSFORM_SERVICE = "transformService";
-		final String ENRICHMENT_SERVICE = "enrichmentService"; 
+		final String ENRICHMENT_SERVICE = "enrichmentService";
+		final String TRANSFORM_COLLECTION_SERVICE = "transformCollectionService";
 		final String DIGRESS_SERVICE = "digressService"; 
 	}
 
@@ -94,4 +95,10 @@ public interface Constants {
 	public static interface ConfigurationFileNames { 
 		public static final String DIGRESSION_POINTS = "DigressionPoints.json"; 
 	}
+	public static interface TransformationType {
+		public static final String COLLECTION = "collection";
+
+	}
+	public static final String IDENTIFIER = "identifier";
+
 }

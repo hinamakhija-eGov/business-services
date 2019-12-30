@@ -16,11 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -129,13 +125,14 @@ public class ElasticService implements IESService {
 	@Override
 	public Boolean push(Map requestBody) throws Exception {
 
-		String trId = ((Map) requestBody.get("dataObject")).get("transactionId").toString();
-		String url = indexerServiceHost + collectionIndexName + "/_doc/" + trId;
+		String docId = requestBody.get(Constants.IDENTIFIER).toString();
+		String url = indexerServiceHost + collectionIndexName + DOC_PATH + docId;
+
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
-		LOGGER.info("Posting request to ES on " + collectionIndexName);
+		LOGGER.info("Posting request to ES on " + collectionIndexName + "with doc id: "+docId);
 		JsonNode request = new ObjectMapper().convertValue(requestBody, JsonNode.class);
 
 		HttpEntity<String> requestEntity = new HttpEntity<>(request.toString(), headers);
@@ -144,7 +141,7 @@ public class ElasticService implements IESService {
 		try {
 			ResponseEntity<Object> response = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, Object.class);
 			LOGGER.info("Status code on pushing to collection index : " + response.getStatusCode());
-			if (response.getStatusCode().value() == 201)
+			if (response.getStatusCode().value() == HttpStatus.CREATED.value())
 				return Boolean.TRUE;
 
 		} catch (HttpClientErrorException e) {
@@ -159,7 +156,7 @@ public class ElasticService implements IESService {
 	public Boolean push(TargetData requestBody) throws Exception {
 
 		Long currentDateTime = new Date().getTime();
-		String url = indexerServiceHost + targetIndexName + "/_doc/" + requestBody.getId();
+		String url = indexerServiceHost + targetIndexName + DOC_PATH + requestBody.getId();
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
