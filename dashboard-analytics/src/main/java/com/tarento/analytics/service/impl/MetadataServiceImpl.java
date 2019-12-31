@@ -5,11 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.tarento.analytics.constant.Constants;
 import org.json.JSONArray;
@@ -60,6 +56,14 @@ public class MetadataServiceImpl implements MetadataService {
 	@Override
 	public ArrayNode getDashboardConfiguration(String dashboardId, String catagory, List<RoleDto> roleIds) throws AINException, IOException {
 
+		Calendar cal = Calendar.getInstance();
+		cal.set(cal.getWeekYear()-1, Calendar.APRIL, 1);
+		Date startDate = cal.getTime();
+		Date endDate = new Date();
+
+		String fyInfo = "From " + Constants.DASHBOARD_DATE_FORMAT.format(startDate) + " to " + Constants.DASHBOARD_DATE_FORMAT.format(endDate);
+
+
 		ObjectNode dashBoardNode = configurationLoader.get(ConfigurationLoader.MASTER_DASHBOARD_CONFIG);
 		ArrayNode dasboardNodes = (ArrayNode) dashBoardNode.findValue(Constants.DashBoardConfig.DASHBOARDS);
 
@@ -78,6 +82,8 @@ public class MetadataServiceImpl implements MetadataService {
 
 					JsonNode name = JsonNodeFactory.instance.textNode("");
 					JsonNode id = JsonNodeFactory.instance.textNode("");
+					JsonNode title = JsonNodeFactory.instance.textNode(fyInfo);
+
 					if (db.get(Constants.DashBoardConfig.ID).asText().equalsIgnoreCase(dashboardId)) {
 						//dasboardNodes.forEach(dbNode -> {
 						for(JsonNode dbNode : dasboardNodes){
@@ -99,6 +105,7 @@ public class MetadataServiceImpl implements MetadataService {
 							}
 							copyDashboard.set(Constants.DashBoardConfig.NAME, name);
 							copyDashboard.set(Constants.DashBoardConfig.ID, id);
+							copyDashboard.set(Constants.DashBoardConfig.TITLE, title);
 							copyDashboard.set(Constants.DashBoardConfig.VISUALISATIONS, visArray);
 						}//);
 						dbArray.add(copyDashboard);

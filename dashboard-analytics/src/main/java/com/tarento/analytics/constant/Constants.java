@@ -1,5 +1,6 @@
 package com.tarento.analytics.constant;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -99,6 +100,7 @@ public class Constants {
 		final static String VISUALISATIONS = "visualizations";
 		final static String NAME = "name";
 		final static String ID = "id";
+		final static String TITLE = "title";
 
 	}
 	public interface MDMSKeys {
@@ -120,5 +122,8 @@ public class Constants {
 		DEFAULT_CLIENT ,
 		MDMS_CLIENT
 	}
+
+	public static final SimpleDateFormat DASHBOARD_DATE_FORMAT = new SimpleDateFormat("MMM dd, yyyy");
+
 
 }
