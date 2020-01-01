@@ -32,6 +32,8 @@ public class CollectionTransformationService implements TransformService {
     private static final String JOLT_SPEC = "spec";
 
     private static final String TRANSACTION_ID = "transactionId";
+    private static final String ID = "id";
+
 
 
     @Autowired
@@ -55,7 +57,7 @@ public class CollectionTransformationService implements TransformService {
 
             JsonNode incomingNode = mapper.convertValue(incomingDataCopy, JsonNode.class);
             LOGGER.info("incoming data: "+incomingNode);
-            JsonNode identifier = incomingNode.get(Constants.DATA_OBJECT).get(TRANSACTION_ID);
+            //JsonNode identifier = incomingNode.get(Constants.DATA_OBJECT).get(TRANSACTION_ID);
 
 
             //To change: for loading the file from config root
@@ -73,6 +75,7 @@ public class CollectionTransformationService implements TransformService {
                 ArrayNode nestedNodes = (ArrayNode)incomingNode.findValues(previousField).get(i);
 
                 for(int j=0; j< nestedNodes.size(); j++){
+                    JsonNode idNode = nestedNodes.get(j).get(ID);
                     String spec = specNode.toString();
                     spec = spec.replace("$i", i+"");
                     spec = spec.replace("$j", j+"");
@@ -91,8 +94,8 @@ public class CollectionTransformationService implements TransformService {
                         incomingMap.put(Constants.DATA_CONTEXT_VERSION, dataContextVersion);
                         incomingMap.put(Constants.DATA_OBJECT , transformedOutput);
 
-                        incomingMap.put(Constants.IDENTIFIER, identifier.asText()+"-"+i+""+j);
-                        incomingData.put(i+"-"+j, incomingMap);
+                        incomingMap.put(Constants.IDENTIFIER, idNode.asText());
+                        incomingData.put(idNode.asText(), incomingMap);
 
                     } catch (Exception e) {
                         LOGGER.error("Encountered an error while transforming the JSON : " + e.getMessage());
