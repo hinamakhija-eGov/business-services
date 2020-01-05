@@ -20,6 +20,7 @@ import java.util.Map;
 @Component
 public class MdmsApiMappings {
 
+    private String testingTenantId = "pb.testing";
     private static Logger logger = LoggerFactory.getLogger(MdmsApiMappings.class);
 
     private Map<String, String> ddrTenantMapping = new HashMap<>();
@@ -52,17 +53,20 @@ public class MdmsApiMappings {
                 JsonNode ddrCode = tenant.findValue(Constants.MDMSKeys.DISTRICT_CODE);
                 JsonNode ddrName = tenant.findValue(Constants.MDMSKeys.DDR_NAME);
 
-                if(!ddrTenantMapping1.containsKey(ddrName.asText())){
-                    List<String> tenantList = new ArrayList<>();
-                    tenantList.add(tenantId.asText());
-                    ddrTenantMapping1.put(ddrName.asText(),tenantList);
-                } else {
-                    ddrTenantMapping1.get(ddrName.asText()).add(tenantId.asText());
+                if(!tenantId.asText().equalsIgnoreCase(testingTenantId)) {
+                    if(!ddrTenantMapping1.containsKey(ddrName.asText())){
+                        List<String> tenantList = new ArrayList<>();
+                        tenantList.add(tenantId.asText());
+                        ddrTenantMapping1.put(ddrName.asText(),tenantList);
+                    } else {
+                        ddrTenantMapping1.get(ddrName.asText()).add(tenantId.asText());
+                    }
+
+                    if (!ddrTenantMapping.containsKey(ddrCode.asText())){
+                        ddrTenantMapping.put(ddrCode.asText(), ddrName.asText());
+                    }
                 }
 
-                if (!ddrTenantMapping.containsKey(ddrCode.asText())){
-                    ddrTenantMapping.put(ddrCode.asText(), ddrName.asText());
-                }
             }
         } catch (Exception e){
             getDefaultMapping();
