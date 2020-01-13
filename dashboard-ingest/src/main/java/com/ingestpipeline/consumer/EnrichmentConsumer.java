@@ -46,12 +46,8 @@ public class EnrichmentConsumer implements KafkaConsumer {
 			@Header(KafkaHeaders.RECEIVED_TOPIC) final String topic) {
 		LOGGER.info("##KafkaMessageAlert## : key:" + topic + ":" + "value:" + incomingData.size());
 
-		if(incomingData.size()>1) {
-			for(Object key : incomingData.keySet()){
-				push((Map)incomingData.get(key));
-			}
-		} else {
-			push(incomingData);
+	        for(Object key : incomingData.keySet()){
+			push((Map)incomingData.get(key));
 		}
 
 	}
