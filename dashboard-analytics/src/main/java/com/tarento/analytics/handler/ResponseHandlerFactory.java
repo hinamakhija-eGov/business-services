@@ -17,6 +17,9 @@ public class ResponseHandlerFactory {
     private PerformanceChartResponeHandler performingBarChartResponeHandler;
     @Autowired
     private TableChartResponseHandler tableChartResponseHandler;
+    @Autowired
+    private AdvanceTableChartResponseHandler advanceTableChartResponseHandler;
+
 
     public IResponseHandler getInstance(ChartType chartType) {
 
@@ -34,6 +37,9 @@ public class ResponseHandlerFactory {
 
         }  else if (chartType == chartType.TABLE) {
             return tableChartResponseHandler;
+
+        }   else if (chartType == chartType.XTABLE) {
+            return advanceTableChartResponseHandler;
         }
 
         return null;

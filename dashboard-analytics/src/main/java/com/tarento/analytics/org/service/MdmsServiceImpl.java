@@ -48,10 +48,14 @@ public class MdmsServiceImpl implements ClientService {
     public AggregateDto getAggregatedData(AggregateRequestDto request, List<RoleDto> roles) throws AINException, IOException {
         // Read visualization Code
         String chartId = request.getVisualizationCode();
+        logger.info("chartId >> "+chartId);
 
         // Load Chart API configuration to Object Node for easy retrieval later
         ObjectNode node = configurationLoader.get(Constants.ConfigurationFiles.CHART_API_CONFIG);
+        logger.info("conf node >> "+node);
+
         ObjectNode chartNode = (ObjectNode) node.get(chartId);
+        logger.info("chartNode >> "+chartNode);
         ChartType chartType = ChartType.fromValue(chartNode.get(Constants.JsonPaths.CHART_TYPE).asText());
         groupTenantIds = mdmsApiMappings.getGroupedTenants((List) request.getFilters().get("tenantId"));
 
@@ -94,6 +98,9 @@ public class MdmsServiceImpl implements ClientService {
                 String indexName = query.get(Constants.JsonPaths.INDEX_NAME).asText();
                 // intercept request + _search operation
                 ObjectNode aggrResponse = aggrResponseBuilder(plotName, requestDto, query, indexName, interval);
+                if(nodes.has(indexName)) {
+                    indexName = indexName + "_1";
+                }
                 nodes.set(indexName, aggrResponse);
                 aggrObjectNode.set(Constants.JsonPaths.AGGREGATIONS, nodes);
             }
@@ -132,9 +139,6 @@ public class MdmsServiceImpl implements ClientService {
 
             try {
                 ObjectNode aggrNode = (ObjectNode) restService.search(indexName, requestNode.toString());
-                if (nodes.has(indexName)) {
-                    indexName = indexName + "_1";
-                }
 
                 if(!ddrkey.equalsIgnoreCase("null")) bucket.add(((ObjectNode) aggrNode.get(Constants.JsonPaths.AGGREGATIONS)).put("key", ddrkey));
             } catch (Exception e) {

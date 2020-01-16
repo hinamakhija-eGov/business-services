@@ -60,6 +60,8 @@ public interface IResponseHandler {
 	public final String RANK = "Rank";
 	public final String AGGREGATIONS = "aggregations";
 	public final String PLOT_LABEL = "plotLabel";
+	public final String COMPUTED_FIELDS = "computedFields";
+	public final String EXCLUDED_COLUMNS = "excludedColumns";
 	public final String LIMIT = "limit";
 	public final String ORDER = "order";
 	public final String ACTION = "action";
