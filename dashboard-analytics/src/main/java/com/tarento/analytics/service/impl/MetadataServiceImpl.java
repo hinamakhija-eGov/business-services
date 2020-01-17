@@ -70,20 +70,20 @@ public class MetadataServiceImpl implements MetadataService {
 		ObjectNode roleMappingNode = configurationLoader.get(ConfigurationLoader.ROLE_DASHBOARD_CONFIG);
 		ArrayNode rolesArray = (ArrayNode) roleMappingNode.findValue(Constants.DashBoardConfig.ROLES);
 		ArrayNode dbArray = JsonNodeFactory.instance.arrayNode();
+		for(JsonNode role: rolesArray){
+			logger.info("role name: " + role.get("roleName"));
+			logger.info("role ID: " + role.get("roleId"));
+			String roleId = role.get("roleId").asText();
 
-		rolesArray.forEach(role -> {
-			Object roleId = roleIds.stream().filter(x -> role.get(Constants.DashBoardConfig.ROLE_ID).asLong() == (x.getId())).findAny().orElse(null);
-			logger.info("roleId: " + roleId);
+			//Object roleId = roleIds.stream().filter(x -> role.get(Constants.DashBoardConfig.ROLE_ID).asLong() == (x.getId())).findAny().orElse(null);
 			if (null != roleId) {
 				ArrayNode visArray = JsonNodeFactory.instance.arrayNode();
-				//checks role has given db id
-				role.get(Constants.DashBoardConfig.DASHBOARDS).forEach(db -> {
+				for(JsonNode db : role.get(Constants.DashBoardConfig.DASHBOARDS)){
 					ObjectNode copyDashboard = objectMapper.createObjectNode();
 
 					JsonNode name = JsonNodeFactory.instance.textNode("");
 					JsonNode id = JsonNodeFactory.instance.textNode("");
 					JsonNode title = JsonNodeFactory.instance.textNode(fyInfo);
-
 					if (db.get(Constants.DashBoardConfig.ID).asText().equalsIgnoreCase(dashboardId)) {
 						//dasboardNodes.forEach(dbNode -> {
 						for(JsonNode dbNode : dasboardNodes){
@@ -105,14 +105,21 @@ public class MetadataServiceImpl implements MetadataService {
 							}
 							copyDashboard.set(Constants.DashBoardConfig.NAME, name);
 							copyDashboard.set(Constants.DashBoardConfig.ID, id);
+							//add TITLE with varible dynamically
 							copyDashboard.set(Constants.DashBoardConfig.TITLE, title);
+
 							copyDashboard.set(Constants.DashBoardConfig.VISUALISATIONS, visArray);
+							copyDashboard.set("roleId", role.get("roleId"));
+							copyDashboard.set("roleName", role.get("roleName"));
+
 						}//);
 						dbArray.add(copyDashboard);
 					}
-				});
+				}
+
 			}
-		});
+		}
+
 		return dbArray;
 	}
 

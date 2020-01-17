@@ -50,13 +50,14 @@ public class PieChartResponseHandler implements IResponseHandler {
                 if(valueNode.has(BUCKETS)){
                     JsonNode buckets = valueNode.findValue(BUCKETS);
                     buckets.forEach(bucket -> {
-                        totalValue.add(bucket.findValue(VALUE).asDouble());
-                        Plot plot = new Plot(bucket.findValue(KEY).asText(), bucket.findValue(VALUE).asDouble(), symbol);
+                        Double val = valueNode.findValues(VALUE).isEmpty() ? bucket.findValue(DOC_COUNT).asInt() : bucket.findValue(VALUE).asDouble();
+                        totalValue.add(val);
+                        Plot plot = new Plot(bucket.findValue(KEY).asText(), val, symbol);
                         headerPlotList.add(plot);
                     });
 
                 } else {
-                    List<JsonNode> valueNodes = valueNode.findValues(VALUE).isEmpty() ? valueNode.findValues("doc_count") : valueNode.findValues(VALUE);
+                    List<JsonNode> valueNodes = valueNode.findValues(VALUE).isEmpty() ? valueNode.findValues(DOC_COUNT) : valueNode.findValues(VALUE);
                     double sum = valueNodes.stream().mapToLong(o -> o.asLong()).sum();
                     totalValue.add(sum);
                     Plot plot = new Plot(headerPath.asText(), sum, symbol);

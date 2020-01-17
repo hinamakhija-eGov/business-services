@@ -43,8 +43,6 @@ public class PercentageComputedField implements IComputedField{
                 double wholeValue = plotMap.get(fields.get(1)).getValue();
                 double fieldValue = plotMap.get(fields.get(0)).getValue() / plotMap.get(fields.get(1)).getValue() * 100;
 
-                logger.error(newField +" wholeValue "+wholeValue);
-                logger.error(newField+ " fieldValue "+fieldValue);
 
                 if(postAggrTheoryName != null && !postAggrTheoryName.isEmpty()) {
                     ComputeHelper computeHelper = computeHelperFactory.getInstance(postAggrTheoryName);
@@ -57,7 +55,7 @@ public class PercentageComputedField implements IComputedField{
 
         } catch (Exception e) {
             // throw new RuntimeException("Computed field configuration not correctly provided");
-            logger.error("ex occured "+e.getMessage());
+            logger.error("percentage could not be computed " +e.getMessage());
             data.getPlots().add(new Plot(newField, 0.0, "percentage"));
         }
 
