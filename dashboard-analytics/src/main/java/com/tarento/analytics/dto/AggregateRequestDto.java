@@ -6,6 +6,7 @@ import java.util.Map;
 
 public class AggregateRequestDto {
 	
+	private String requestId;
 	private String visualizationType; 
 	private String visualizationCode;
 	private String moduleLevel; 
@@ -29,9 +30,16 @@ public class AggregateRequestDto {
 		this.requestDate = requestDtoV3.getRequestDate(); 
 		this.interval = requestDtoV3.getInterval(); 
 		this.chartNode = requestDtoV3.getChartNode(); 
+		this.requestId= requestDtoV3.getRequestId();
 	}
 
 
+	public String getRequestId() {
+		return requestId;
+	}
+	public void setRequestId(String requestId) {
+		this.requestId = requestId;
+	}
 	public ObjectNode getChartNode() {
 		return chartNode;
 	}

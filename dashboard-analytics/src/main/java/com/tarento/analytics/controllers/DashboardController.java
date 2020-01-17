@@ -138,6 +138,16 @@ public class DashboardController {
 				throw new AINException(ErrorCode.ERR320, "tenant is missing");
 
 			}
+			
+			if(requestDto.getAggregationRequestDto() == null) { 
+				logger.error("Please provide requested Visualization Details");
+				throw new AINException(ErrorCode.ERR320, "Visualization Request is missing");
+			}
+			/*if(requestDto.getAggregationRequestDto().getRequestId() == null) { 
+				logger.error("Please provide Request ID");
+				throw new AINException(ErrorCode.ERR320, "Request ID is missing. Insights will not work");
+			}*/
+
 
 			// To be removed once the development is complete
 			if(StringUtils.isBlank(requestInfo.getModuleLevel())) {

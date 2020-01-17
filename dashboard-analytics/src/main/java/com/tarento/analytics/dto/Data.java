@@ -1,17 +1,31 @@
 package com.tarento.analytics.dto;
 
-import com.google.gson.JsonObject;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Data {
 
     private String headerName;
     private Object headerValue;
     private String headerSymbol;
+    private InsightsWidget insight; 
+    
+    public InsightsWidget getInsight() {
+		return insight;
+	}
+
+	public void setInsight(InsightsWidget insight) {
+		this.insight = insight;
+	}
+
+	public void setHeaderName(String headerName) {
+		this.headerName = headerName;
+	}
+
+	public void setHeaderSymbol(String headerSymbol) {
+		this.headerSymbol = headerSymbol;
+	}
+
 
     public Data(String name, Object value, String symbol) {
         this.headerName = name;

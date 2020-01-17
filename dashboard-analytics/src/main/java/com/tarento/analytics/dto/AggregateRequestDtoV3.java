@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class AggregateRequestDtoV3 {
 	
+	private String requestId;
 	private List<Visualization> visualizations; 
 	private String moduleLevel; 
 	private String queryType;
@@ -24,7 +25,13 @@ public class AggregateRequestDtoV3 {
 	public void setChartNode(ObjectNode chartNode) {
 		this.chartNode = chartNode;
 	}
+	public String getRequestId() {
+		return requestId;
+	}
 
+	public void setRequestId(String requestId) {
+		this.requestId = requestId;
+	}
 	public String getModuleLevel() {
 		return moduleLevel;
 	}
