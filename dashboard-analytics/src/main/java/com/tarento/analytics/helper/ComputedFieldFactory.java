@@ -8,11 +8,17 @@ public class ComputedFieldFactory {
 
     @Autowired
     private PercentageComputedField percentageComputedField;
+    @Autowired
+    private AverageComputedField averageComputedField;
 
     public IComputedField getInstance(String className){
 
         if(className.equalsIgnoreCase(percentageComputedField.getClass().getSimpleName())){
             return percentageComputedField;
+
+        } else if(className.equalsIgnoreCase(averageComputedField.getClass().getSimpleName())) {
+            return averageComputedField;
+
         } else {
             throw new RuntimeException("Computer field not found for className "+className);
         }
