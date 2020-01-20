@@ -14,7 +14,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
-public class PercentageComputedField implements IComputedField{
+public class PercentageComputedField implements IComputedField<Data>{
 
     public static final Logger logger = LoggerFactory.getLogger(PercentageComputedField.class);
 
@@ -31,8 +31,7 @@ public class PercentageComputedField implements IComputedField{
     }
 
     @Override
-    public void add(Object data1, List<String> fields, String newField) {
-        Data data = (Data) data1;
+    public void add(Data data, List<String> fields, String newField) {
         try {
             Map<String, Plot> plotMap = data.getPlots().stream().parallel().collect(Collectors.toMap(Plot::getName, Function.identity()));
 

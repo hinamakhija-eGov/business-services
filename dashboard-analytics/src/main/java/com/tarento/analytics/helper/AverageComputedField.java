@@ -1,12 +1,9 @@
 package com.tarento.analytics.helper;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tarento.analytics.dto.AggregateRequestDto;
-import com.tarento.analytics.dto.Data;
-import com.tarento.analytics.dto.Plot;
 import com.tarento.analytics.handler.IResponseHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,14 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Component
-public class AverageComputedField implements IComputedField<ObjectNode>{
+public class AverageComputedField implements IComputedField<ObjectNode> {
 
     public static final Logger logger = LoggerFactory.getLogger(AverageComputedField.class);
 

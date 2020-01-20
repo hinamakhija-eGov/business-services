@@ -80,7 +80,9 @@ public class Constants {
 		final static String INTERVAL_VAL = "intervalvalue";
 		final static String INTERVAL = "interval";
 		final static String IS_MDMS_ENABALED = "isMdmsEnabled";
-		final static String INSIGHT = "insight"; 
+		final static String INSIGHT = "insight";
+		final static String DAYS = "days";
+
 
 	}
 	
