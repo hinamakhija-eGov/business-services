@@ -27,12 +27,12 @@ public class MetricsInsightsHandler implements InsightsHandler {
 		String insightIndicator = ""; 
 		if(INSIGHT_NUMBER_DIFFERENCE.equals(insightsConfig.getAction())) {
 			Double difference = (Double)currentData.getHeaderValue() - (Double) pastData.getHeaderValue();
-			if(difference > 0) { 
+			if(difference >= 0) {
 				Double insightValue = (difference / (Double)pastData.getHeaderValue()) * 100;
 				if(insightValue.isInfinite()) 
 					return aggregateDto; 
 				textToDisplay = textToDisplay.replace(INDICATOR_PLACEHOLDER, POSITIVE);
-				textToDisplay = textToDisplay.replace(VALUE_PLACEHOLDER, String.valueOf(new DecimalFormat("#").format(insightValue)));
+				textToDisplay = textToDisplay.replace(VALUE_PLACEHOLDER, String.valueOf(new DecimalFormat("#.##").format(insightValue)));
 				insightIndicator = INSIGHT_INDICATOR_POSITIVE; 
 			} else { 
 				difference = (Double) pastData.getHeaderValue() - (Double) currentData.getHeaderValue();
@@ -42,7 +42,7 @@ public class MetricsInsightsHandler implements InsightsHandler {
 				if(difference.equals(0.0) && insightValue.equals(0.0)) 
 					return aggregateDto;
 				textToDisplay = textToDisplay.replace(INDICATOR_PLACEHOLDER, NEGATIVE);
-				textToDisplay = textToDisplay.replace(VALUE_PLACEHOLDER, String.valueOf(new DecimalFormat("#").format(insightValue)));
+				textToDisplay = textToDisplay.replace(VALUE_PLACEHOLDER, String.valueOf(new DecimalFormat("#.##").format(insightValue)));
 				insightIndicator = INSIGHT_INDICATOR_NEGATIVE; 
 			}
 			textToDisplay = textToDisplay.replace(INSIGHT_INTERVAL_PLACEHOLDER, insightsConfig.getInsightInterval());
