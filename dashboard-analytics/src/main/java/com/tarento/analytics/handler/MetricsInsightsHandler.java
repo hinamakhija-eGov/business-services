@@ -30,7 +30,9 @@ public class MetricsInsightsHandler implements InsightsHandler {
 			if(difference >= 0) {
 				Double insightValue = (difference / (Double)pastData.getHeaderValue()) * 100;
 				if(insightValue.isInfinite()) 
-					return aggregateDto; 
+					return aggregateDto;
+				if(insightValue.isNaN())
+					insightValue = 0.00;
 				textToDisplay = textToDisplay.replace(INDICATOR_PLACEHOLDER, POSITIVE);
 				textToDisplay = textToDisplay.replace(VALUE_PLACEHOLDER, String.valueOf(new DecimalFormat("#.##").format(insightValue)));
 				insightIndicator = INSIGHT_INDICATOR_POSITIVE; 
