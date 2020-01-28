@@ -122,7 +122,7 @@ public class NotificationConsumer {
 	 */
 	private void sendNotification(ReceiptReq receiptReq){
 		Receipt receipt = receiptReq.getReceipt().get(0); //currently we dont support mutliple receipts.
-		List<String> businessServiceAllowed = fetchBusinessServiceFromMDMS(receiptReq.getRequestInfo());
+		List<String> businessServiceAllowed = fetchBusinessServiceFromMDMS(receiptReq.getRequestInfo(), receipt.getTenantId());
 		if(!CollectionUtils.isEmpty(businessServiceAllowed)) {
 			for(Bill bill: receipt.getBill()) {
 				for(BillDetail detail: bill.getBillDetails()) {
@@ -219,17 +219,19 @@ public class NotificationConsumer {
 	}
 	
 	
-	/**
+	/*
 	 * Method to fetch business service from MDMS
-	 * 
+	 *
 	 * @param requestInfo
 	 * @return
 	 */
-	private List<String> fetchBusinessServiceFromMDMS(RequestInfo requestInfo){
+	private List<String> fetchBusinessServiceFromMDMS(RequestInfo requestInfo, String tenantId){
 		List<String> masterData = new ArrayList<>();
 		StringBuilder uri = new StringBuilder();
 		uri.append(mdmsHost).append(mdmsUrl);
-		MdmsCriteriaReq request = getRequestForEvents(requestInfo, "pb");
+		if(StringUtils.isEmpty(tenantId))
+			return masterData;
+		MdmsCriteriaReq request = getRequestForEvents(requestInfo, tenantId.split("\\.")[0]);
 		try {
 			Object response = restTemplate.postForObject(uri.toString(), request, Map.class);
 			masterData = JsonPath.read(response, BUSINESSSERVICE_CODES_JSONPATH);
