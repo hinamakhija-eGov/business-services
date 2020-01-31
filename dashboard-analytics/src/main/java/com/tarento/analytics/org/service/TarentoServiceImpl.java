@@ -57,7 +57,10 @@ public class TarentoServiceImpl implements ClientService {
 	private ResponseHandlerFactory responseHandlerFactory;
 
 	@Autowired
-	private InsightsHandlerFactory insightsHandlerFactory; 
+	private InsightsHandlerFactory insightsHandlerFactory;
+
+	@Autowired
+	private MdmsApiMappings mdmsApiMappings;
 
 	@Override
 	public AggregateDto getAggregatedData(AggregateRequestDto request, List<RoleDto> roles) throws AINException, IOException {
@@ -108,7 +111,9 @@ public class TarentoServiceImpl implements ClientService {
 		return aggregateDto;
 	}
 
-	private void executeConfiguredQueries(ObjectNode chartNode, ObjectNode aggrObjectNode, ObjectNode nodes, AggregateRequestDto request, String interval) { 
+	private void executeConfiguredQueries(ObjectNode chartNode, ObjectNode aggrObjectNode, ObjectNode nodes, AggregateRequestDto request, String interval) {
+		preHandle(request, chartNode, mdmsApiMappings);
+
 		ArrayNode queries = (ArrayNode) chartNode.get(Constants.JsonPaths.QUERIES);
 		queries.forEach(query -> {
 			String module = query.get(Constants.JsonPaths.MODULE).asText();

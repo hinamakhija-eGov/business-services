@@ -20,11 +20,16 @@ import java.util.Map;
 @Component
 public class MdmsApiMappings {
 
-    private String testingTenantId = "pb.testing";
+    private boolean isTranslate = Boolean.FALSE;
+    private final String TESTING_ID = "pb.testing";
+    private final String NAME = "name";
+
     private static Logger logger = LoggerFactory.getLogger(MdmsApiMappings.class);
 
     private Map<String, String> ddrTenantMapping = new HashMap<>();
     private Map<String, List<String>> ddrTenantMapping1 = new HashMap<>();
+    private Map<String, String> codeValues = new HashMap<>();
+    private Map<String, List<String>> ddrValueMap = new HashMap<>();
 
     @Value("${egov.mdms-service.target.url}")
     private String mdmsServiceSearchUri;
@@ -38,6 +43,13 @@ public class MdmsApiMappings {
     @Value("${egov.mdms-service.request}")
     private  String REQUEST_INFO_STR ;//="{\"RequestInfo\":{\"authToken\":\"\"},\"MdmsCriteria\":{\"tenantId\":\"pb\",\"moduleDetails\":[{\"moduleName\":\"tenant\",\"masterDetails\":[{\"name\":\"tenants\"}]}]}}";
 
+    public String valueOf(String code){
+        return codeValues.getOrDefault(code, null);
+    }
+
+    public void setTranslate(boolean isTranslate){
+        this.isTranslate = isTranslate;
+    }
 
     @PostConstruct
     public void loadMdmsService() throws Exception {
@@ -53,13 +65,23 @@ public class MdmsApiMappings {
                 JsonNode ddrCode = tenant.findValue(Constants.MDMSKeys.DISTRICT_CODE);
                 JsonNode ddrName = tenant.findValue(Constants.MDMSKeys.DDR_NAME);
 
-                if(!tenantId.asText().equalsIgnoreCase(testingTenantId)) {
+                JsonNode name = tenant.findValue(NAME);
+                if(!codeValues.containsKey(tenantId.asText())) codeValues.put(tenantId.asText(), name.asText());
+
+
+                if(!tenantId.asText().equalsIgnoreCase(TESTING_ID)) {
                     if(!ddrTenantMapping1.containsKey(ddrName.asText())){
                         List<String> tenantList = new ArrayList<>();
                         tenantList.add(tenantId.asText());
                         ddrTenantMapping1.put(ddrName.asText(),tenantList);
+                        List<String> values = new ArrayList<>();
+                        values.add(name.asText());
+                        ddrValueMap.put(ddrName.asText(), values);
+
                     } else {
                         ddrTenantMapping1.get(ddrName.asText()).add(tenantId.asText());
+                        ddrValueMap.get(ddrName.asText()).add(name.asText());
+
                     }
 
                     if (!ddrTenantMapping.containsKey(ddrCode.asText())){
@@ -87,7 +109,7 @@ public class MdmsApiMappings {
 
     public String getDDRName(String tenantId){
 
-        for(Map.Entry entry :ddrTenantMapping1.entrySet()){
+        for(Map.Entry entry : isTranslate ? ddrValueMap.entrySet() :ddrTenantMapping1.entrySet()){
             List<String> values = (List<String>) entry.getValue();
             if(values.contains(tenantId)) return entry.getKey().toString();
 
@@ -121,7 +143,7 @@ public class MdmsApiMappings {
 
 
     public Map<String, List<String>> getAll(){
-        return ddrTenantMapping1;
+        return isTranslate ? ddrValueMap : ddrTenantMapping1;
     }
 
     private void getDefaultMapping(){
