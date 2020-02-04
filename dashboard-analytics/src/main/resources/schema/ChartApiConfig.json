@@ -2883,7 +2883,7 @@
     "_comment": ""
   },
   "topFiveComplaints": {
-    "chartName": "DSS_PGR_TOP_COMPLAINTS",
+    "chartName": "Top Complaints",
     "queries": [
       {
         "module": "PGR",
