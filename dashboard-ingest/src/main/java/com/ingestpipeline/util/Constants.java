@@ -100,5 +100,6 @@ public interface Constants {
 
 	}
 	public static final String IDENTIFIER = "identifier";
+	public static final String TRANSACTION_ID = "transactionId";
 
 }

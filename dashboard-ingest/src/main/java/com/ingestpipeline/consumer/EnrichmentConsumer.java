@@ -44,10 +44,15 @@ public class EnrichmentConsumer implements KafkaConsumer {
 	@KafkaListener(id = INTENT, groupId = INTENT, topics = { Constants.KafkaTopics.TRANSFORMED_DATA}, containerFactory = Constants.BeanContainerFactory.INCOMING_KAFKA_LISTENER)
 	public void processMessage(final Map incomingData,
 			@Header(KafkaHeaders.RECEIVED_TOPIC) final String topic) {
+
 		LOGGER.info("##KafkaMessageAlert## : key:" + topic + ":" + "value:" + incomingData.size());
 
-	        for(Object key : incomingData.keySet()){
-			push((Map)incomingData.get(key));
+		if(incomingData.get(Constants.DATA_CONTEXT) != null && !incomingData.get(Constants.DATA_CONTEXT).equals(Constants.TransformationType.COLLECTION) ){
+			push(incomingData);
+		} else {
+			for(Object key : incomingData.keySet()){
+				push((Map)incomingData.get(key));
+			}
 		}
 
 	}

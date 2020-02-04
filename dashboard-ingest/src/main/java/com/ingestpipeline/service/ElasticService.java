@@ -125,7 +125,13 @@ public class ElasticService implements IESService {
 	@Override
 	public Boolean push(Map requestBody) throws Exception {
 
-		String docId = requestBody.get(Constants.IDENTIFIER).toString();
+		Object id = requestBody.get(Constants.IDENTIFIER);
+		Object trxid = ((Map)requestBody.get(Constants.DATA_OBJECT)).get(Constants.TRANSACTION_ID);
+
+
+		String docId = id!=null ? id.toString(): trxid.toString();
+
+
 		String url = indexerServiceHost + collectionIndexName + DOC_PATH + docId;
 
 
