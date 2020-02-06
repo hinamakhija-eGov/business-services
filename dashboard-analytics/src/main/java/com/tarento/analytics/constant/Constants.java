@@ -84,8 +84,6 @@ public class Constants {
 		final static String DAYS = "days";
 		final static String TRANSLATE_CODE = "translateTenantCode";
 
-
-
 	}
 	
 	public interface Filters {
