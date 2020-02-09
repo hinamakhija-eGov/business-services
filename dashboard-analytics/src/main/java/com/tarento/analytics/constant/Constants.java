@@ -82,7 +82,7 @@ public class Constants {
 		final static String IS_MDMS_ENABALED = "isMdmsEnabled";
 		final static String INSIGHT = "insight";
 		final static String DAYS = "days";
-
+		final static String TRANSLATE_CODE = "translateTenantCode";
 
 	}
 	
@@ -112,6 +112,8 @@ public class Constants {
 		final static String DDR_NAME = "ddrName";
 		final static String TENANTS = "tenants";
 		final static String KEY = "key";
+		final static String TENANT_ID = "tenantId";
+
 	}
 
 	public enum  Interval {

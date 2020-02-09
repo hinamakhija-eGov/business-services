@@ -439,7 +439,7 @@ public class QueryServiceImpl implements QueryService {
 			Iterator<Entry<String, Object>> filtersItr = request.getFilters().entrySet().iterator();
 			while(filtersItr.hasNext()) { 
 				Entry<String, Object> entry = filtersItr.next();
-				if(!String.valueOf(entry.getValue()).equals(Constants.Filters.FILTER_ALL)) { 
+				if(null != requestQueryMaps.get(entry.getKey()) && !String.valueOf(entry.getValue()).equals(Constants.Filters.FILTER_ALL)) {
 					String esQueryKey = requestQueryMaps.get(entry.getKey()).asText();
 					request.getEsFilters().put(esQueryKey, entry.getValue());
 				}

@@ -108,7 +108,7 @@ public class TableChartResponseHandler implements IResponseHandler {
             }
 
         });
-        dataList.sort((o1, o2) -> ((Integer) o1.getHeaderValue()).compareTo((Integer) o2.getHeaderValue()));
+        //dataList.sort((o1, o2) -> ((Integer) o1.getHeaderValue()).compareTo((Integer) o2.getHeaderValue()));
         return getAggregatedDto(chartNode, dataList, requestDto.getVisualizationCode());
     }
 
