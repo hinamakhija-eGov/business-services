@@ -161,6 +161,25 @@ public class RestApiController {
 		return new ResponseEntity<String>(HttpStatus.SERVICE_UNAVAILABLE);
 	}
 
+/**
+	 * This API to post documents from ES index
+	 * 
+	 * @param post documents
+	 * @author Rahul
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/migrate/{indexName}", method = RequestMethod.GET)
+	public ResponseEntity<?> migrateIndexV2(@PathVariable String indexName) throws Exception {
+		String index = null, queryString = null, dataContext = null;
+		Boolean status = elasticService.searchIndex(indexName, queryString);
+		if (status) {
+			return new ResponseEntity<String>(HttpStatus.CREATED);
+		} else if (index.equals("notDefinedIndex")) {
+			return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
+		}
+		return new ResponseEntity<String>(HttpStatus.SERVICE_UNAVAILABLE);
+	}
+
 	private void logMyTime() {
 		logger.info("System Time is : " + new Date());
 		SimpleDateFormat sd = new SimpleDateFormat(Constants.DATE_FORMAT);
