@@ -26,8 +26,10 @@ public class IngestConsumer{
 							   @Header(KafkaHeaders.RECEIVED_TOPIC) final String topic) {
 		LOGGER.info("##KafkaMessageAlert## : key:" + topic + ":" + "value:" + data.size());
 		try {
+			LOGGER.info("IngestConsumer ## get data ## " +data );
 			IncomingData incomingData = ingestService.getContextForIncomingTopic(topic);
-			incomingData.setDataObject(data);
+			incomingData.setDataObject(data.get("Data"));
+			//incomingData.setDataObject(data);
 			ingestService.ingestToPipeline(incomingData);
 		} catch (final Exception e) {
 			LOGGER.error("Exception Encountered while processing the received message : " + e.getMessage());
