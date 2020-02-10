@@ -57,9 +57,7 @@ public class MdmsServiceImpl implements ClientService {
         ObjectNode chartNode = (ObjectNode) node.get(chartId);
         logger.info("chartNode >> "+chartNode);
         boolean isHandle = preHandle(request, chartNode, mdmsApiMappings);
-        if(isHandle){
-            mdmsApiMappings.setTranslate(isHandle);
-        }
+        mdmsApiMappings.setTranslate(isHandle);
 
         ChartType chartType = ChartType.fromValue(chartNode.get(Constants.JsonPaths.CHART_TYPE).asText());
         groupTenantIds = mdmsApiMappings.getGroupedTenants((List) request.getFilters().get("tenantId"));
