@@ -1,5 +1,6 @@
 package com.ingestpipeline;
 
+import com.ingestpipeline.service.IngestServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,8 @@ public class AppStartupRunner implements ApplicationRunner {
 	 
 	  @Autowired RestApiController restApiController;
 
+	  @Autowired IngestServiceImpl ingestService;
+
     @SuppressWarnings("static-access")
 	@Override
     public void run(ApplicationArguments args) throws Exception {
@@ -42,6 +45,8 @@ public class AppStartupRunner implements ApplicationRunner {
 		for(DomainConfig domainConfig : domainConfigFactory.getAllConfigs()) { 
 			domainConfig.loadDomains(); 
 		}
+
+		ingestService.loadTopicsConfig();
         
     }
 }

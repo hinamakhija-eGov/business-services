@@ -23,6 +23,8 @@ public interface IESService {
 
     public final String DOC_PATH = "/_doc/";
 
+    public JsonNode post(String index, String type, String id, String authToken, String requestNode);
+
     /**
      * Holds client for each indices.
      */

@@ -62,7 +62,9 @@ public class ElasticService implements IESService {
 	private RestTemplate restTemplate;
 	
 	@Autowired
-	private IngestService ingestService; 
+	private IngestService ingestService;
+
+	private static final String SLASH_SEPERATOR  = "/";
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(ElasticService.class);
 
@@ -80,6 +82,35 @@ public class ElasticService implements IESService {
 
 	public void setSearchQueryBilling(String searchQueryBilling) {
 		this.searchQueryBilling = searchQueryBilling;
+	}
+
+
+	public JsonNode post(String index, String type, String id, String authToken, String requestNode) {
+
+		StringBuilder uriBuilder = new StringBuilder(indexerServiceHost.concat(index).concat(SLASH_SEPERATOR).concat(type).concat(SLASH_SEPERATOR).concat(id));
+		//String uri = indexServiceHost + index + SLASH_SEPERATOR + type + SLASH_SEPERATOR + id;
+		HttpHeaders headers = new HttpHeaders();
+		if(authToken != null && !authToken.isEmpty())
+			headers.add("Authorization", "Bearer "+ authToken );
+		headers.setContentType(MediaType.APPLICATION_JSON);
+
+		LOGGER.info("Request Node: " + requestNode);
+		HttpEntity<String> requestEntity = null;
+		if(requestNode != null ) requestEntity = new HttpEntity<>(requestNode, headers);
+		else requestEntity = new HttpEntity<>("{}", headers);
+
+		JsonNode responseNode = null;
+
+		try {
+			ResponseEntity<Object> response = restTemplate.postForEntity(uriBuilder.toString(), requestEntity, Object.class);
+			//restTemplate.postForEntity(uri,requestEntity);
+			responseNode = new ObjectMapper().convertValue(response.getBody(), JsonNode.class);
+			LOGGER.info("RestTemplate response :- "+responseNode);
+
+		} catch (HttpClientErrorException e) {
+			LOGGER.error("post client exception: " + e.getMessage());
+		}
+		return responseNode;
 	}
 
 	@Override
