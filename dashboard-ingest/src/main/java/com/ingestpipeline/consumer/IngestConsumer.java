@@ -26,7 +26,7 @@ public class IngestConsumer{
 							   @Header(KafkaHeaders.RECEIVED_TOPIC) final String topic) {
 		LOGGER.info("##KafkaMessageAlert## : key:" + topic + ":" + "value:" + data.size());
 		try {
-			LOGGER.info("IngestConsumer ## get data ## " +data );
+			LOGGER.info("IngestConsumer ## get data ## " +data +" ## TOPIC ## "+topic);
 			IncomingData incomingData = ingestService.getContextForIncomingTopic(topic);
 			incomingData.setDataObject(data.get("Data"));
 			//incomingData.setDataObject(data);
