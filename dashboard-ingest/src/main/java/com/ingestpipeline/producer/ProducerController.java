@@ -25,7 +25,7 @@ public class ProducerController {
     @Autowired
     private KafkaTemplate<String, Object> kafkaTemplate;
 
-    @PostMapping("g")
+    @PostMapping("/update/publish")
     public String publish(@RequestBody String body){
         try{
 
