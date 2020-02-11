@@ -3,10 +3,13 @@ package com.ingestpipeline.producer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.ingestpipeline.model.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,7 +29,8 @@ public class ProducerController {
     private KafkaTemplate<String, Object> kafkaTemplate;
 
     @PostMapping("/update/publish")
-    public String publish(@RequestBody String body){
+    public ResponseEntity<Response> publish(@RequestBody String body){
+        LOGGER.info("publishing request body "+body);
         try{
 
             ArrayNode nodes = (ArrayNode) new ObjectMapper().readTree(body);
@@ -36,11 +40,11 @@ public class ProducerController {
 
             }
             LOGGER.info("Published successfully");
-            return "Published successfully";
+            return new ResponseEntity<Response>(new Response("sucessful", "Published successfully"), HttpStatus.OK);
 
         } catch (Exception e){
             LOGGER.error("Published failed "+ e.getMessage());
-            return "Published failed: "+e.getMessage();
+            return new ResponseEntity(new Response("failed", e.getMessage()), HttpStatus.BAD_REQUEST);
         }
 
     }
