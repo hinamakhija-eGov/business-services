@@ -33,7 +33,9 @@ public class ProducerController {
         LOGGER.info("publishing request body "+body);
         try{
 
-            ArrayNode nodes = (ArrayNode) new ObjectMapper().readTree(body);
+            JsonNode bodyNode = new ObjectMapper().readTree(body);
+            ArrayNode nodes = (ArrayNode) bodyNode.get("data");
+            LOGGER.info("## nodes ## "+nodes);
             for(JsonNode node : nodes ){
                 LOGGER.info("single node "+node);
                 kafkaTemplate.send(topic, topickey, node);
