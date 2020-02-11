@@ -21,7 +21,7 @@ public class IngestConsumer{
 	@Autowired
 	private IngestService ingestService; 
 	
-	@KafkaListener(topics = { "${kafka.topics.incoming.data}" }, containerFactory = Constants.BeanContainerFactory.INCOMING_KAFKA_LISTENER)
+	@KafkaListener(topics = { "${kafka.topics.incoming.collection}" }, containerFactory = Constants.BeanContainerFactory.INCOMING_KAFKA_LISTENER)
 	public void processMessage(Map data,
 							   @Header(KafkaHeaders.RECEIVED_TOPIC) final String topic) {
 		LOGGER.info("##KafkaMessageAlert## : key:" + topic + ":" + "value:" + data.size());
