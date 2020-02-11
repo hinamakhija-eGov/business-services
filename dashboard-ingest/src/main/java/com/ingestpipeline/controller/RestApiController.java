@@ -168,7 +168,7 @@ public class RestApiController {
 	 * @author Rahul
 	 * @throws Exception
 	 */
-	@RequestMapping(value = "/migrate/{indexName}", method = RequestMethod.GET)
+	@RequestMapping(value = "/migrateV2/{indexName}", method = RequestMethod.GET)
 	public ResponseEntity<?> migrateIndexV2(@PathVariable String indexName) throws Exception {
 		String index = null, queryString = null, dataContext = null;
 		Boolean status = elasticService.searchIndex(indexName, queryString);
