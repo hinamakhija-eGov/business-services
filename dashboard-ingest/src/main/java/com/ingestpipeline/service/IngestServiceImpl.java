@@ -108,8 +108,10 @@ public class IngestServiceImpl implements IngestService {
 			TopicContext topicCxt = topicContextMap.get(topicName);
 					LOGGER.info("## topicCxt"+topicCxt +"## topicName "+topicName);
 
-			incomingData.setDataContext(topicCxt.getDataContext());
-        	incomingData.setDataContextVersion(topicCxt.getDataContextVersion());
+		
+		
+		incomingData.setDataContext("collection"/*topicCxt.getDataContext()*/);
+        	incomingData.setDataContextVersion("v1"/*topicCxt.getDataContextVersion()*/);
         }
 		return incomingData;
 	}
