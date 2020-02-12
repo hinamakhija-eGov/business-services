@@ -149,7 +149,7 @@ public class RestApiController {
 	 * @author Rahul
 	 * @throws Exception
 	 */
-/*	@RequestMapping(value = Constants.Paths.ES_INDEX, method = RequestMethod.POST)
+	@RequestMapping(value = Constants.Paths.ES_INDEX, method = RequestMethod.POST)
 	public ResponseEntity<?> migrateIndex(@PathVariable String indexName) throws Exception {
 		String index = null, queryString = null, dataContext = null;
 		Boolean status = elasticService.searchIndex(indexName, queryString);
@@ -159,7 +159,7 @@ public class RestApiController {
 			return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
 		}
 		return new ResponseEntity<String>(HttpStatus.SERVICE_UNAVAILABLE);
-	}*/
+	}
 
 /**
 	 * This API to post documents from ES index
