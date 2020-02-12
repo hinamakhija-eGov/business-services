@@ -106,6 +106,8 @@ public class IngestServiceImpl implements IngestService {
         if(topicContext!=null) {
         	incomingData = new IncomingData();
 			TopicContext topicCxt = topicContextMap.get(topicName);
+					LOGGER.info("## topicCxt"+topicCxt +"## topicName "+topicName);
+
 			incomingData.setDataContext(topicCxt.getDataContext());
         	incomingData.setDataContextVersion(topicCxt.getDataContextVersion());
         }
