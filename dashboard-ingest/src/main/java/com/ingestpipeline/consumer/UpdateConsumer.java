@@ -13,6 +13,7 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.net.URLEncoder;
 
 @Component
 public class UpdateConsumer {
