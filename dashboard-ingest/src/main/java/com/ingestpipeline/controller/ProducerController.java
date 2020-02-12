@@ -1,4 +1,4 @@
-package com.ingestpipeline.producer;
+package com.ingestpipeline.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
