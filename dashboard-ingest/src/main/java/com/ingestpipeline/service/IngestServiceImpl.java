@@ -103,16 +103,12 @@ public class IngestServiceImpl implements IngestService {
 		} catch (Exception e) {
 			LOGGER.error("Encountered an error while reading Topic to Context Configuration" + e.getMessage());
 		}*/
-        //if(topicContext!=null) {
+        if(topicContextMap.size()>0 ) {
         	incomingData = new IncomingData();
-			TopicContext topicCxt = topicContextMap.get(topicName);
-					LOGGER.info("## topicCxt"+topicCxt +"## topicName "+topicName);
-
-		
-		
-		incomingData.setDataContext(topicCxt.getDataContext());
+        	TopicContext topicCxt = topicContextMap.get(topicName);
+        	incomingData.setDataContext(topicCxt.getDataContext());
         	incomingData.setDataContextVersion(topicCxt.getDataContextVersion());
-       // }
+        }
 		return incomingData;
 	}
 }
