@@ -32,6 +32,7 @@ public class IngestConsumer{
 			//incomingData.setDataObject(data);
 			ingestService.ingestToPipeline(incomingData);
 		} catch (final Exception e) {
+		        e.printStackTrace();
 			LOGGER.error("Exception Encountered while processing the received message : " + e.getMessage());
 		}
 	}
