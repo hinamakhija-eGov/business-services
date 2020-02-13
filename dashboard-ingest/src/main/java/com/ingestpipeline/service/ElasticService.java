@@ -167,7 +167,7 @@ public class ElasticService implements IESService {
 		String docId = id!=null ? id.toString(): trxid.toString();
 
 
-		String url = indexerServiceHost + collectionIndexName + DOC_PATH + docId;
+		String url = indexerServiceHost + collectionIndexName +"/"+ DOC_PATH +"/"+ docId;
 		LOGGER.info("url ## " +url);
 
 
