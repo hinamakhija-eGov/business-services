@@ -13,6 +13,7 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.net.URLEncoder;
 
 @Component
 public class UpdateConsumer {
@@ -35,11 +36,13 @@ public class UpdateConsumer {
             String index =  data.get("_index").toString();
             String type =  data.get("_type").toString();
             JsonNode sourceNode = mapper.convertValue(data.get("_source"), JsonNode.class);
-            String id = data.get("_id").toString();
+            //String id = data.get("_id").toString();
+            String id = URLEncoder.encode(data.get("_id").toString());
             JsonNode response  = elasticService.post(index, type, id, "", sourceNode.toString());
             LOGGER.info("Updated response " + response + " for index "+ index);
 
         } catch (final Exception e) {
+            e.printStackTrace();
             LOGGER.error("Exception Encountered while processing the received message updating posted data for topic: "+ topic +"" + e.getMessage());
         }
     }
