@@ -156,21 +156,23 @@ public class ElasticService implements IESService {
 	@Override
 	public Boolean push(Map requestBody) throws Exception {
 
+		LOGGER.info(" new request body on ### " +requestBody);
 		Object id = requestBody.get(Constants.IDENTIFIER);
 		Object trxid = ((Map)requestBody.get(Constants.DATA_OBJECT)).get(Constants.TRANSACTION_ID);
+		LOGGER.info("request body on ### trxid" +trxid);
 
 
 		String docId = id!=null ? id.toString(): trxid.toString();
 
 
 		String url = indexerServiceHost + collectionIndexName + DOC_PATH + docId;
+		LOGGER.info("url ## " +url);
 
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
 		LOGGER.info("Posting request to ES on " + collectionIndexName + "with doc id: "+docId);
-		LOGGER.info("request body on ### " +requestBody);
 
 		JsonNode request = new ObjectMapper().convertValue(requestBody, JsonNode.class);
 

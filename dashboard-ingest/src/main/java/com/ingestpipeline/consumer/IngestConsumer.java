@@ -29,12 +29,10 @@ public class IngestConsumer{
 			LOGGER.info("IngestConsumer ## get data ## " +data +" ## TOPIC ## "+topic);
 			IncomingData incomingData = ingestService.getContextForIncomingTopic(topic);
 			LOGGER.info("## incomingData: "+incomingData);
-
 			incomingData.setDataObject(data.get("Data"));
 			//incomingData.setDataObject(data);
 			ingestService.ingestToPipeline(incomingData);
 		} catch (final Exception e) {
-		        e.printStackTrace();
 			LOGGER.error("Exception Encountered while processing the received message : " + e.getMessage());
 		}
 	}

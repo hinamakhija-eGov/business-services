@@ -61,12 +61,21 @@ public class CollectionTransformationService implements TransformService {
 
 
             //To change: for loading the file from config root
+            String trsFile = OBJECTIVE.concat(SEPARATOR).concat(dataContext).concat(SEPARATOR).concat(dataContextVersion).concat(JSON_EXTENSION);
+            String strFile = configLoader.get(trsFile);
+            JsonNode specNode = mapper.readTree(strFile);
+            LOGGER.info("specNode:## "+specNode);
+
+
+            /*LOGGER.info("sourceUrl## "+strFile);
+
             String sourceUrl = CONFIGROOT.concat(OBJECTIVE.concat(SEPARATOR).concat(dataContext).concat(SEPARATOR).concat(dataContextVersion).concat(JSON_EXTENSION));
+
             LOGGER.info("sourceUrl## "+sourceUrl);
 
             JsonNode specNode = mapper.readTree(this.getClass().getClassLoader().getResourceAsStream(sourceUrl));
 
-            LOGGER.info("specNode:## "+specNode);
+            LOGGER.info("specNode:## "+specNode);*/
 
             //String sourceUrl = (OBJECTIVE.concat(SEPARATOR).concat(dataContext).concat(SEPARATOR).concat(dataContextVersion).concat(JSON_EXTENSION));
             //JsonNode specNode = mapper.readTree(configLoader.get(sourceUrl));
