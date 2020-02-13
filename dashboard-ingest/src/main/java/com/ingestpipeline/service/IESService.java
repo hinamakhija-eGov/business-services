@@ -21,7 +21,7 @@ import java.util.Map;
 
 public interface IESService {
 
-    public final String DOC_PATH = "/_doc/";
+    public final String DOC_TYPE = "/doc/";
 
     public JsonNode post(String index, String type, String id, String authToken, String requestNode);
 

@@ -36,6 +36,9 @@ import com.ingestpipeline.util.Constants;
 @Component("elasticService")
 public class ElasticService implements IESService {
 
+	@Value("${es.index.type}")
+	public String DOC_PATH;
+
 	@Value("${services.esindexer.host}")
 	private String indexServiceHost;
 	@Value("${egov.services.esindexer.host.search}")
@@ -156,10 +159,9 @@ public class ElasticService implements IESService {
 	@Override
 	public Boolean push(Map requestBody) throws Exception {
 
-		LOGGER.info(" new request body on ### " +requestBody);
 		Object id = requestBody.get(Constants.IDENTIFIER);
 		Object trxid = ((Map)requestBody.get(Constants.DATA_OBJECT)).get(Constants.TRANSACTION_ID);
-		LOGGER.info("request body on ### trxid" +trxid);
+		LOGGER.info("request body on ### trxid "  +trxid);
 
 
 		String docId = id!=null ? id.toString(): trxid.toString();
@@ -199,7 +201,7 @@ public class ElasticService implements IESService {
 	public Boolean push(TargetData requestBody) throws Exception {
 
 		Long currentDateTime = new Date().getTime();
-		String url = indexerServiceHost + targetIndexName + DOC_PATH + requestBody.getId();
+		String url = indexerServiceHost + targetIndexName + DOC_TYPE + requestBody.getId();
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
