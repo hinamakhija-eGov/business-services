@@ -175,6 +175,8 @@ public class ElasticService implements IESService {
 		LOGGER.info("Posting request to ES on " + collectionIndexName + "with doc id: "+docId);
 
 		JsonNode request = new ObjectMapper().convertValue(requestBody, JsonNode.class);
+		LOGGER.info(" new request body json ### " +request);
+
 
 		HttpEntity<String> requestEntity = new HttpEntity<>(request.toString(), headers);
 		ArrayNode hitNodes = null;

@@ -92,6 +92,8 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 	@Override
 	public Map enrichData(Map incomingData) {
 		DomainConfig domainConfig = domainConfigFactory.getConfiguration(incomingData.get(DATA_CONTEXT).toString());
+		LOGGER.info("domainConfig ## "+domainConfig);
+
 		if(domainConfig instanceof CollectionDomainConfig) {
 			// prepare the query required based on incoming data businessType
 			ObjectNode incomingNode = new ObjectMapper().convertValue(incomingData.get(DATA_OBJECT), ObjectNode.class);
@@ -99,6 +101,7 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 			String businessTypeVal = copyNode.findValue(BUSINESS_SERVICE).asText();
 
 			DomainIndexConfig indexConfig = domainConfig.getIndexConfig(businessTypeVal.toString());
+			LOGGER.info("indexConfig ## "+indexConfig);
 			String indexName = indexConfig.getIndexName();
 			String query = indexConfig.getQuery();
 
