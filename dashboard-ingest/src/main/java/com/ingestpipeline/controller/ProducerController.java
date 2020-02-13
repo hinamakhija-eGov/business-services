@@ -51,5 +51,24 @@ public class ProducerController {
 
     }
 
+    @Value("${kafka.topics.incoming.collection}")
+    private String testTopic;
+    @Value("${kafka.topics.enriched.key}")
+    private String testKey;
+
+    @PostMapping("/update/collection/test")
+    public String test(@RequestBody String body){
+        try{
+            JsonNode node = new ObjectMapper().readTree(body);
+            kafkaTemplate.send(testTopic, testKey, node);
+            LOGGER.info("Published successfully");
+            return "Published successfully";
+
+        } catch (Exception e){
+            LOGGER.error("Published failed "+ e.getMessage());
+            return "Published failed: "+e.getMessage();
+        }
+
+    }
 
 }
