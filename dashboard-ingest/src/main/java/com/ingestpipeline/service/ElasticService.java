@@ -170,6 +170,8 @@ public class ElasticService implements IESService {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
 		LOGGER.info("Posting request to ES on " + collectionIndexName + "with doc id: "+docId);
+		LOGGER.info("request body on ### " +requestBody);
+
 		JsonNode request = new ObjectMapper().convertValue(requestBody, JsonNode.class);
 
 		HttpEntity<String> requestEntity = new HttpEntity<>(request.toString(), headers);
@@ -198,7 +200,9 @@ public class ElasticService implements IESService {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
-		System.out.println("Posting request to ES on " + targetIndexName);
+		LOGGER.info("Posting request to ES on ## " + targetIndexName);
+		LOGGER.info("request body on ### " +requestBody);
+
 		JsonNode request = new ObjectMapper().convertValue(requestBody, JsonNode.class);
 
 		HttpEntity<String> requestEntity = new HttpEntity<>(request.toString(), headers);
@@ -206,13 +210,13 @@ public class ElasticService implements IESService {
 
 		try {
 			ResponseEntity<Object> response = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, Object.class);
-			System.out.println("Status code on pushing to target index : " + response.getStatusCode());
+			LOGGER.info("Status code on pushing to target index : " + response.getStatusCode());
 			if (response.getStatusCode().value() == 201)
 				return Boolean.TRUE;
 
 		} catch (HttpClientErrorException e) {
 			e.printStackTrace();
-			System.out.println("client error while pushing ES target index : " + e.getMessage());
+			LOGGER.error("client error while pushing ES target index : " + e.getMessage());
 
 		}
 		return Boolean.FALSE;
