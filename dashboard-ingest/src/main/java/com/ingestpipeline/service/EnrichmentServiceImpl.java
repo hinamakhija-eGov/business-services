@@ -144,6 +144,7 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 
 				incomingData.put("domainObject", transDomainResponse);
 				LOGGER.debug("Final transformed result to push::", incomingData.toString());
+				LOGGER.info("Data Transformed");
 
 			}catch (Exception e) {
 				e.printStackTrace();

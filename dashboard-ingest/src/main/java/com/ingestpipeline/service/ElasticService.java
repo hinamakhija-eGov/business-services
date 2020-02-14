@@ -143,11 +143,11 @@ public class ElasticService implements IESService {
 
         try {
 			ResponseEntity<Object> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Object.class);
-			LOGGER.info("Response Body::" + response.getBody());
+			// LOGGER.info("Response Body::" + response.getBody());
             Map responseNode = new ObjectMapper().convertValue(response.getBody(), Map.class);
-			LOGGER.info("REsponse Node::" + responseNode);
+			// LOGGER.info("REsponse Node::" + responseNode);
 			Map hits = (Map)responseNode.get("hits");
-			LOGGER.info("hits::" + hits);
+			// LOGGER.info("hits::" + hits);
             if((Integer)hits.get("total") >=1)
                 return (Map)((ArrayList)hits.get("hits")).get(0);
 
