@@ -66,9 +66,8 @@ public class CollectionTransformationService implements TransformService {
             JsonNode specNode = mapper.readTree(strFile);
             LOGGER.info("specNode:## "+specNode);
 
-
-            /*LOGGER.info("sourceUrl## "+strFile);
-
+            LOGGER.info("sourceUrl## "+strFile);
+/*
             String sourceUrl = CONFIGROOT.concat(OBJECTIVE.concat(SEPARATOR).concat(dataContext).concat(SEPARATOR).concat(dataContextVersion).concat(JSON_EXTENSION));
 
             LOGGER.info("sourceUrl## "+sourceUrl);
