@@ -143,7 +143,7 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 				Object transDomainResponse = enrichTransform.transform(domainNode, businessTypeVal.toString());
 
 				incomingData.put("domainObject", transDomainResponse);
-				LOGGER.debug("Final transformed result to push : {}", incomingData.toString());
+				LOGGER.debug("Final transformed result to push::", incomingData.toString());
 
 			}catch (Exception e) {
 				e.printStackTrace();

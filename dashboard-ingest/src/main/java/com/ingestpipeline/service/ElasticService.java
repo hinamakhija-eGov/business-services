@@ -137,14 +137,17 @@ public class ElasticService implements IESService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        LOGGER.info("searching ES for query: " + searchQuery + " on " + index);
+        LOGGER.info("searching ES for query::" + searchQuery + "::on::" + index + "::ON URL::" + url);
 
         HttpEntity<String> requestEntity = new HttpEntity<>(searchQuery, headers);
 
         try {
-            ResponseEntity<Object> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Object.class);
+			ResponseEntity<Object> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Object.class);
+			Logger.info("Response Body::" + responseNode.getBody());
             Map responseNode = new ObjectMapper().convertValue(response.getBody(), Map.class);
-            Map hits = (Map)responseNode.get("hits");
+			Logger.info("REsponse Node::" + responseNode);
+			Map hits = (Map)responseNode.get("hits");
+			Logger.info("hits::" + hits);
             if((Integer)hits.get("total") >=1)
                 return (Map)((ArrayList)hits.get("hits")).get(0);
 
