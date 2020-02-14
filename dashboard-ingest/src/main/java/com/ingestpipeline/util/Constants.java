@@ -42,9 +42,9 @@ public interface Constants {
 	public static String ALLOWED_METHODS_POST = "POST";
 
 	public interface KafkaTopics {
-		public static final String INGEST_DATA = "egov-dss-ingest";
-		public static final String VALID_DATA = "egov-dss-valid";
-		public static final String TRANSFORMED_DATA = "egov-dss-transformed";
+		public static final String INGEST_DATA = "ingestData";
+		public static final String VALID_DATA = "validData";
+		public static final String TRANSFORMED_DATA = "transformedData";
 		public static final String ERROR_INTENT = "DataError";
 		public static final String TOPIC_ONE = "topicOne"; 
 		public static final String TOPIC_TWO = "topicTwo"; 
