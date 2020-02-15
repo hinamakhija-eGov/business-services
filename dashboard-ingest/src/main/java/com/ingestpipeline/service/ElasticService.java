@@ -63,6 +63,9 @@ public class ElasticService implements IESService {
 
 	@Autowired
 	private RestTemplate restTemplate;
+
+	@Autowired
+	private RetryTemplate retryTemplate;
 	
 	@Autowired
 	private IngestService ingestService;
@@ -105,7 +108,7 @@ public class ElasticService implements IESService {
 		JsonNode responseNode = null;
 
 		try {
-			ResponseEntity<Object> response = restTemplate.postForEntity(uriBuilder.toString(), requestEntity, Object.class);
+			ResponseEntity<Object> response = retryTemplate.postForEntity(uriBuilder.toString(), requestEntity);
 			//restTemplate.postForEntity(uri,requestEntity);
 			responseNode = new ObjectMapper().convertValue(response.getBody(), JsonNode.class);
 			LOGGER.info("RestTemplate response :- "+responseNode);
@@ -142,7 +145,8 @@ public class ElasticService implements IESService {
         HttpEntity<String> requestEntity = new HttpEntity<>(searchQuery, headers);
 
         try {
-            ResponseEntity<Object> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Object.class);
+            //ResponseEntity<Object> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Object.class);
+			ResponseEntity<Object> response = retryTemplate.postForEntity(url,requestEntity);
             Map responseNode = new ObjectMapper().convertValue(response.getBody(), Map.class);
             Map hits = (Map)responseNode.get("hits");
             if((Integer)hits.get("total") >=1)
@@ -184,7 +188,8 @@ public class ElasticService implements IESService {
 		ArrayNode hitNodes = null;
 
 		try {
-			ResponseEntity<Object> response = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, Object.class);
+			ResponseEntity<Object> response = retryTemplate.postForEntity(url, requestEntity);
+			//ResponseEntity<Object> response = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, Object.class);
 			LOGGER.info("Status code on pushing to collection index : " + response.getStatusCode());
 			if (response.getStatusCode().value() == HttpStatus.CREATED.value())
 				return Boolean.TRUE;
@@ -215,7 +220,9 @@ public class ElasticService implements IESService {
 		ArrayNode hitNodes = null;
 
 		try {
-			ResponseEntity<Object> response = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, Object.class);
+			ResponseEntity<Object> response = retryTemplate.postForEntity(url, requestEntity);
+
+			//ResponseEntity<Object> response = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, Object.class);
 			LOGGER.info("Status code on pushing to target index : " + response.getStatusCode());
 			if (response.getStatusCode().value() == 201)
 				return Boolean.TRUE;
@@ -243,12 +250,16 @@ public class ElasticService implements IESService {
 	        	Map<String, List<Object>> documentMap = new HashMap<>();
 	        	while (iSize >= 0 && iSize < counter && iSumSize < totalLimitSize) {
 	        		LOGGER.info("Sum Size is : " + iSumSize);
-	    			documentMap = performScrollSearch(scrollSearchParams);
-	    			List<Object> listOfDocs = documentMap.get("hits");
+	    			documentMap =
+							performScrollSearch(scrollSearchParams);
+					LOGGER.info("documentMap : " + documentMap);
+
+					List<Object> listOfDocs = documentMap.get("hits");
 	    			iSize = listOfDocs.size();
 	    			iSumSize = iSize + iSumSize;
 	    			for (Map.Entry<String, List<Object>> entry : documentMap.entrySet()) {
-	    				for (int i = 0; i < entry.getValue().size(); i++) {
+
+						for (int i = 0; i < entry.getValue().size(); i++) {
 	    					Map innerMap = (Map) entry.getValue().get(i);
 	    					Gson gson = new Gson(); 
 	    					String json = gson.toJson(innerMap.get("_source"));
@@ -320,6 +331,7 @@ public class ElasticService implements IESService {
 		HttpEntity<String> requestEntity = new HttpEntity<>(queryString, getHttpHeaders());
 		String str = null;
 		try {
+			LOGGER.info("scroll search req body "+requestEntity);
 			ResponseEntity<Object> response = restTemplate.exchange(scrollUrl, HttpMethod.POST, requestEntity,
 					Object.class);
 			Map responseNode = new ObjectMapper().convertValue(response.getBody(), Map.class);
