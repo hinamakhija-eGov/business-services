@@ -45,7 +45,8 @@ public class EnrichTransform {
     	ObjectMapper mapper = new ObjectMapper(); 
 		List chainrSpecJSON = null ;
 		try {
-			chainrSpecJSON = mapper.readValue(configLoader.get(OBJECTIVE.concat(SEPARATOR).concat(businessService.toLowerCase()).concat(SEPARATOR).concat(VERSION).concat(JSON_EXTENSION)), List.class);
+            chainrSpecJSON = mapper.readValue(configLoader.get(OBJECTIVE.concat(SEPARATOR).concat(businessService.toLowerCase()).concat(SEPARATOR).concat(VERSION).concat(JSON_EXTENSION)), List.class);
+            LOGGER.info("ChainrSpecJSON::" + chainrSpecJSON);
 		} catch (Exception e) {
 			LOGGER.error("Encountered an error : " + e.getMessage());
 		}
