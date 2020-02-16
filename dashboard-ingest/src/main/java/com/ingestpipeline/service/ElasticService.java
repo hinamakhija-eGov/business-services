@@ -91,32 +91,30 @@ public class ElasticService implements IESService {
 	}
 
 
-	public JsonNode post(String index, String type, String id, String authToken, String requestNode) {
+	public ResponseEntity<Object> post(String index, String type, String id, String authToken, String requestNode) {
 
 		StringBuilder uriBuilder = new StringBuilder(indexerServiceHost.concat(index).concat(SLASH_SEPERATOR).concat(type).concat(SLASH_SEPERATOR).concat(id));
-		//String uri = indexServiceHost + index + SLASH_SEPERATOR + type + SLASH_SEPERATOR + id;
 		HttpHeaders headers = new HttpHeaders();
 		if(authToken != null && !authToken.isEmpty())
 			headers.add("Authorization", "Bearer "+ authToken );
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
-		LOGGER.info("Request Node: " + requestNode);
 		HttpEntity<String> requestEntity = null;
 		if(requestNode != null ) requestEntity = new HttpEntity<>(requestNode, headers);
 		else requestEntity = new HttpEntity<>("{}", headers);
 
-		JsonNode responseNode = null;
+		ResponseEntity<Object> response = new ResponseEntity<Object>(HttpStatus.OK);
 
 		try {
-			ResponseEntity<Object> response = retryTemplate.postForEntity(uriBuilder.toString(), requestEntity);
+			response = retryTemplate.postForEntity(uriBuilder.toString(), requestEntity);
 			//restTemplate.postForEntity(uri,requestEntity);
-			responseNode = new ObjectMapper().convertValue(response.getBody(), JsonNode.class);
-			LOGGER.info("RestTemplate response :- "+responseNode);
+			LOGGER.info("RestTemplate response status :: {}", response.getStatusCode());
 
 		} catch (HttpClientErrorException e) {
+			response = new ResponseEntity<Object>(e.getStatusCode());
 			LOGGER.error("post client exception: " + e.getMessage());
 		}
-		return responseNode;
+		return response;
 	}
 
 	@Override
@@ -145,13 +143,10 @@ public class ElasticService implements IESService {
         HttpEntity<String> requestEntity = new HttpEntity<>(searchQuery, headers);
 
         try {
-            //ResponseEntity<Object> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Object.class);
 			ResponseEntity<Object> response = retryTemplate.postForEntity(url,requestEntity);
 
             Map responseNode = new ObjectMapper().convertValue(response.getBody(), Map.class);
-			// LOGGER.info("REsponse Node::" + responseNode);
 			Map hits = (Map)responseNode.get("hits");
-			// LOGGER.info("hits::" + hits);
             if((Integer)hits.get("total") >=1)
                 return (Map)((ArrayList)hits.get("hits")).get(0);
 
@@ -172,8 +167,7 @@ public class ElasticService implements IESService {
 
 
 		String docId = id!=null ? id.toString(): trxid.toString();
-		StringBuilder url = new StringBuilder().append(indexerServiceHost).append(collectionIndexName).append("/").append(DOC_PATH).append("/").append(docId);
-		//String url = indexerServiceHost + collectionIndexName +"/"+ DOC_PATH +"/"+ docId;
+		StringBuilder url = new StringBuilder().append(indexerServiceHost).append(collectionIndexName).append(SLASH_SEPERATOR).append(DOC_PATH).append(SLASH_SEPERATOR).append(docId);
 		LOGGER.info("url ## " +url);
 
 
@@ -252,7 +246,6 @@ public class ElasticService implements IESService {
 	        		// LOGGER.info("Sum Size is : " + iSumSize);
 	    			documentMap =
 							performScrollSearch(scrollSearchParams);
-					LOGGER.info("documentMap : " + documentMap);
 
 					List<Object> listOfDocs = documentMap.get("hits");
 	    			iSize = listOfDocs.size();

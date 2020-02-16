@@ -6,12 +6,14 @@ import com.ingestpipeline.model.TargetData;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.http.HttpHost;
+import org.apache.http.HttpStatus;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -23,7 +25,7 @@ public interface IESService {
 
     public final String DOC_TYPE = "/doc/";
 
-    public JsonNode post(String index, String type, String id, String authToken, String requestNode);
+    public ResponseEntity<Object> post(String index, String type, String id, String authToken, String requestNode);
 
     /**
      * Holds client for each indices.

@@ -54,7 +54,6 @@ public class EnrichmentConsumer implements KafkaConsumer {
 				push((Map)incomingData.get(key), key.toString());
 			}
 		}
-
 	}
 
 	private void push(Map incomingData, String docId ) {
@@ -65,7 +64,7 @@ public class EnrichmentConsumer implements KafkaConsumer {
 			if(esPushDirect) {
 				elasticService.push(incomingData);
 			} else {
-				LOGGER.info("Pushing to::" + enrichedDataTopic);
+				LOGGER.info("Pushing to:: {} :: docId:: {}" , enrichedDataTopic, " docId:: "+docId);
 				ingestProducer.pushToPipeline(incomingData, enrichedDataTopic, docId);
 			}
 			if(updatedIncomingData == null) {
@@ -73,7 +72,7 @@ public class EnrichmentConsumer implements KafkaConsumer {
 				ingestProducer.pushToPipeline(incomingData, ERROR_INTENT, ERROR_INTENT);
 			}
 		} catch (final Exception e) {
-			e.printStackTrace();
+			///e.printStackTrace();
 			LOGGER.error("Exception Encountered while processing the received message : " + e.getMessage());
 		}
 
