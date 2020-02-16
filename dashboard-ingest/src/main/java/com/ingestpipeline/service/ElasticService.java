@@ -172,34 +172,31 @@ public class ElasticService implements IESService {
 
 
 		String docId = id!=null ? id.toString(): trxid.toString();
-
-
-		String url = indexerServiceHost + collectionIndexName +"/"+ DOC_PATH +"/"+ docId;
+		StringBuilder url = new StringBuilder().append(indexerServiceHost).append(collectionIndexName).append("/").append(DOC_PATH).append("/").append(docId);
+		//String url = indexerServiceHost + collectionIndexName +"/"+ DOC_PATH +"/"+ docId;
 		LOGGER.info("url ## " +url);
 
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
-		LOGGER.info("Posting request to ES on " + collectionIndexName + "with doc id: "+docId);
+		LOGGER.info("Posting request to ES on ::" + collectionIndexName + " with doc id:: "+docId);
 
 		JsonNode request = new ObjectMapper().convertValue(requestBody, JsonNode.class);
-		LOGGER.info(" new request body json ### " +request);
-
+		//LOGGER.info(" new request body json ### " +request);
 
 		HttpEntity<String> requestEntity = new HttpEntity<>(request.toString(), headers);
 		ArrayNode hitNodes = null;
 
 		try {
-			ResponseEntity<Object> response = retryTemplate.postForEntity(url, requestEntity);
-			//ResponseEntity<Object> response = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, Object.class);
-			LOGGER.info("Status code on pushing to collection index : " + response.getStatusCode());
+			ResponseEntity<Object> response = retryTemplate.postForEntity(url.toString(), requestEntity);
+			LOGGER.info("Status code on pushing to collection index : {}",  response.getStatusCode());
 			if (response.getStatusCode().value() == HttpStatus.CREATED.value())
 				return Boolean.TRUE;
 
 		} catch (HttpClientErrorException e) {
 			e.printStackTrace();
-			LOGGER.error("client error while pushing ES collection index : " + e.getMessage());
+			LOGGER.error("client error while pushing ES collection index : {}" ,e.getMessage());
 
 		}
 		return Boolean.FALSE;

@@ -135,20 +135,18 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 
 				}
 				LOGGER.info("Query node "+ queryNode);
-				// Hit Elastic search: pull record for the constructed query
 				Map domainNode = elasticService.search(indexName, queryNode.toString());
-				// LOGGER.debug("Fetched record from ES of a businessType "+ businessTypeVal + ": " + domainNode);
+				if(domainNode != null){
+					Object transDomainResponse = enrichTransform.transform(domainNode, businessTypeVal.toString());
+					incomingData.put("domainObject", transDomainResponse);
 
-				//transform the request(s) using schema(s), and reform the incoming object
-				Object transDomainResponse = enrichTransform.transform(domainNode, businessTypeVal.toString());
-
-				incomingData.put("domainObject", transDomainResponse);
-				// LOGGER.debug("Final transformed result to push::", incomingData.toString());
+				} else {
+					LOGGER.info("Fetching record from ES for domain:: {} failed ",  businessTypeVal);
+				}
 				LOGGER.info("Data Transformed");
 
-			}catch (Exception e) {
-				e.printStackTrace();
-				LOGGER.error("Pre-processing - Fetching record from ES for " + businessTypeVal + "failed: " +  e.getMessage());
+			} catch (Exception e) {
+				LOGGER.error("Pre-processing enrichment - failed  :: {}" , e.getMessage());
 			}
 		}
 		if (incomingData.get(DATA_CONTEXT).toString().equalsIgnoreCase("target")) {

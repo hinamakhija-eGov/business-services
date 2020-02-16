@@ -48,16 +48,16 @@ public class EnrichmentConsumer implements KafkaConsumer {
 		LOGGER.info("##KafkaMessageAlert## : key:" + topic + ":" + "value:" + incomingData.size());
 
 		if(incomingData.get(Constants.DATA_CONTEXT) != null && !incomingData.get(Constants.DATA_CONTEXT).equals(Constants.TransformationType.COLLECTION) ){
-			push(incomingData);
+			push(incomingData, null);
 		} else {
 			for(Object key : incomingData.keySet()){
-				push((Map)incomingData.get(key));
+				push((Map)incomingData.get(key), key.toString());
 			}
 		}
 
 	}
 
-	private void push(Map incomingData) {
+	private void push(Map incomingData, String docId ) {
 
 		try {
 			Map updatedIncomingData = enrichmentService.enrichData(incomingData);
@@ -66,7 +66,7 @@ public class EnrichmentConsumer implements KafkaConsumer {
 				elasticService.push(incomingData);
 			} else {
 				LOGGER.info("Pushing to::" + enrichedDataTopic);
-				ingestProducer.pushToPipeline(incomingData, enrichedDataTopic, enrichedDataKey);
+				ingestProducer.pushToPipeline(incomingData, enrichedDataTopic, docId);
 			}
 			if(updatedIncomingData == null) {
 				LOGGER.info("Incoming Data is null::");

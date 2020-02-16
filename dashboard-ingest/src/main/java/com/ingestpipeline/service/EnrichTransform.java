@@ -1,5 +1,6 @@
 package com.ingestpipeline.service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -40,20 +41,22 @@ public class EnrichTransform {
      * @param businessService
      * @return
      */
-    public Object transform (Map rawResponseNode, String businessService) {
+    public Object transform (Map rawResponseNode, String businessService) throws IOException {
     	
     	ObjectMapper mapper = new ObjectMapper(); 
 		List chainrSpecJSON = null ;
+        Object transNode = null;
 		try {
             chainrSpecJSON = mapper.readValue(configLoader.get(OBJECTIVE.concat(SEPARATOR).concat(businessService.toLowerCase()).concat(SEPARATOR).concat(VERSION).concat(JSON_EXTENSION)), List.class);
             LOGGER.info("ChainrSpecJSON::" + chainrSpecJSON);
-		} catch (Exception e) {
-			LOGGER.error("Encountered an error : " + e.getMessage());
-		}
-        Chainr chainr = Chainr.fromSpec( chainrSpecJSON );
+            Chainr chainr = Chainr.fromSpec( chainrSpecJSON );
 
-        Object indexData = rawResponseNode.keySet().contains("_source") ? ((Map)rawResponseNode.get("_source")).get("Data") : null;
-        Object transNode = indexData!= null ? chainr.transform(indexData) : null;
+            Object indexData = rawResponseNode.keySet().contains("_source") ? ((Map)rawResponseNode.get("_source")).get("Data") : null;
+            transNode = indexData!= null ? chainr.transform(indexData) : null;
+
+		} catch (Exception e) {
+			LOGGER.error("Encountered an error : businessService {} ", e.getMessage());
+		}
 
         return transNode;
 

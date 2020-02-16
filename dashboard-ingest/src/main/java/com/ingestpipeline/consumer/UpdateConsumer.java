@@ -2,11 +2,13 @@ package com.ingestpipeline.consumer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ingestpipeline.producer.IngestProducer;
 import com.ingestpipeline.service.IESService;
 import com.ingestpipeline.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -20,11 +22,19 @@ public class UpdateConsumer {
 
 
     public static final Logger LOGGER = LoggerFactory.getLogger(UpdateConsumer.class);
-
+    private static final String ERROR_INTENT = "DataError";
+    @Autowired
+    private IngestProducer ingestProducer;
     @Autowired
     private ObjectMapper mapper;
     @Autowired
     private IESService elasticService;
+
+    @Value("${kafka.topics.bypass.update.post}")
+    String updatedPostTopic;
+
+    @Value("${es.push.direct}")
+    private Boolean esPushDirect;
 
     @KafkaListener(topics = "${kafka.topics.bypass.update.data}" , containerFactory = Constants.BeanContainerFactory.INCOMING_KAFKA_LISTENER)
     public void processMessage(Map data,
@@ -36,13 +46,20 @@ public class UpdateConsumer {
             String index =  data.get("_index").toString();
             String type =  data.get("_type").toString();
             JsonNode sourceNode = mapper.convertValue(data.get("_source"), JsonNode.class);
-            //String id = data.get("_id").toString();
+            String _id = data.get("_id").toString();
             String id = URLEncoder.encode(data.get("_id").toString());
-            JsonNode response  = elasticService.post(index, type, id, "", sourceNode.toString());
-            LOGGER.info("Updated response " + response + " for index "+ index);
+
+            if(esPushDirect){
+                JsonNode response  = elasticService.post(index, type, id, "", sourceNode.toString());
+                LOGGER.info("Updated response " + response + " for index "+ index);
+            } else {
+                ingestProducer.pushToPipeline(sourceNode, updatedPostTopic, _id);
+            }
 
         } catch (final Exception e) {
             e.printStackTrace();
+            if(!esPushDirect)
+                ingestProducer.pushToPipeline(data, ERROR_INTENT, ERROR_INTENT);
             LOGGER.error("Exception Encountered while processing the received message updating posted data for topic: "+ topic +"" + e.getMessage());
         }
     }
