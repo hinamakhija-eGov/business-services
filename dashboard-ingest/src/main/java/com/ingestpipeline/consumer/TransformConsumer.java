@@ -58,6 +58,7 @@ public class TransformConsumer implements KafkaConsumer {
 			}*/
 		} catch (final Exception e) {
 			LOGGER.error("Exception Encountered while processing the received message : " + e.getMessage());
+			e.printStackTrace();
 		}
 	}
 }
