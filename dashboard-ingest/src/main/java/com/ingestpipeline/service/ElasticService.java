@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -60,6 +61,9 @@ public class ElasticService implements IESService {
 	
 	@Value("${es.index.searchQuery.billing}")
 	private String searchQueryBilling;
+	
+	@Value("${es.index.searchQuery.payment}")
+	private String searchQueryPayment;
 
 	@Autowired
 	private RestTemplate restTemplate;
@@ -80,6 +84,14 @@ public class ElasticService implements IESService {
 
 	public void setSearchQueryCollection(String searchQueryCollection) {
 		this.searchQueryCollection = searchQueryCollection;
+	}
+	
+	public String getSearchQueryPayment() {
+		return searchQueryPayment;
+	}
+
+	public void setSearchQueryPayment(String searchQueryPayment) {
+		this.searchQueryPayment = searchQueryPayment;
 	}
 
 	public String getSearchQueryBilling() {
@@ -230,27 +242,26 @@ public class ElasticService implements IESService {
 	}
 	
 	@Override
-	public Boolean searchIndex(String index, String searchQuery) throws Exception {
+	public Boolean searchIndex(String index, String searchQuery, String dataContextVersion) throws Exception {
 		LOGGER.info("searching ES for query: " + searchQuery + " on " + index);
 		
-		Map<String, String> scrollSearchParams = getScrollIdForScrollSearch(index); 
-		
+		Map<String, String> scrollSearchParams = getScrollIdForScrollSearch(index, dataContextVersion); 
+		if(scrollSearchParams == null) { 
+			return Boolean.FALSE;
+		}
 		new Thread(new Runnable() {
 	        public void run(){
-	        	int counter = 100; 
-	    		int iSize = 0; 
-	    		int iSumSize = 0; 
-	    		int totalLimitSize = 100000; 
 	        	Map<String, List<Object>> documentMap = new HashMap<>();
-	        	while (iSize >= 0 && iSize < counter && iSumSize < totalLimitSize) {
-	        		// LOGGER.info("Sum Size is : " + iSumSize);
-	    			documentMap =
-							performScrollSearch(scrollSearchParams);
-
-					List<Object> listOfDocs = documentMap.get("hits");
-	    			iSize = listOfDocs.size();
-	    			iSumSize = iSize + iSumSize;
-	    			for (Map.Entry<String, List<Object>> entry : documentMap.entrySet()) {
+	        	int docFetchSize = 1; 
+	        	int totalDocFetchedSize = 0;
+	        	int totalDocInIndex = 100000; 
+	        	
+	        	while(docFetchSize > 0 && totalDocFetchedSize < totalDocInIndex) {
+	        		documentMap = performScrollSearch(scrollSearchParams); 
+	        		List<Object> listOfDocs = documentMap.get("hits");
+	        		docFetchSize = listOfDocs.size();
+	        		totalDocFetchedSize = docFetchSize + totalDocFetchedSize; 
+	        		for (Map.Entry<String, List<Object>> entry : documentMap.entrySet()) {
 
 						for (int i = 0; i < entry.getValue().size(); i++) {
 	    					Map innerMap = (Map) entry.getValue().get(i);
@@ -262,16 +273,20 @@ public class ElasticService implements IESService {
 								dataNode = mapper.readTree(json);
 							} catch (IOException e) {
 								LOGGER.error("Encountered an exception while reading the JSON Node on Thread : " + e.getMessage());
-							} 
-	    					JsonNode dataObjectNode = dataNode.get("Data");
-	    					Map<Object, Object> dataMap = new Gson().fromJson(
-	    							dataObjectNode.toString(), new TypeToken<HashMap<Object, Object>>() {}.getType()
+							}
+							JsonNode dataObjectNode = null; 
+							if(dataNode != null && dataNode.get("Data") == null) { 
+								dataObjectNode = dataNode; 
+							} else { 
+								dataObjectNode= dataNode.get("Data");
+							}
+	    					Map<Object, Object> dataMap = new Gson().fromJson(dataObjectNode.toString(), new TypeToken<HashMap<Object, Object>>() {}.getType()
 	    						);
 							ingestService.ingestToPipeline(
-									setIncomingData(scrollSearchParams.get("CONTEXT"), "v1", dataObjectNode));
+									setIncomingData(scrollSearchParams.get(Constants.DataContexts.CONTEXT), dataContextVersion, dataObjectNode));
 	    				}
 	    			}
-	    		}
+	        	}
 	        }
 	    }).start();
 		
@@ -305,39 +320,74 @@ public class ElasticService implements IESService {
 		return hitsToMap;
 	}
 	
-	private Map<String, String> getScrollIdForScrollSearch(String index) { 
+	private Map<String, String> getScrollIdForScrollSearch(String index, String dataContextVersion) { 
 		Map<String, String> scrollSearchParams = new HashMap<>(); 
 		String queryString = null; 
 		if (index.equals(Constants.ES_INDEX_COLLECTION)) {
-			index = Constants.ES_INDEX_COLLECTION;
 			queryString = getSearchQueryCollection();
-			scrollSearchParams.put("CONTEXT", "collection"); 
+			scrollSearchParams.put(Constants.DataContexts.CONTEXT, Constants.DataContexts.COLLECTION); 
 		} else if (index.equals(Constants.ES_INDEX_BILLING)) {
-			index = Constants.ES_INDEX_BILLING;
 			queryString = getSearchQueryBilling();
-			scrollSearchParams.put("CONTEXT", "billing"); 
-		} else {
-			index = "notDefinedIndex";
-			queryString = "noquery";
+			scrollSearchParams.put(Constants.DataContexts.CONTEXT, Constants.DataContexts.BILLING); 
+		} else if (index.equals(Constants.ES_INDEX_PAYMENT)) {
+			queryString = getSearchQueryPayment();
+			scrollSearchParams.put(Constants.DataContexts.CONTEXT, Constants.DataContexts.PAYMENT); 
+		} else { 
+			return null; 
 		}
 		String scrollUrl = indexServiceHost + index + indexServiceHostSearch + "?scroll=1m";
 		HttpEntity<String> requestEntity = new HttpEntity<>(queryString, getHttpHeaders());
 		String str = null;
 		try {
-			LOGGER.info("scroll search req body "+requestEntity);
+			LOGGER.info("Request Body for Scroll Search : "+requestEntity);
 			ResponseEntity<Object> response = restTemplate.exchange(scrollUrl, HttpMethod.POST, requestEntity,
 					Object.class);
 			Map responseNode = new ObjectMapper().convertValue(response.getBody(), Map.class);
+			
+			Map<String, List<JsonObject>> hitsToMap = new LinkedHashMap();
+			Map hits = new LinkedHashMap();
+			hits = (Map) responseNode.get("hits");
+			if ((Integer) hits.get("total") >= 1) {
+				hitsToMap.put("hits", ((ArrayList) hits.get("hits")));
+			}
+			
+			for (Entry<String, List<JsonObject>> entry : hitsToMap.entrySet()) {
+
+				for (int i = 0; i < entry.getValue().size(); i++) {
+					Map innerMap = (Map) entry.getValue().get(i);
+					Gson gson = new Gson(); 
+					String json = gson.toJson(innerMap.get("_source"));
+				    ObjectMapper mapper = new ObjectMapper();
+					JsonNode dataNode = null;
+					try {
+						dataNode = mapper.readTree(json);
+					} catch (IOException e) {
+						LOGGER.error("Encountered an exception while reading the JSON Node on Thread : " + e.getMessage());
+					}
+					JsonNode dataObjectNode = null; 
+					if(dataNode != null && dataNode.get("Data") == null) { 
+						dataObjectNode = dataNode; 
+					} else { 
+						dataObjectNode= dataNode.get("Data");
+					}
+					Map<Object, Object> dataMap = new Gson().fromJson(dataObjectNode.toString(), new TypeToken<HashMap<Object, Object>>() {}.getType()
+						);
+					ingestService.ingestToPipeline(
+							setIncomingData(scrollSearchParams.get(Constants.DataContexts.CONTEXT), dataContextVersion, dataObjectNode));
+				}
+			}
 			str = indexServiceHostSearch.replaceAll("[/]", "");
-			scrollSearchParams.put(Constants.ScrollSearch.SCROLL_ID, (String) responseNode.get("_scroll_id"));
+			scrollSearchParams.put(Constants.ScrollSearch.SCROLL_ID, (String) responseNode.get(Constants.ScrollSearch.SCROLL_ID_PARAMS));
 			scrollSearchParams.put(Constants.ScrollSearch.SEARCH_PATH, indexServiceHost + str + "/" + "scroll");
-			String queryForScrollId = "{\"scroll\":\"1m\",\"scroll_id\":" + "\"" + scrollSearchParams.get(Constants.ScrollSearch.SCROLL_ID) + "\"" + "}";
+			String queryForScrollId = Constants.ScrollSearch.SCROLL_SEARCH_DEFAULT_QUERY + "\"" + scrollSearchParams.get(Constants.ScrollSearch.SCROLL_ID) + "\"" + "}";
 			scrollSearchParams.put(Constants.ScrollSearch.QUERY, queryForScrollId); 
 		} catch (HttpClientErrorException e) {
 			LOGGER.error("client error while searching ES : " + e.getMessage());
 		}
 		return scrollSearchParams; 
 	}
+	
+
 	
 	private HttpHeaders getHttpHeaders() { 
 		HttpHeaders headers = new HttpHeaders();

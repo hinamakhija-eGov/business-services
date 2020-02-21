@@ -149,16 +149,15 @@ public class RestApiController {
 	 * @author Rahul
 	 * @throws Exception
 	 */
-	@RequestMapping(value = Constants.Paths.ES_INDEX, method = RequestMethod.POST)
-	public ResponseEntity<?> migrateIndex(@PathVariable String indexName) throws Exception {
+	@RequestMapping(value = "/migrate/{indexName}/{version}", method = RequestMethod.POST)
+	public ResponseEntity<?> migrateIndex(@PathVariable String indexName, @PathVariable String version) throws Exception {
 		String index = null, queryString = null, dataContext = null;
-		Boolean status = elasticService.searchIndex(indexName, queryString);
+		Boolean status = elasticService.searchIndex(indexName, queryString, version);
 		if (status) {
 			return new ResponseEntity<String>(HttpStatus.CREATED);
-		} else if (index.equals("notDefinedIndex")) {
+		} else { 
 			return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
 		}
-		return new ResponseEntity<String>(HttpStatus.SERVICE_UNAVAILABLE);
 	}
 
 /**
@@ -168,10 +167,10 @@ public class RestApiController {
 	 * @author Rahul
 	 * @throws Exception
 	 */
-	@RequestMapping(value = "/migrateV2/{indexName}", method = RequestMethod.GET)
-	public ResponseEntity<?> migrateIndexV2(@PathVariable String indexName) throws Exception {
+	@RequestMapping(value = "/migrateV2/{indexName}/{version}", method = RequestMethod.GET)
+	public ResponseEntity<?> migrateIndexV2(@PathVariable String indexName, @PathVariable String dataContextVersion) throws Exception {
 		String index = null, queryString = null, dataContext = null;
-		Boolean status = elasticService.searchIndex(indexName, queryString);
+		Boolean status = elasticService.searchIndex(indexName, queryString, dataContextVersion);
 		if (status) {
 			return new ResponseEntity<String>(HttpStatus.CREATED);
 		} else if (index.equals("notDefinedIndex")) {
