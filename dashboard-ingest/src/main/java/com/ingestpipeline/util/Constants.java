@@ -91,7 +91,7 @@ public interface Constants {
 	public static String MUNICIPAL_CORPORATIONS = "Municipal Corporations";
 	public static String ES_INDEX_COLLECTION = "collectionsindex-v1";
 	public static String ES_INDEX_BILLING = "billingservice";
-	public static String ES_INDEX_PAYMENT = "paymentservice"; 
+	public static String ES_INDEX_PAYMENT = "paymentsindex-v1"; 
 	
 	public interface ErrorMessages {
 		Map<String,String> errorCodeMessageMap = new HashMap<String, String>() {{
