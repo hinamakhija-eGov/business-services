@@ -32,6 +32,7 @@ public class ConfigLoader {
      * @throws Exception
      */
 	public void loadResources() throws Exception {
+	    logger.info("RESOURCE_LOCATION:: "+RESOURCE_LOCATION);
 		Resource[] resources = getResources(RESOURCE_LOCATION);
 
 		for (Resource resource : resources) {

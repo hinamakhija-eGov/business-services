@@ -60,7 +60,7 @@ public class ProducerController {
     public String test(@RequestBody String body){
         try{
             JsonNode node = new ObjectMapper().readTree(body);
-            kafkaTemplate.send(testTopic, testKey, node);
+            kafkaTemplate.send(testTopic, testKey, node.get("data"));
             LOGGER.info("Published successfully");
             return "Published successfully";
 

@@ -47,9 +47,8 @@ public class CollectionDomainConfig implements DomainConfig {
      */
     @Override
     public void loadDomains(){
-        //TODO:- load the JSON mapping, read/prepare the n queries
         String collectionConfigContent = configLoader.get(COLLECTION_DOMAIN_CONFIG);
-        LOGGER.info("collectionConfigContent json string = "+collectionConfigContent);
+        //LOGGER.info("collectionConfigContent json string = "+collectionConfigContent);
 
         try{
 
@@ -60,7 +59,7 @@ public class CollectionDomainConfig implements DomainConfig {
             Iterator<JsonNode> iterator = domainConfigArr.elements();
             while (iterator.hasNext()) {
                 DomainIndexConfig domainIndexConfig = mapper.readValue(iterator.next().toString(), DomainIndexConfig.class);
-                System.out.println("DomainIndexConfig id=" + domainIndexConfig.getDomain());
+                LOGGER.info("DomainIndexConfig id:: " + domainIndexConfig.getDomain());
                 domainIndexConfigMap.put(domainIndexConfig.getDomain(), domainIndexConfig);
 
             }
