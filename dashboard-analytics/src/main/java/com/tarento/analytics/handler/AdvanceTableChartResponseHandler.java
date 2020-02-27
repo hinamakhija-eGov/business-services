@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tarento.analytics.dto.AggregateDto;
 import com.tarento.analytics.dto.AggregateRequestDto;
@@ -48,6 +49,10 @@ public class AdvanceTableChartResponseHandler implements IResponseHandler {
 
         boolean executeComputedFields = computedFields !=null && computedFields.isArray();
         List<JsonNode> aggrNodes = aggregationNode.findValues(BUCKETS);
+        boolean isPathSpecified = chartNode.get(IResponseHandler.AGGS_PATH)!=null && chartNode.get(IResponseHandler.AGGS_PATH).isArray();
+        ArrayNode aggrsPaths = isPathSpecified ? (ArrayNode) chartNode.get(IResponseHandler.AGGS_PATH) : JsonNodeFactory.instance.arrayNode();
+
+
 
         int[] idx = { 1 };
         List<Data> dataList = new ArrayList<>();
@@ -62,7 +67,13 @@ public class AdvanceTableChartResponseHandler implements IResponseHandler {
                 Map<String, Plot> plotMap = new LinkedHashMap<>();
                 String key = bucket.get(IResponseHandler.KEY).asText();
 
-                processNestedObjects(bucket, mappings, key, plotMap);
+                //If aggrPath is specified.
+                if(aggrsPaths.size()>0){
+                    processWithSpecifiedKeys(aggrsPaths, bucket, mappings, key, plotMap);
+
+                } else {
+                    processNestedObjects(bucket, mappings, key, plotMap);
+                }
 
                 if (plotMap.size() > 0) {
                     Map<String, Plot> plots = new LinkedHashMap<>();
@@ -92,7 +103,6 @@ public class AdvanceTableChartResponseHandler implements IResponseHandler {
                 //
                 if(executeComputedFields){
                     try {
-                        List<String> list = mapper.readValue(excludedFields.toString(), new TypeReference<List<String>>(){});
 
                         List<ComputedFields> computedFieldsList = mapper.readValue(computedFields.toString(), new TypeReference<List<ComputedFields>>(){});
                         computedFieldsList.forEach(cfs -> {
@@ -102,8 +112,12 @@ public class AdvanceTableChartResponseHandler implements IResponseHandler {
 
                         });
                         // exclude the fields no to be displayed
-                        List<Plot> removeplots = data.getPlots().stream().filter(c -> list.contains(c.getName())).collect(Collectors.toList());
-                        data.getPlots().removeAll(removeplots);
+                        if(excludedFields!=null){
+                            List<String> list = mapper.readValue(excludedFields.toString(), new TypeReference<List<String>>(){});
+                            List<Plot> removeplots = data.getPlots().stream().filter(c -> list.contains(c.getName())).collect(Collectors.toList());
+                            data.getPlots().removeAll(removeplots);
+                        }
+
 
                     } catch (Exception e){
                         logger.error("execution of computed field :"+e.getMessage());
@@ -171,6 +185,28 @@ public class AdvanceTableChartResponseHandler implements IResponseHandler {
         }
 
 
+    }
+
+    private void processWithSpecifiedKeys(ArrayNode aggrsPaths, JsonNode bucket, Map<String, Map<String, Plot>> mappings, String key, Map<String, Plot> plotMap ){
+
+        aggrsPaths.forEach(headerPath -> {
+            JsonNode valueNode = bucket.findValue(headerPath.asText());
+            //Double value = (null == valueNode || null == valueNode.get(VALUE)) ? 0.0 : valueNode.get(VALUE).asDouble();
+            Double doc_value = 0.0;
+            if(valueNode!=null)
+                doc_value = (null == valueNode.findValue(DOC_COUNT)) ? 0.0 : valueNode.findValue(DOC_COUNT).asDouble();
+            Double value = (null == valueNode || null == valueNode.findValue(VALUE)) ? doc_value : valueNode.findValue(VALUE).asDouble();
+            String dataType = valueNode.findValue(VALUE)!=null? (valueNode.findValue(VALUE).isDouble() ? "amount" : "number") : "number" ;
+
+            Plot plot = new Plot(headerPath.asText(), value, dataType);
+            if (mappings.containsKey(key)) {
+                double newval = mappings.get(key).get(headerPath.asText()) == null ? value : (mappings.get(key).get(headerPath.asText()).getValue() + value);
+                plot.setValue(newval);
+                mappings.get(key).put(headerPath.asText(), plot);
+            } else {
+                plotMap.put(headerPath.asText(), plot);
+            }
+        });
     }
 
 }
