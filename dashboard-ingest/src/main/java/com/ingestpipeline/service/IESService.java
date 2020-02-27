@@ -113,5 +113,5 @@ public interface IESService {
         return Boolean.TRUE;
     }
 
-    Boolean searchIndex(String index, String query) throws Exception;
+    Boolean searchIndex(String index, String query, String dataContextVersion) throws Exception;
 }

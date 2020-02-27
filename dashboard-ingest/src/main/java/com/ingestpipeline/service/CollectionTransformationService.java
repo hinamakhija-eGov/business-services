@@ -64,7 +64,7 @@ public class CollectionTransformationService implements TransformService {
             String trsFile = OBJECTIVE.concat(SEPARATOR).concat(dataContext).concat(SEPARATOR).concat(dataContextVersion).concat(JSON_EXTENSION);
             String strFile = configLoader.get(trsFile);
             JsonNode specNode = mapper.readTree(strFile);
-            LOGGER.info("specNode:## "+specNode);
+            // LOGGER.info("specNode:## "+specNode);
 
 
             /*LOGGER.info("sourceUrl## "+strFile);
@@ -117,7 +117,7 @@ public class CollectionTransformationService implements TransformService {
 
                 }
             }
-            LOGGER.info("After collection transformation incomingData size "+incomingData.size()+" entries "+incomingData.entrySet());
+            // LOGGER.info("After collection transformation incomingData size "+incomingData.size()+" entries "+incomingData.entrySet());
             return Boolean.TRUE;
 
         } catch (Exception e) {

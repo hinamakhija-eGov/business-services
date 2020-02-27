@@ -17,7 +17,7 @@ public interface Constants {
 		final String UPLOAD = "/upload";
 		final String Targets = "/targets";
 		final String Collections = "/getCollections";
-		final String ES_INDEX = "/migrate/{indexName}";
+		final String ES_INDEX = "/migrate/{indexName}/{version}";
 	}
 	
 	public interface Qualifiers { 
@@ -70,6 +70,15 @@ public interface Constants {
 		public static final String SCROLL_ID = "scrollId"; 
 		public static final String SEARCH_PATH = "searchPath"; 
 		public static final String QUERY = "query"; 
+		public static final String SCROLL_ID_PARAMS = "_scroll_id";
+		public static final String SCROLL_SEARCH_DEFAULT_QUERY = "{\"scroll\":\"1m\",\"scroll_id\":"; 
+	}
+	
+	public interface DataContexts { 
+		public static final String CONTEXT = "context"; 
+		public static final String COLLECTION = "collection"; 
+		public static final String BILLING = "billing" ; 
+		public static final String PAYMENT = "payment" ; 
 	}
 	
 	public static String DATA_CONTEXT = "dataContext";
@@ -82,6 +91,7 @@ public interface Constants {
 	public static String MUNICIPAL_CORPORATIONS = "Municipal Corporations";
 	public static String ES_INDEX_COLLECTION = "collectionsindex-v1";
 	public static String ES_INDEX_BILLING = "billingservice";
+	public static String ES_INDEX_PAYMENT = "paymentsindex-v1"; 
 	
 	public interface ErrorMessages {
 		Map<String,String> errorCodeMessageMap = new HashMap<String, String>() {{

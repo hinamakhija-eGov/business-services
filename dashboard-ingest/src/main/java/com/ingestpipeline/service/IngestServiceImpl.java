@@ -57,6 +57,7 @@ public class IngestServiceImpl implements IngestService {
 
 		} catch (Exception e) {
 			LOGGER.error("Encountered an error while reading Topic to Context Configuration" + e.getMessage());
+			e.printStackTrace();
 		}
 	}
 	
@@ -107,7 +108,8 @@ public class IngestServiceImpl implements IngestService {
         	incomingData = new IncomingData();
         	TopicContext topicCxt = topicContextMap.get(topicName);
         	incomingData.setDataContext(topicCxt.getDataContext());
-        	incomingData.setDataContextVersion(topicCxt.getDataContextVersion());
+			incomingData.setDataContextVersion(topicCxt.getDataContextVersion());
+			LOGGER.info("###Context Set##");
         }
 		return incomingData;
 	}
