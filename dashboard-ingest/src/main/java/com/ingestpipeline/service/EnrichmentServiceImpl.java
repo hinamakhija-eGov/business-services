@@ -102,52 +102,57 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 
 			DomainIndexConfig indexConfig = domainConfig.getIndexConfig(businessTypeVal.toString());
 			LOGGER.info("indexConfig ## "+indexConfig);
-			String indexName = indexConfig.getIndexName();
-			String query = indexConfig.getQuery();
+			if(indexConfig != null){
+				String indexName = indexConfig.getIndexName();
+				String query = indexConfig.getQuery();
 
-			try {
-				ObjectNode queryNode = new ObjectMapper().readValue(query, ObjectNode.class);
+				try {
+					ObjectNode queryNode = new ObjectMapper().readValue(query, ObjectNode.class);
 
-				Map<String, Object> expValMap = new HashMap<>();
-				// Source references to be prepare a map of fieldName & value
-				for (SourceReferences ref : indexConfig.getSourceReferences()){
-					String arg = ref.getFieldName();
-					String argVal = copyNode.findValue(arg).asText();
-					String[] values = argVal.split(ref.getSeperator());
-					String[] exps = ref.getExpression().split(ref.getSeperator());
+					Map<String, Object> expValMap = new HashMap<>();
+					// Source references to be prepare a map of fieldName & value
+					for (SourceReferences ref : indexConfig.getSourceReferences()){
+						String arg = ref.getFieldName();
+						String argVal = copyNode.findValue(arg).asText();
+						String[] values = argVal.split(ref.getSeperator());
+						String[] exps = ref.getExpression().split(ref.getSeperator());
 
-					for(int i=0; i<exps.length; i++){
-						if(values[i] != null)
-							expValMap.put(exps[i], values[i]);
+						for(int i=0; i<exps.length; i++){
+							if(values[i] != null)
+								expValMap.put(exps[i], values[i]);
+						}
 					}
-				}
 
-				// To use produce the value of fieldNames and replace the query field value
-				for (TargetReferences ref : indexConfig.getTargetReferences()) {
-					String[] exps = ref.getExpression().split(ref.getSeperator());
+					// To use produce the value of fieldNames and replace the query field value
+					for (TargetReferences ref : indexConfig.getTargetReferences()) {
+						String[] exps = ref.getExpression().split(ref.getSeperator());
 
-					StringBuffer buff = new StringBuffer();
-					for(String exp : exps){
-						buff.append(expValMap.get(exp)+ref.getSeperator());
+						StringBuffer buff = new StringBuffer();
+						for(String exp : exps){
+							buff.append(expValMap.get(exp)+ref.getSeperator());
+						}
+						ref.setValue(buff.substring(0,buff.length()-1));
+						JSONUtil.replaceFieldValue(queryNode, ref.getArgument(), ref.getValue());
+
 					}
-					ref.setValue(buff.substring(0,buff.length()-1));
-					JSONUtil.replaceFieldValue(queryNode, ref.getArgument(), ref.getValue());
+					LOGGER.info("Query node "+ queryNode);
+					Map domainNode = elasticService.search(indexName, queryNode.toString());
+					if(domainNode != null){
+						Object transDomainResponse = enrichTransform.transform(domainNode, businessTypeVal.toString());
+						incomingData.put("domainObject", transDomainResponse);
 
+					} else {
+						LOGGER.info("Fetching record from ES for domain:: {} failed ",  businessTypeVal);
+					}
+					LOGGER.info("Data Transformed");
+
+				} catch (Exception e) {
+					LOGGER.error("Pre-processing enrichment - failed  :: {}" , e.getMessage());
 				}
-				LOGGER.info("Query node "+ queryNode);
-				Map domainNode = elasticService.search(indexName, queryNode.toString());
-				if(domainNode != null){
-					Object transDomainResponse = enrichTransform.transform(domainNode, businessTypeVal.toString());
-					incomingData.put("domainObject", transDomainResponse);
-
-				} else {
-					LOGGER.info("Fetching record from ES for domain:: {} failed ",  businessTypeVal);
-				}
-				LOGGER.info("Data Transformed");
-
-			} catch (Exception e) {
-				LOGGER.error("Pre-processing enrichment - failed  :: {}" , e.getMessage());
+			} else {
+				LOGGER.info("No indexConfig for businessType::  {}",businessTypeVal);
 			}
+
 		}
 		if (incomingData.get(DATA_CONTEXT).toString().equalsIgnoreCase("target")) {
 			ArrayNode values = new ObjectMapper().convertValue(incomingData.get(Constants.DATA_OBJECT), ArrayNode.class);

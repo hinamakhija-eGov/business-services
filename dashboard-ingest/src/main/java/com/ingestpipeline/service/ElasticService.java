@@ -37,6 +37,10 @@ import com.ingestpipeline.util.Constants;
 @Component("elasticService")
 public class ElasticService implements IESService {
 
+
+	//public Map<String , JsonNode > caughtFailedRequests = new HashMap<>();
+
+
 	@Value("${es.index.type}")
 	public String DOC_PATH;
 
@@ -176,6 +180,8 @@ public class ElasticService implements IESService {
 		Object id = requestBody.get(Constants.IDENTIFIER);
 		Object trxid = ((Map)requestBody.get(Constants.DATA_OBJECT)).get(Constants.TRANSACTION_ID);
 		LOGGER.info("request body on ### trxid "  +trxid);
+		//Object dataObjectId = ((Map)requestBody.get(Constants.DATA_OBJECT)).get("id");
+
 
 
 		String docId = id!=null ? id.toString(): trxid.toString();
@@ -201,8 +207,10 @@ public class ElasticService implements IESService {
 				return Boolean.TRUE;
 
 		} catch (HttpClientErrorException e) {
-			e.printStackTrace();
-			LOGGER.error("client error while pushing ES collection index : {}" ,e.getMessage());
+			//e.printStackTrace();
+
+			//caughtFailedRequests.put(dataObjectId.toString(), request);
+			LOGGER.error("client error while pushing ES collection index : {}, {}" ,e.getMessage(), requestEntity.getBody());
 
 		}
 		return Boolean.FALSE;
@@ -245,7 +253,9 @@ public class ElasticService implements IESService {
 	public Boolean searchIndex(String index, String searchQuery, String dataContextVersion) throws Exception {
 		LOGGER.info("searching ES for query: " + searchQuery + " on " + index);
 		
-		Map<String, String> scrollSearchParams = getScrollIdForScrollSearch(index, dataContextVersion); 
+		Map<String, String> scrollSearchParams = getScrollIdForScrollSearch(index, dataContextVersion);
+		LOGGER.info("scrollSearchParams.get(Constants.DataContexts.CONTEXT):: "+scrollSearchParams.get(Constants.DataContexts.CONTEXT));
+
 		if(scrollSearchParams == null) { 
 			return Boolean.FALSE;
 		}
@@ -289,7 +299,8 @@ public class ElasticService implements IESService {
 	        	}
 	        }
 	    }).start();
-		
+
+
 		return Boolean.TRUE;
 	}
 	
@@ -331,7 +342,7 @@ public class ElasticService implements IESService {
 			scrollSearchParams.put(Constants.DataContexts.CONTEXT, Constants.DataContexts.BILLING); 
 		} else if (index.equals(Constants.ES_INDEX_PAYMENT)) {
 			queryString = getSearchQueryPayment();
-			scrollSearchParams.put(Constants.DataContexts.CONTEXT, Constants.DataContexts.PAYMENT); 
+			scrollSearchParams.put(Constants.DataContexts.CONTEXT, Constants.DataContexts.COLLECTION);
 		} else { 
 			return null; 
 		}
