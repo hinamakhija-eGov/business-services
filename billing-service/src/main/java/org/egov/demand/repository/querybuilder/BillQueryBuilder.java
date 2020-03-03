@@ -1,5 +1,6 @@
 package org.egov.demand.repository.querybuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -96,10 +97,10 @@ public class BillQueryBuilder {
 			selectQuery.append(" AND bd.billno = ?");
 			preparedStatementValues.add(searchBill.getBillNumber());
 		}
-		
-		if(searchBill.getConsumerCode() != null){
-			selectQuery.append(" AND bd.consumercode = ?");
-			preparedStatementValues.add(searchBill.getConsumerCode());
+
+		if (!CollectionUtils.isEmpty(searchBill.getConsumerCode())) {
+			selectQuery.append(" AND bd.consumercode IN (");
+			appendListToQuery(new ArrayList<>(searchBill.getConsumerCode()), preparedStatementValues, selectQuery);
 		}
 	}
 	

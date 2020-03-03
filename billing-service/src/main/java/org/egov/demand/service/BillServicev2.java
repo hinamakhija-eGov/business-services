@@ -159,6 +159,7 @@ public class BillServicev2 {
 		if (CollectionUtils.isEmpty(bills))
 			return generateBill(billCriteria, requestInfo);
 		
+		Map<String, BillV2> consumerCodeAndBillMap = bills.stream().collect(Collectors.toMap(BillV2::getConsumerCode, Function.identity()));
 		/*
 		 * Collecting the businessService code and the list of consumer codes for those service codes 
 		 * whose demands needs to be updated.
@@ -166,45 +167,39 @@ public class BillServicev2 {
 		 * grouping by service code and collecting the list of 
 		 * consumerCodes against the service code
 		 */
+		List<String> cosnumerCodesNotFoundInBill = new ArrayList<>(billCriteria.getConsumerCode());
+		List<String> cosnumerCodesToBeExpired = new ArrayList<>();
+		List<BillV2> billsToBeReturned = new ArrayList<>();
+		Boolean isBillExpired = false;
 		
-		Map<String, Set<String>> serviceAndConsumerCodeList = new HashMap<>();
-		List<String> billCosnumerCodesToBeExpired = new ArrayList<>();
-		
-		for (BillV2 bill : bills)
-			for (BillDetailV2 billDetail : bill.getBillDetails())
-				if (billDetail.getExpiryDate().compareTo(System.currentTimeMillis()) < 0) {
-					billCosnumerCodesToBeExpired.add(bill.getConsumerCode());
-					addConsumercodeToexpiredMap(bill, serviceAndConsumerCodeList);
-					continue;
-				}
+		for (Entry<String, BillV2> entry : consumerCodeAndBillMap.entrySet()) {
+			BillV2 bill = entry.getValue();
 
+			for (BillDetailV2 billDetail : bill.getBillDetails()) {
+				if (billDetail.getExpiryDate().compareTo(System.currentTimeMillis()) < 0)
+					cosnumerCodesToBeExpired.add(bill.getConsumerCode());
+			}
+			if (!isBillExpired) {
+				billsToBeReturned.add(bill);
+			}
+			cosnumerCodesNotFoundInBill.remove(entry.getKey());
+			isBillExpired = false;
+		}
+			
 		/*
 		 * If none of the billDetails in the bills needs to be updated then return the search result
 		 */
-		if(CollectionUtils.isEmpty(serviceAndConsumerCodeList))
+		if(CollectionUtils.isEmpty(cosnumerCodesToBeExpired) && CollectionUtils.isEmpty(cosnumerCodesNotFoundInBill))
 			return res;
 		else {
-			updateDemandsForexpiredBillDetails(serviceAndConsumerCodeList, billCriteria.getTenantId(), requestInfoWrapper);
-			billRepository.updateBillStatus(billCosnumerCodesToBeExpired, StatusEnum.EXPIRED);
-			return generateBill(billCriteria, requestInfo);
+			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), cosnumerCodesToBeExpired, billCriteria.getTenantId(), requestInfoWrapper);
+			billRepository.updateBillStatus(cosnumerCodesToBeExpired, StatusEnum.EXPIRED);
+			billCriteria.getConsumerCode().retainAll(cosnumerCodesToBeExpired);
+			billCriteria.getConsumerCode().addAll(cosnumerCodesNotFoundInBill);
+			BillResponseV2 finalResponse = generateBill(billCriteria, requestInfo);
+			finalResponse.getBill().addAll(billsToBeReturned);
+			return finalResponse;
 		}
-	}
-
-	/**
-	 * private method to update consumer code values for expired bills
-	 * 
-	 * @param bill
-	 * @param serviceAndConsumerCodeList
-	 */
-	private void addConsumercodeToexpiredMap(BillV2 bill, Map<String, Set<String>> serviceAndConsumerCodeList) {
-
-		Set<String> consumerCodeSet = serviceAndConsumerCodeList.get(bill.getBusinessService());
-		if (null == consumerCodeSet) {
-			consumerCodeSet = new HashSet<String>();
-			consumerCodeSet.add(bill.getConsumerCode());
-			serviceAndConsumerCodeList.put(bill.getBusinessService(), consumerCodeSet);
-		} else
-			consumerCodeSet.add(bill.getConsumerCode());
 	}
 
 	/**
@@ -214,29 +209,25 @@ public class BillServicev2 {
 	 * @param serviceAndConsumerCodeListMap
 	 * @param tenantId
 	 */
-	private void updateDemandsForexpiredBillDetails(Map<String, Set<String>> serviceAndConsumerCodeListMap,
-			String tenantId, RequestInfoWrapper requestInfoWrapper) {
+	private void updateDemandsForexpiredBillDetails(String businessService, List<String> consumerCodesTobeUpdated, String tenantId, RequestInfoWrapper requestInfoWrapper) {
 
 		Map<String, String> serviceUrlMap = appProps.getBusinessCodeAndDemandUpdateUrlMap();
 
-		for (Entry<String, Set<String>> entry : serviceAndConsumerCodeListMap.entrySet()) {
 
-			String url = serviceUrlMap.get(entry.getKey());
-
+			String url = serviceUrlMap.get(businessService);
 			if (StringUtils.isEmpty(url)) {
 				
 				log.info(URL_NOT_CONFIGURED_FOR_DEMAND_UPDATE_KEY, URL_NOT_CONFIGURED_FOR_DEMAND_UPDATE_MSG
-						.replace(URL_NOT_CONFIGURED_REPLACE_TEXT, entry.getKey()));
+						.replace(URL_NOT_CONFIGURED_REPLACE_TEXT, businessService));
 				return;
 			}
 
 			StringBuilder completeUrl = new StringBuilder(url)
 					.append(URL_PARAMS_FOR_SERVICE_BASED_DEMAND_APIS.replace(TENANTID_REPLACE_TEXT, tenantId).replace(
-							CONSUMERCODES_REPLACE_TEXT, entry.getValue().toString().replace("[", "").replace("]", "")));
+							CONSUMERCODES_REPLACE_TEXT, consumerCodesTobeUpdated.toString().replace("[", "").replace("]", "")));
 
 			log.info("the url : " + completeUrl);
 			restRepository.fetchResult(completeUrl.toString(), requestInfoWrapper);
-		}
 	}
 
 
@@ -271,7 +262,7 @@ public class BillServicev2 {
 			demandIds.add(billCriteria.getDemandId());
 
 		if (billCriteria.getConsumerCode() != null)
-			consumerCodes.add(billCriteria.getConsumerCode());
+			consumerCodes.addAll(billCriteria.getConsumerCode());
 
 		DemandCriteria demandCriteria = DemandCriteria.builder()
 				.status(org.egov.demand.model.Demand.StatusEnum.ACTIVE.toString())

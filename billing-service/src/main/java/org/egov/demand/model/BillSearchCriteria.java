@@ -28,7 +28,7 @@ public class BillSearchCriteria {
 	
 	private Boolean isCancelled;
 	
-	private String consumerCode;
+	private Set<String> consumerCode;
 	
 	private String billNumber;
 	

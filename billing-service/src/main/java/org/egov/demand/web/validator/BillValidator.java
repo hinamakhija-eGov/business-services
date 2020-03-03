@@ -7,6 +7,7 @@ import org.egov.demand.model.BillSearchCriteria;
 import org.egov.demand.model.GenerateBillCriteria;
 import org.egov.tracer.model.CustomException;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.Errors;
 
 @Component
@@ -36,7 +37,7 @@ public class BillValidator {
 
 		if (billCriteria.getBillId() == null && billCriteria.getIsActive() == null
 				&& billCriteria.getIsCancelled() == null && billCriteria.getService() == null
-				&& billCriteria.getConsumerCode() == null && billCriteria.getMobileNumber() == null
+				&& CollectionUtils.isEmpty(billCriteria.getConsumerCode()) && billCriteria.getMobileNumber() == null
 				&& billCriteria.getEmail() == null) {
 
 			errors.rejectValue("service", "BILL_SEARCH_MANDATORY_FIELDS_MISSING",

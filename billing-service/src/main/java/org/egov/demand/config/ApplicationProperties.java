@@ -148,7 +148,7 @@ public class ApplicationProperties {
 	@Value("${kafka.topics.receipt.cancel.name.v2}")
 	private String receiptCancellationTopicV2;
 	
-	@Value("S{search.pagesize.default}")
-	private String commonSearchDefaultLimit;
+    @Value("${search.pagesize.default}")
+    private String commonSearchDefaultLimit;
 
 }

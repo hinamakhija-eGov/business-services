@@ -67,8 +67,9 @@ public class GenerateBillCriteria {
 	
 	private String demandId;
 	
-	private String consumerCode;
+	private Set<String> consumerCode;
 	
+	@NotNull
 	private String businessService;
 	
 	@Email
@@ -79,13 +80,19 @@ public class GenerateBillCriteria {
 	public DemandCriteria toDemandCriteria() {
 		
 		Set<String> consumerCodeSet = new HashSet<>();
-		consumerCodeSet.add(consumerCode);
+		consumerCodeSet.addAll(consumerCode);
 		
 		Set<String> demandIdSet = new HashSet<>();
 		demandIdSet.add(demandId);
 		
-		return DemandCriteria.builder().businessService(businessService).consumerCode(consumerCodeSet)
-				.tenantId(tenantId).demandId(demandIdSet).email(email).mobileNumber(mobileNumber).build();
+		return DemandCriteria.builder()
+				.businessService(businessService)
+				.consumerCode(consumerCodeSet)
+				.mobileNumber(mobileNumber)
+				.demandId(demandIdSet)
+				.tenantId(tenantId)
+				.email(email)
+				.build();
 	}
 	
 	/**
