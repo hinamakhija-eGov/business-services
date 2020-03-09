@@ -81,11 +81,11 @@ public class PaymentService {
             paymentSearchCriteria.setOffset(0);
             paymentSearchCriteria.setLimit(applicationProperties.getReceiptsSearchDefaultLimit());
         }
-        if(requestInfo.getUserInfo().getType().equals("CITIZEN")) {
+        /*if(requestInfo.getUserInfo().getType().equals("CITIZEN")) {
             List<String> payerIds = new ArrayList<>();
             payerIds.add(requestInfo.getUserInfo().getUuid());
             paymentSearchCriteria.setPayerIds(payerIds);
-        }
+        }*/
         List<Payment> payments = paymentRepository.fetchPayments(paymentSearchCriteria);
 
         return payments;
