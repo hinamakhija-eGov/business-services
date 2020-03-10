@@ -1,0 +1,110 @@
+---
+swagger: "2.0"
+info:
+  description: APIs for DSS Ingest consist of 5 APIs.
+  version: 1.0.0
+  title: DSS Ingest APIs
+host: virtserver.swaggerhub.com
+basePath: /pritha-egov-tarento/Ingest/1.0.0
+schemes:
+- https
+- http
+produces:
+- application/json
+paths:
+  /save:
+    post:
+      tags:
+      - Ingest
+      summary: API receives the Transaction Details JSON Request and passes it on to
+      description: This API receives the Transaction Details JSON Request and passes it on to the Service Layer for further process of persisting into elastic search.
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/IncomingData'
+      responses:
+        "201":
+          description: Response for Success State of the API
+        "400":
+          description: Invalid input.
+  /upload:
+    post:
+      summary: API use to provide response for external data upload
+      description: uploded file get parsed and stores target data to Elastic search.
+      consumes:
+      - multipart/form-data
+      parameters:
+      - name: file
+        in: formData
+        required: true
+        type: file
+      responses:
+        "201":
+          description: Response for Success State of the API
+        "400":
+          description: Invalid input.
+  /migrate/{indexName}/{version}:
+    get:
+      summary: This API use to pause a active kafka consumer
+      parameters:
+      - name: indexName
+        in: path
+        required: true
+        type: string
+      - name: version
+        in: path
+        required: true
+        type: string
+      responses:
+        "201":
+          description: Response for Success State of the API
+        "400":
+          description: Invalid input.
+  /pause/{consumerId}:
+    get:
+      summary: This API use to pause a active kafka consumer
+      parameters:
+      - name: consumerId
+        in: path
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Response for Success State of the API
+          schema:
+            $ref: '#/definitions/Response'
+        "400":
+          description: Invalid input.
+  /resume/{consumerId}:
+    get:
+      summary: This API is to resume a paused kafka consumer
+      parameters:
+      - name: consumerId
+        in: path
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Response for Success State of the API
+          schema:
+            $ref: '#/definitions/Response'
+        "400":
+          description: Invalid input.
+definitions:
+  Response:
+    type: boolean
+  IncomingData:
+    type: object
+    properties:
+      dataContext:
+        type: string
+        description: context of the transactional data
+      dataContextVersion:
+        type: string
+        description: version of the context
+      dataObject:
+        type: object
+        description: this contains the transactional object
+        properties: {}
