@@ -264,7 +264,7 @@ public class ElasticService implements IESService {
 	        	Map<String, List<Object>> documentMap = new HashMap<>();
 	        	int docFetchSize = 1; 
 	        	int totalDocFetchedSize = 0;
-	        	int totalDocInIndex = 100000; 
+	        	int totalDocInIndex = 900000; 
 	        	
 	        	while(docFetchSize > 0 && totalDocFetchedSize < totalDocInIndex) {
 	        		documentMap = performScrollSearch(scrollSearchParams); 

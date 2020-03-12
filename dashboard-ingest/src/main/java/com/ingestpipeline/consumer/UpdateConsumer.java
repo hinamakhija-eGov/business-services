@@ -57,7 +57,7 @@ public class UpdateConsumer {
             }
 
         } catch (final Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
             if(!esPushDirect)
                 ingestProducer.pushToPipeline(data, ERROR_INTENT, ERROR_INTENT);
             LOGGER.error("Exception Encountered while processing the received message updating posted data for topic: "+ topic +"" + e.getMessage());
