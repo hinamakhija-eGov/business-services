@@ -22,7 +22,7 @@ public class MdmsApiMappings {
 
     private boolean isTranslate = Boolean.FALSE;
     private final String TESTING_ID = "pb.testing";
-    private final String NAME = "name";
+    private final String NAME = "localName";
 
     private static Logger logger = LoggerFactory.getLogger(MdmsApiMappings.class);
 
