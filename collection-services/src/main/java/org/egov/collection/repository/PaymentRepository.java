@@ -1,34 +1,9 @@
 package org.egov.collection.repository;
 
 import static java.util.Collections.reverseOrder;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.COPY_BILLDETAIL_SQL;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.COPY_BILL_SQL;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.COPY_PAYMENTDETAIL_SQL;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.COPY_PAYMENT_SQL;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.INSERT_BILLACCOUNTDETAIL_SQL;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.INSERT_BILLDETAIL_SQL;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.INSERT_BILL_SQL;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.INSERT_PAYMENTDETAIL_SQL;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.INSERT_PAYMENT_SQL;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.STATUS_UPDATE_BILL_SQL;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.STATUS_UPDATE_PAYMENTDETAIL_SQL;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.STATUS_UPDATE_PAYMENT_SQL;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.UPDATE_BILLDETAIL_SQL;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.UPDATE_BILL_SQL;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.UPDATE_PAYMENTDETAIL_SQL;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.UPDATE_PAYMENT_SQL;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.getParametersForBillAccountDetailCreate;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.getParametersForPaymentCreate;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.getParametersForPaymentDetailCreate;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.getParametersForPaymentDetailStatusUpdate;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.getParametersForPaymentDetailUpdate;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.getParametersForPaymentStatusUpdate;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.getParametersForPaymentUpdate;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.getParamtersForBillCreate;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.getParamtersForBillDetailCreate;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.getParamtersForBillDetailUpdate;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.getParamtersForBillStatusUpdate;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.getParamtersForBillUpdate;
+import static org.egov.collection.config.CollectionServiceConstants.KEY_FILESTOREID;
+import static org.egov.collection.config.CollectionServiceConstants.KEY_ID;
+import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -215,6 +190,21 @@ public class PaymentRepository {
         }
     }
 
+
+    public void updateFileStoreId(List<Map<String,String>> idToFileStoreIdMaps){
+
+        List<MapSqlParameterSource> fileStoreIdSource = new ArrayList<>();
+
+        idToFileStoreIdMaps.forEach(map -> {
+            MapSqlParameterSource sqlParameterSource = new MapSqlParameterSource();
+            sqlParameterSource.addValue("id",map.get(KEY_ID));
+            sqlParameterSource.addValue("filestoreid",map.get(KEY_FILESTOREID));
+            fileStoreIdSource.add(sqlParameterSource);
+        });
+
+        namedParameterJdbcTemplate.batchUpdate(FILESTOREID_UPDATE_PAYMENT_SQL,fileStoreIdSource.toArray(new MapSqlParameterSource[0]));
+
+    }
 
 
 }

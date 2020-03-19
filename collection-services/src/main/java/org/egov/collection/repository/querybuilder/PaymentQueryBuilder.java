@@ -129,6 +129,8 @@ public class PaymentQueryBuilder {
 
     public static final String COPY_BILLDETAIL_SQL = "INSERT INTO egcl_billdetial_audit SELECT * FROM egcl_billdetial WHERE id = :id;";
 
+    public static final String FILESTOREID_UPDATE_PAYMENT_SQL = "UPDATE egcl_payment SET filestoreid=:filestoreid WHERE id=:id;";
+
 
 
     // Payment update queries

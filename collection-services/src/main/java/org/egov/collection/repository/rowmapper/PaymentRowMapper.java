@@ -69,6 +69,7 @@ public class PaymentRowMapper implements ResultSetExtractor<List<Payment>> {
                 String payerEmail = rs.getString("payerEmail");
                 String payerId = rs.getString("payerId");
                 String paymentStatus = rs.getString("paymentStatus");
+                String filesoreId = rs.getString("filestoreid");
                 String createdBy = rs.getString("py_createdBy");
 
                 Long createdDate = rs.getLong("py_createdTime");
@@ -102,6 +103,7 @@ public class PaymentRowMapper implements ResultSetExtractor<List<Payment>> {
                         .payerEmail(payerEmail)
                         .payerId(payerId)
                         .paymentStatus(PaymentStatusEnum.fromValue(paymentStatus))
+                        .fileStoreId(filesoreId)
                         .auditDetails(auditDetails)
                         .build();
 
