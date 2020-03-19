@@ -35,7 +35,7 @@ public class FileStoreConsumer {
 
         jobMaps.forEach(job -> {
             Map<String, String> idToFileStore = new HashMap<>();
-            idToFileStore.put(KEY_ID,(String) job.get(KEY_PDF_ID));
+            idToFileStore.put(KEY_ID,(String) job.get(KEY_PDF_ENTITY_ID));
             idToFileStore.put(KEY_FILESTOREID, StringUtils.join((List<String>)job.get(KEY_PDF_FILESTOREID),','));
             idTofileStoreIdMaps.add(idToFileStore);
             log.info("Updating filestorid for: "+idToFileStore.get(KEY_ID));
