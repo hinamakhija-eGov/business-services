@@ -3,6 +3,8 @@ package com.tarento.analytics.org.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.tarento.analytics.ConfigurationLoader;
 import com.tarento.analytics.constant.Constants;
 import com.tarento.analytics.service.impl.RestService;
 import org.slf4j.Logger;
@@ -23,6 +25,7 @@ public class MdmsApiMappings {
     private boolean isTranslate = Boolean.FALSE;
     private final String TESTING_ID = "pb.testing";
     private final String NAME = "name";
+    private final String MDMS_CITY_NAME_CONFIG_FILE_NAME = "TenantCodeNameMappings.json";
 
     private static Logger logger = LoggerFactory.getLogger(MdmsApiMappings.class);
 
@@ -30,6 +33,9 @@ public class MdmsApiMappings {
     private Map<String, List<String>> ddrTenantMapping1 = new HashMap<>();
     private Map<String, String> codeValues = new HashMap<>();
     private Map<String, List<String>> ddrValueMap = new HashMap<>();
+
+    @Autowired
+	private ConfigurationLoader configurationLoader;
 
     @Value("${egov.mdms-service.target.url}")
     private String mdmsServiceSearchUri;
@@ -51,6 +57,21 @@ public class MdmsApiMappings {
         this.isTranslate = isTranslate;
     }
 
+    /**
+     * This method loads the MDMS city name mappings.
+     *
+     * @return
+     */
+    private Map<String, String> getMappings() {
+        ObjectNode objectNode = configurationLoader.get(MDMS_CITY_NAME_CONFIG_FILE_NAME);
+        ArrayNode objectArrayNode = (ArrayNode) objectNode.get("ulbCityNamesMappings");
+        Map<String, String> ulbCityNamesMappings = new HashMap<String, String>();
+        for (JsonNode node : objectArrayNode) {
+            ulbCityNamesMappings.put(node.get("tenantCode").asText(), node.get("tenantValue").asText());
+        }
+        return ulbCityNamesMappings;
+    }
+
     @PostConstruct
     public void loadMdmsService() throws Exception {
 
@@ -58,6 +79,7 @@ public class MdmsApiMappings {
         try {
             JsonNode response = restService.post(mdmsServiceSearchUri, "", requestInfo);
             ArrayNode tenants = (ArrayNode) response.findValues(Constants.MDMSKeys.TENANTS).get(0);
+            Map<String, String> ulbCityNamesMappings = getMappings();
 
 
             for(JsonNode tenant : tenants) {
@@ -65,8 +87,10 @@ public class MdmsApiMappings {
                 JsonNode ddrCode = tenant.findValue(Constants.MDMSKeys.DISTRICT_CODE);
                 JsonNode ddrName = tenant.findValue(Constants.MDMSKeys.DDR_NAME);
 
-                JsonNode name = tenant.findValue(NAME);
-                if(!codeValues.containsKey(tenantId.asText())) codeValues.put(tenantId.asText(), name.asText());
+                //JsonNode name = tenant.findValue(NAME);
+                //if(!codeValues.containsKey(tenantId.asText())) codeValues.put(tenantId.asText(), name.asText());
+                String cityName = ulbCityNamesMappings.get(tenantId.asText());
+                if(!codeValues.containsKey(tenantId.asText())) codeValues.put(tenantId.asText(), cityName);
 
 
                 if(!tenantId.asText().equalsIgnoreCase(TESTING_ID)) {
@@ -75,12 +99,14 @@ public class MdmsApiMappings {
                         tenantList.add(tenantId.asText());
                         ddrTenantMapping1.put(ddrName.asText(),tenantList);
                         List<String> values = new ArrayList<>();
-                        values.add(name.asText());
+                        //values.add(name.asText());
+                        values.add(cityName);
                         ddrValueMap.put(ddrName.asText(), values);
 
                     } else {
                         ddrTenantMapping1.get(ddrName.asText()).add(tenantId.asText());
-                        ddrValueMap.get(ddrName.asText()).add(name.asText());
+                        //ddrValueMap.get(ddrName.asText()).add(name.asText());
+                        ddrValueMap.get(ddrName.asText()).add(cityName);
 
                     }
 

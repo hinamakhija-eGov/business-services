@@ -32,11 +32,13 @@ public class AdditiveComputedField implements IComputedField<Data> {
 
     @Override
     public void add(Data data, List<String> fields, String newField) {
+        String dataType = "amount";
         try {
             Map<String, Plot> plotMap = data.getPlots().stream().parallel().collect(Collectors.toMap(Plot::getName, Function.identity()));
 
             double total = 0.0;
             for (String field: fields){
+                dataType = plotMap.get(field).getSymbol();
                 total = total+ plotMap.get(field).getValue();
             }
             if(postAggrTheoryName != null && !postAggrTheoryName.isEmpty()) {
@@ -46,12 +48,12 @@ public class AdditiveComputedField implements IComputedField<Data> {
             }
 
 
-            data.getPlots().add(new Plot(newField, total, "amount"));
+            data.getPlots().add(new Plot(newField, total, dataType));
 
         } catch (Exception e) {
             // throw new RuntimeException("Computed field configuration not correctly provided");
             logger.error("percentage could not be computed " +e.getMessage());
-            data.getPlots().add(new Plot(newField, 0.0, "amount"));
+            data.getPlots().add(new Plot(newField, 0.0, dataType));
         }
 
     }
