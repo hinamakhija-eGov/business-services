@@ -62,6 +62,7 @@ public class MdmsApiMappings {
      *
      * @return
      */
+
     private Map<String, String> getMappings() {
         ObjectNode objectNode = configurationLoader.get(MDMS_CITY_NAME_CONFIG_FILE_NAME);
         ArrayNode objectArrayNode = (ArrayNode) objectNode.get("ulbCityNamesMappings");
@@ -72,6 +73,7 @@ public class MdmsApiMappings {
         return ulbCityNamesMappings;
     }
 
+
     @PostConstruct
     public void loadMdmsService() throws Exception {
 
@@ -80,6 +82,7 @@ public class MdmsApiMappings {
             JsonNode response = restService.post(mdmsServiceSearchUri, "", requestInfo);
             ArrayNode tenants = (ArrayNode) response.findValues(Constants.MDMSKeys.TENANTS).get(0);
             Map<String, String> ulbCityNamesMappings = getMappings();
+            //logger.info("ulbCityNamesMappings :: "+ulbCityNamesMappings);
 
 
             for(JsonNode tenant : tenants) {
@@ -90,7 +93,10 @@ public class MdmsApiMappings {
                 //JsonNode name = tenant.findValue(NAME);
                 //if(!codeValues.containsKey(tenantId.asText())) codeValues.put(tenantId.asText(), name.asText());
                 String cityName = ulbCityNamesMappings.get(tenantId.asText());
-                if(!codeValues.containsKey(tenantId.asText())) codeValues.put(tenantId.asText(), cityName);
+                if(cityName!=null){
+                    if(!codeValues.containsKey(tenantId.asText())) codeValues.put(tenantId.asText(), cityName);
+                }
+
 
 
                 if(!tenantId.asText().equalsIgnoreCase(TESTING_ID)) {
@@ -100,13 +106,13 @@ public class MdmsApiMappings {
                         ddrTenantMapping1.put(ddrName.asText(),tenantList);
                         List<String> values = new ArrayList<>();
                         //values.add(name.asText());
-                        values.add(cityName);
+                        if(cityName!=null) values.add(cityName);
                         ddrValueMap.put(ddrName.asText(), values);
 
                     } else {
                         ddrTenantMapping1.get(ddrName.asText()).add(tenantId.asText());
                         //ddrValueMap.get(ddrName.asText()).add(name.asText());
-                        ddrValueMap.get(ddrName.asText()).add(cityName);
+                        if(cityName!=null) ddrValueMap.get(ddrName.asText()).add(cityName);
 
                     }
 
@@ -120,7 +126,9 @@ public class MdmsApiMappings {
             getDefaultMapping();
             logger.error("Loading Mdms service error: "+e.getMessage()+" :: loaded default DDRs");
         }
-        //logger.info("ddrTenantMapping = "+ddrTenantMapping);
+        ddrValueMap.entrySet().removeIf(map -> map.getValue().size()==0);
+        logger.info("ddrValueMap = "+ddrValueMap);
+        //logger.info("codeValues = "+codeValues);
         logger.info("ddrTenantMapping1 = "+ddrTenantMapping1);
 
     }
