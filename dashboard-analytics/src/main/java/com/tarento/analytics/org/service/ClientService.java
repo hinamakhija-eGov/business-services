@@ -28,7 +28,8 @@ public interface ClientService {
 			List<String> values = new ArrayList<>();
 			if(filter instanceof ArrayList){
 				for(Object code : ((ArrayList)request.getFilters().get(Constants.MDMSKeys.TENANT_ID))){
-					values.add(mdmsApiMappings.valueOf(code.toString()));
+					String val = mdmsApiMappings.valueOf(code.toString());
+					if(val!=null) values.add(val);
 				}
 				request.getFilters().put(Constants.MDMSKeys.TENANT_ID, values);
 				status = Boolean.TRUE;

@@ -82,7 +82,7 @@ public class MdmsApiMappings {
             JsonNode response = restService.post(mdmsServiceSearchUri, "", requestInfo);
             ArrayNode tenants = (ArrayNode) response.findValues(Constants.MDMSKeys.TENANTS).get(0);
             Map<String, String> ulbCityNamesMappings = getMappings();
-            //logger.info("ulbCityNamesMappings :: "+ulbCityNamesMappings);
+            logger.info("ulbCityNamesMappings :: "+ulbCityNamesMappings);
 
 
             for(JsonNode tenant : tenants) {
@@ -128,7 +128,7 @@ public class MdmsApiMappings {
         }
         ddrValueMap.entrySet().removeIf(map -> map.getValue().size()==0);
         logger.info("ddrValueMap = "+ddrValueMap);
-        //logger.info("codeValues = "+codeValues);
+        logger.info("codeValues = "+codeValues);
         logger.info("ddrTenantMapping1 = "+ddrTenantMapping1);
 
     }
@@ -160,14 +160,17 @@ public class MdmsApiMappings {
             for(String tenant : tenants) {
 
                 String ddrName = getDDRName(tenant);
-                if (groupTenantIds.containsKey(ddrName)){
-                    groupTenantIds.get(ddrName).add(tenant);
+                if(ddrName!=null){
+                    if (groupTenantIds.containsKey(ddrName)){
+                        groupTenantIds.get(ddrName).add(tenant);
 
-                } else {
-                    List<String> tenantList = new ArrayList<>();
-                    tenantList.add(tenant);
-                    groupTenantIds.put(ddrName,tenantList);
+                    } else {
+                        List<String> tenantList = new ArrayList<>();
+                        tenantList.add(tenant);
+                        groupTenantIds.put(ddrName,tenantList);
+                    }
                 }
+
 
             }
         }
