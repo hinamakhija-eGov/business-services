@@ -59,6 +59,7 @@ public class BillRowMapperV2 implements ResultSetExtractor<List<BillV2>>{
 					.billNumber(rs.getString("bd_billno"))
 					.billDate(rs.getLong("bd_billDate"))
 					.consumerCode(rs.getString("bd_consumerCode"))
+					.fileStoreId(rs.getString("b_fileStoreId"))
 					.additionalDetails(util.getJsonValue((PGobject) rs.getObject("b_additionalDetails")))
 					.auditDetails(auditDetails)
 					.build();
