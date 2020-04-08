@@ -11,6 +11,8 @@ import static org.egov.collection.config.CollectionServiceConstants.RECEIPT_CHEQ
 import static org.egov.collection.model.enums.InstrumentStatusEnum.APPROVAL_PENDING;
 import static org.egov.collection.model.enums.InstrumentStatusEnum.APPROVED;
 import static org.egov.collection.model.enums.InstrumentStatusEnum.REMITTED;
+import static org.egov.collection.model.enums.PaymentModeEnum.ONLINE_NEFT;
+import static org.egov.collection.model.enums.PaymentModeEnum.ONLINE_RTGS;
 import static org.egov.collection.util.Utils.jsonMerge;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
@@ -149,20 +151,27 @@ public class PaymentValidator {
         }
 
         if (paymentMode.equalsIgnoreCase(InstrumentTypesEnum.CHEQUE.name())
-                || paymentMode.equalsIgnoreCase(InstrumentTypesEnum.DD.name())) {
+                || paymentMode.equalsIgnoreCase(InstrumentTypesEnum.DD.name())
+                || paymentMode.equalsIgnoreCase(InstrumentTypesEnum.OFFLINE_NEFT.name())
+                || paymentMode.equalsIgnoreCase(InstrumentTypesEnum.OFFLINE_RTGS.name())
+                || paymentMode.equalsIgnoreCase(InstrumentTypesEnum.POSTAL_ORDER.name())) {
 
             if (isNull(payment.getInstrumentDate()))
                 errorMap.put("INVALID_INST_DATE", "Instrument Date Input is mandatory for cheque and DD");
 
             if (StringUtils.isEmpty(payment.getInstrumentNumber()))
                 errorMap.put("INVALID_INST_NUMBER", "Instrument Number is mandatory for Cheque, DD, Card");
-            
-            validateChequeDD(payment, errorMap);
+
+            if (paymentMode.equalsIgnoreCase(InstrumentTypesEnum.CHEQUE.name())
+                    || paymentMode.equalsIgnoreCase(InstrumentTypesEnum.DD.name()))
+                validateChequeDD(payment, errorMap);
+
         }
 
-        if (paymentMode.equalsIgnoreCase(InstrumentTypesEnum.CARD.name()) || paymentMode.equalsIgnoreCase(InstrumentTypesEnum.ONLINE.name())) {
+        if (paymentMode.equalsIgnoreCase(InstrumentTypesEnum.CARD.name()) || paymentMode.equalsIgnoreCase(InstrumentTypesEnum.ONLINE.name())
+                || paymentMode.equalsIgnoreCase(ONLINE_NEFT.name()) || paymentMode.equalsIgnoreCase(ONLINE_RTGS.name())) {
             if (org.apache.commons.lang3.StringUtils.isEmpty(payment.getTransactionNumber()))
-                errorMap.put("INVALID_TXN_NUMBER", "Transaction Number is mandatory for Cheque, DD, Card");
+                errorMap.put("INVALID_TXN_NUMBER", "Transaction Number is mandatory for Card and online payment");
 
             if (org.apache.commons.lang3.StringUtils.isEmpty(payment.getInstrumentNumber()))
                 errorMap.put("INVALID_INSTRUMENT_NUMBER", "Instrument Number is mandatory for Card");
