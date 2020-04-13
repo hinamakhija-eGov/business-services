@@ -2,12 +2,7 @@ package org.egov.collection.util;
 
 
 import static java.util.Objects.isNull;
-import static org.egov.collection.config.CollectionServiceConstants.CHEQUE_DD_DATE_WITH_FUTURE_DATE_MESSAGE;
-import static org.egov.collection.config.CollectionServiceConstants.CHEQUE_DD_DATE_WITH_MANUAL_RECEIPT_DATE_MESSAGE;
-import static org.egov.collection.config.CollectionServiceConstants.CHEQUE_DD_DATE_WITH_RECEIPT_DATE_MESSAGE;
-import static org.egov.collection.config.CollectionServiceConstants.INSTRUMENT_DATE_DAYS;
-import static org.egov.collection.config.CollectionServiceConstants.RECEIPT_CHEQUE_OR_DD_DATE;
-import static org.egov.collection.config.CollectionServiceConstants.RECEIPT_CHEQUE_OR_DD_DATE_MESSAGE;
+import static org.egov.collection.config.CollectionServiceConstants.*;
 import static org.egov.collection.model.enums.InstrumentStatusEnum.APPROVAL_PENDING;
 import static org.egov.collection.model.enums.InstrumentStatusEnum.APPROVED;
 import static org.egov.collection.model.enums.InstrumentStatusEnum.REMITTED;
@@ -166,6 +161,10 @@ public class PaymentValidator {
                     || paymentMode.equalsIgnoreCase(InstrumentTypesEnum.DD.name()))
                 validateChequeDD(payment, errorMap);
 
+            if (paymentMode.equalsIgnoreCase(InstrumentTypesEnum.OFFLINE_NEFT.name())
+                    || paymentMode.equalsIgnoreCase(InstrumentTypesEnum.OFFLINE_RTGS.name()))
+                validateNEFTAndRTGS(payment, errorMap);
+
         }
 
         if (paymentMode.equalsIgnoreCase(InstrumentTypesEnum.CARD.name()) || paymentMode.equalsIgnoreCase(InstrumentTypesEnum.ONLINE.name())
@@ -178,6 +177,15 @@ public class PaymentValidator {
 
         }
 
+    }
+
+
+    private void validateNEFTAndRTGS(Payment payment, Map<String, String> errorMap){
+
+        DateTime instrumentDate = new DateTime(payment.getInstrumentDate());
+        if (instrumentDate.isAfter(System.currentTimeMillis())) {
+            errorMap.put(RECEIPT_NEFT_OR_RTGS_DATE, RECEIPT_NEFT_OR_RTGS_DATE_MESSAGE);
+        }
     }
 
 

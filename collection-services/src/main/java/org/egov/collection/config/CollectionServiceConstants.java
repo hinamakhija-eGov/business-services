@@ -172,6 +172,9 @@ public class CollectionServiceConstants {
     public static final String RECEIPT_CHEQUE_OR_DD_DATE_FIELD = "Cheque/DD Date";
     public static final String RECEIPT_CHEQUE_OR_DD_DATE_MESSAGE = "Cheque/DD date should not be greater than Manual Receipt Date ";
 
+    public static final String RECEIPT_NEFT_OR_RTGS_DATE = "INVALID_NEFT_RTGS_DATE";
+    public static final String RECEIPT_NEFT_OR_RTGS_DATE_MESSAGE = "NEFT/RTGS date should not be greater than Manual Receipt Date ";
+
     public static final String CHEQUE_DD_DATE_WITH_MANUAL_RECEIPT_DATE_CODE = "egcl_0021";
     public static final String CHEQUE_DD_DATE_WITH_MANUAL_RECEIPT_DATE_FIELD = "Cheque/DD Date";
     public static final String CHEQUE_DD_DATE_WITH_MANUAL_RECEIPT_DATE_MESSAGE = "Cheque/DD date should be less than and within 90 days of Manual Receipt Date ";
