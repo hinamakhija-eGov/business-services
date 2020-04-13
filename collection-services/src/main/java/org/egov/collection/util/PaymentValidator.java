@@ -162,7 +162,8 @@ public class PaymentValidator {
                 validateChequeDD(payment, errorMap);
 
             if (paymentMode.equalsIgnoreCase(InstrumentTypesEnum.OFFLINE_NEFT.name())
-                    || paymentMode.equalsIgnoreCase(InstrumentTypesEnum.OFFLINE_RTGS.name()))
+                    || paymentMode.equalsIgnoreCase(InstrumentTypesEnum.OFFLINE_RTGS.name())
+                    || paymentMode.equalsIgnoreCase(InstrumentTypesEnum.POSTAL_ORDER.name()))
                 validateNEFTAndRTGS(payment, errorMap);
 
         }
