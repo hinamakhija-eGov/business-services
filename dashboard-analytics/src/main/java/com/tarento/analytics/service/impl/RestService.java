@@ -85,7 +85,7 @@ public class RestService {
             headers.add("Authorization", "Bearer "+ authToken );
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        LOGGER.info("Request Node: " + requestNode);
+        LOGGER.info("Request URI: " + uri + ", Node: " + requestNode);
         HttpEntity<String> requestEntity = null;
         if(requestNode != null ) requestEntity = new HttpEntity<>(requestNode.toString(), headers);
         else requestEntity = new HttpEntity<>("{}", headers);
