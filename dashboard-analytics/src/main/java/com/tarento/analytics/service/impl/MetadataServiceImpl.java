@@ -47,11 +47,12 @@ public class MetadataServiceImpl implements MetadataService {
 	 
 	 @Autowired
 	 private RestTemplate restTemplate;
-
 	 
-	 @Value("${egov.mdms-service.target.url}")
-	 private String mdmsServiceTargetUrl;
-
+	@Value("${egov.mdms.host}")
+    private String mdmsServiceHost;
+    
+    @Value("${egov.mdms.search.endpoint}")
+    private String mdmsSearchEndpoint;
 
 	@Override
 	public ArrayNode getDashboardConfiguration(String dashboardId, String catagory, List<RoleDto> roleIds) throws AINException, IOException {
@@ -158,7 +159,7 @@ public class MetadataServiceImpl implements MetadataService {
 	}*/
 
 	public JSONArray getTargetDistrict() throws Exception {
-		final String baseUrl = mdmsServiceTargetUrl;
+		final String baseUrl = mdmsServiceHost + mdmsSearchEndpoint;
 		URI uri = new URI(baseUrl);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);

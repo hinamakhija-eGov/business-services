@@ -22,8 +22,11 @@ public class MdmsService {
 
     private Map<String, String> ddrTenantMapping = new HashMap<>();
 
-    @Value("${egov.mdms-service.target.url}")
-    private String mdmsServiceSearchUri;
+    @Value("${egov.mdms.host}")
+    private String mdmsServiceHost;
+    
+    @Value("${egov.mdms.search.endpoint}")
+    private String mdmsSearchEndpoint;
 
     @Autowired
     private RestService restService;
@@ -40,7 +43,7 @@ public class MdmsService {
 
         JsonNode requestInfo = mapper.readTree(REQUEST_INFO_STR);
         try {
-            JsonNode response = restService.post(mdmsServiceSearchUri, "", requestInfo);
+            JsonNode response = restService.post(mdmsServiceHost + mdmsSearchEndpoint, "", requestInfo);
             ArrayNode tenants = (ArrayNode) response.findValues(Constants.MDMSKeys.TENANTS).get(0);
 
 
