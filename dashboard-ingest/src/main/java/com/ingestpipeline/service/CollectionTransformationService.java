@@ -56,7 +56,7 @@ public class CollectionTransformationService implements TransformService {
         try {
 
             JsonNode incomingNode = mapper.convertValue(incomingDataCopy, JsonNode.class);
-            LOGGER.info("incoming data: "+incomingNode);
+            //LOGGER.info("incoming data: "+incomingNode);
             //JsonNode identifier = incomingNode.get(Constants.DATA_OBJECT).get(TRANSACTION_ID);
 
 
