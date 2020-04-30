@@ -52,10 +52,8 @@ public class TransformConsumer implements KafkaConsumer {
 				isTransformed = defaulttransformService.transformData(incomingData);
 			}
 			if (isTransformed) {
-				ingestProducer.pushToPipeline(incomingData, applicationProperties.getTransactionTransformationTopic(), applicationProperties.getTransactionTransformationKey());
-			} /*else {
-				ingestProducer.pushToPipeline(incomingData, Constants.KafkaTopics.ERROR_INTENT, Constants.KafkaTopics.ERROR_INTENT);
-			}*/
+				ingestProducer.pushToPipeline(incomingData, applicationProperties.getTransactionTransformationTopic(), null);
+			}
 		} catch (final Exception e) {
 			LOGGER.error("Exception Encountered while processing the received message : " + e.getMessage());
 			e.printStackTrace();

@@ -61,7 +61,7 @@ public class UpdateConsumer {
         	str.append(topic).append("Exception: ");
         	LOGGER.error(str.toString(), e);
             if(!esPushDirect)
-                ingestProducer.pushToPipeline(data, ERROR_INTENT, ERROR_INTENT);
+                ingestProducer.pushToPipeline(data, ERROR_INTENT, null);
         }
     }
 
