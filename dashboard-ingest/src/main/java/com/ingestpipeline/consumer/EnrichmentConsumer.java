@@ -65,7 +65,7 @@ public class EnrichmentConsumer implements KafkaConsumer {
 				elasticService.push(incomingData);
 			} else {
 				LOGGER.info("Pushing to:: {} :: docId:: {}" , enrichedDataTopic, " docId:: "+docId);
-				ingestProducer.pushToPipeline(incomingData, enrichedDataTopic, null);
+				ingestProducer.pushToPipeline(incomingData, enrichedDataTopic, docId);
 			}
 			if(updatedIncomingData == null) {
 				LOGGER.info("Incoming Data is null::");
