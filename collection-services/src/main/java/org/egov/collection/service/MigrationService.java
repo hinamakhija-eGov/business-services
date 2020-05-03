@@ -33,6 +33,7 @@ import org.egov.collection.web.contract.BillResponse;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.response.ResponseInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -64,25 +65,34 @@ public class MigrationService {
     private BillIdRowMapper billIdRowMapper;
 
     @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Autowired
     public MigrationService(ApplicationProperties properties, ServiceRequestRepository serviceRequestRepository,CollectionProducer producer) {
         this.properties = properties;
         this.serviceRequestRepository = serviceRequestRepository;
         this.producer = producer;
     }
 
+    public static final String TENANT_QUERY = "select distinct tenantid from egcl_receiptheader_v1;";
 
     public void migrate(RequestInfo requestInfo, Integer batchSize) throws JsonProcessingException {
         Integer offset = 0;
         Map<String, Long> billAndBillDetails = new HashMap<>();
-        while(true){
-            ReceiptSearchCriteria_v1 criteria_v1 = ReceiptSearchCriteria_v1.builder()
-                    .offset(offset).limit(batchSize).build();
-            List<Receipt_v1> receipts = collectionService.fetchReceipts(criteria_v1);
-            if(CollectionUtils.isEmpty(receipts))
-                break;
-            migrateReceipt(requestInfo, receipts, billAndBillDetails);
-            offset += batchSize;
+        List<String> tenantIdList =jdbcTemplate.queryForList(TENANT_QUERY,String.class);
+        for(String tenantId : tenantIdList){
+            while(true){
+                ReceiptSearchCriteria_v1 criteria_v1 = ReceiptSearchCriteria_v1.builder()
+                        .offset(offset).limit(batchSize).tenantId(tenantId).build();
+                List<Receipt_v1> receipts = collectionService.fetchReceipts(criteria_v1);
+                if(CollectionUtils.isEmpty(receipts))
+                    break;
+                migrateReceipt(requestInfo, receipts, billAndBillDetails);
+                offset += batchSize;
+            }
+
         }
+
         log.info("BillAndBillDetails: "+billAndBillDetails);
         log.info("Total receipts migrated: " + offset);
     }
