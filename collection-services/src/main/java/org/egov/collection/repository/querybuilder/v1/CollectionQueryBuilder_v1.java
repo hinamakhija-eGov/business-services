@@ -224,19 +224,20 @@ public class CollectionQueryBuilder_v1 {
                                               ReceiptSearchCriteria_v1 criteria) {
 
         if (criteria.getLimit()!=null && criteria.getLimit() != 0) {
-            String finalQuery = PAGINATION_WRAPPER.replace("{baseQuery}", selectQuery);
+        	addClauseIfRequired(preparedStatementValues, selectQuery);
+        	selectQuery.append(" rh.id in (select id from from egcl_receiptheader_v1 order by id offset ? limit ?");
             preparedStatementValues.put("offset", criteria.getOffset());
             preparedStatementValues.put("limit", criteria.getOffset() + criteria.getLimit());
 
-            return addOrderByClause(finalQuery, criteria);
+            return addOrderByClause(selectQuery, criteria);
 
         } else
-            return addOrderByClause(selectQuery.toString(), criteria);
+            return addOrderByClause(selectQuery, criteria);
     }
 
-    private static String addOrderByClause(String selectQuery,
+    private static String addOrderByClause(StringBuilder selectQuery,
                                            ReceiptSearchCriteria_v1 criteria) {
-        return selectQuery + " ORDER BY rh_receiptDate DESC ";
+        return selectQuery.append(" ORDER BY rh_receiptDate DESC ").toString();
     }
 
 
