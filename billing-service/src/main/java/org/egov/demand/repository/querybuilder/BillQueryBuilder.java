@@ -50,7 +50,7 @@ public class BillQueryBuilder {
 			+ " ad.orderno AS ad_orderno, ad.accountdescription AS ad_accountdescription,"
 			+ " ad.amount AS ad_amount, ad.adjustedamount AS ad_adjustedamount, ad.taxheadcode AS ad_taxheadcode, ad.demanddetailid,"
 			+ " ad.isactualdemand AS ad_isactualdemand, ad.purpose AS ad_purpose,"
-			+ " b.additionaldetails as b_additionaldetails,  bd.additionaldetails as bd_additionaldetails,  ad.additionaldetails as ad_additionaldetails"
+			+ " b.additionaldetails as b_additionaldetails,  bd.additionaldetails as bd_additionaldetails "
 			+ " FROM egbs_bill_v1 b"
 			+ " LEFT OUTER JOIN egbs_billdetail_v1 bd ON b.id = bd.billid AND b.tenantid = bd.tenantid"
 			+ " LEFT OUTER JOIN egbs_billaccountdetail_v1 ad ON bd.id = ad.billdetail AND bd.tenantid = ad.tenantid"
