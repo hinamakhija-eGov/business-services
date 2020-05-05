@@ -83,6 +83,7 @@ public class CollectionResultSetExtractor_v1 implements ResultSetExtractor<List<
                         .build();
 
                 Bill_v1 billInfo = Bill_v1.builder()
+                        .id(resultSet.getString("rh_id"))
                         .payerName(resultSet.getString("rh_payername"))
                         .payerAddress(resultSet.getString("rh_payerAddress"))
                         .payerEmail(resultSet.getString("rh_payerEmail"))

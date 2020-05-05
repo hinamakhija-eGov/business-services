@@ -76,31 +76,34 @@ public class MigrationService {
 
     public static final String TENANT_QUERY = "select distinct tenantid from egcl_receiptheader_v1;";
 
-    public void migrate(RequestInfo requestInfo, Integer batchSize) throws JsonProcessingException {
+    public void migrate(RequestInfo requestInfo, Integer batchSize,List<String> nobillId) throws JsonProcessingException {
         Integer offset = 0;
         Map<String, Long> billAndBillDetails = new HashMap<>();
         List<String> tenantIdList =jdbcTemplate.queryForList(TENANT_QUERY,String.class);
-        for(String tenantId : tenantIdList){
-            while(true){
-                ReceiptSearchCriteria_v1 criteria_v1 = ReceiptSearchCriteria_v1.builder()
-                        .offset(offset).limit(batchSize).tenantId(tenantId).build();
-                List<Receipt_v1> receipts = collectionService.fetchReceipts(criteria_v1);
-                if(CollectionUtils.isEmpty(receipts))
-                    break;
-                migrateReceipt(requestInfo, receipts, billAndBillDetails);
-                offset += batchSize;
-            }
-
+        for(String tenantid:tenantIdList){
+                while(true){
+                    long startTime = System.nanoTime();
+                    ReceiptSearchCriteria_v1 criteria_v1 = ReceiptSearchCriteria_v1.builder()
+                            .offset(offset).limit(batchSize).tenantId(tenantid).build();
+                    List<Receipt_v1> receipts = collectionService.fetchReceipts(criteria_v1);
+                    if(CollectionUtils.isEmpty(receipts))
+                        break;
+                    migrateReceipt(requestInfo, receipts, billAndBillDetails, nobillId);
+                    offset += batchSize;
+                    long endtime = System.nanoTime();
+                    long elapsetime = endtime - startTime;
+                    System.out.println("\n\nBatch Elapsed Time--->"+elapsetime+"\n\n");
+                }
         }
 
         log.info("BillAndBillDetails: "+billAndBillDetails);
         log.info("Total receipts migrated: " + offset);
     }
 
-    public void migrateReceipt(RequestInfo requestInfo, List<Receipt_v1> receipts, Map<String, Long> billAndBillDetails){
+    public void migrateReceipt(RequestInfo requestInfo, List<Receipt_v1> receipts, Map<String, Long> billAndBillDetails,List<String> nobillId){
         List<Payment> paymentList = new ArrayList<Payment>();
         for(Receipt_v1 receipt : receipts){
-            Payment payment = transformToPayment(requestInfo,receipt, billAndBillDetails);
+            Payment payment = transformToPayment(requestInfo,receipt, billAndBillDetails,nobillId);
             if(null != payment){
                 paymentList.add(payment);
             }
@@ -110,8 +113,8 @@ public class MigrationService {
                 .getCollectionMigrationTopicKey(), paymentResponse);
     }
 
-    private Payment transformToPayment(RequestInfo requestInfo, Receipt_v1 receipt, Map<String, Long> billAndBillDetails) {
-    	Bill bill = getBillFromV2(receipt.getBill().get(0),requestInfo);
+    private Payment transformToPayment(RequestInfo requestInfo, Receipt_v1 receipt, Map<String, Long> billAndBillDetails, List<String> nobillId) {
+    	Bill bill = getBillFromV2(receipt.getBill().get(0),requestInfo, nobillId);
         if(null == bill) 
             return null;
         else {
@@ -216,9 +219,10 @@ public class MigrationService {
         return newAuditDetails;
     }
 
-    private Bill getBillFromV2(Bill_v1 bill,RequestInfo requestInfo){
-           String billDetailId = bill.getBillDetails().get(0).getBillNumber();
-           String billId = getBillIdFromBillDetail(billDetailId);
+    private Bill getBillFromV2(Bill_v1 bill,RequestInfo requestInfo, List<String> nobillId){
+            String billDetailId = bill.getBillDetails().get(0).getBillNumber();
+            //String billId = getBillIdFromBillDetail(billDetailId);
+            String billId = billDetailId;
             String tenantId = bill.getBillDetails().get(0).getTenantId();
             String service = bill.getBillDetails().get(0).getBusinessService();
             String status = bill.getBillDetails().get(0).getStatus();
@@ -231,11 +235,12 @@ public class MigrationService {
             ObjectMapper mapper = new ObjectMapper();
             try{
                 BillResponse billResponse = mapper.convertValue(response, BillResponse.class);
-                if(CollectionUtils.isEmpty(billResponse.getBill())){
+                if(billResponse.getBill().size()<=0){
                     log.info("No bills for billId: "+billId);
+                    nobillId.add(billId);
                     return null;
                 }else{
-                    Bill newBill = billResponse.getBill().get(0);
+                        Bill newBill = billResponse.getBill().get(0);
                     if(null == newBill.getStatus())
                         newBill.setStatus(Bill.StatusEnum.EXPIRED);
                     

@@ -181,7 +181,14 @@ public class PaymentController {
     @ResponseBody
     public ResponseEntity<?> workflow(@RequestBody @Valid RequestInfoWrapper requestInfoWrapper,
                                       @RequestParam("batchSize") Integer batchSize) throws JsonProcessingException {
-        migrationService.migrate(requestInfoWrapper.getRequestInfo(), batchSize);
+        long startTime = System.nanoTime();
+        List<String> nobillId= new ArrayList<>();
+        migrationService.migrate(requestInfoWrapper.getRequestInfo(), batchSize,nobillId);
+        long endtime = System.nanoTime();
+        long elapsetime = endtime - startTime;
+        System.out.println("\n\nElapsed Time--->"+elapsetime+"\n\n");
+        System.out.println("\n\nnobillId --->"+nobillId+"\n\n");
+        System.out.println("\n\nnobillId Size --->"+nobillId.size()+"\n\n");
        return new ResponseEntity<>(HttpStatus.OK );
 
     }

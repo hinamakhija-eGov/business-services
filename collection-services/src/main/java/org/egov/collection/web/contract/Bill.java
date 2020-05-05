@@ -105,6 +105,9 @@ public class Bill {
 	  @JsonProperty("amountPaid")
 	  private BigDecimal amountPaid;
 
+	@JsonProperty("fileStoreId")
+	private String fileStoreId;
+
 
 
 	public enum StatusEnum {
