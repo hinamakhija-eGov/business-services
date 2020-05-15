@@ -86,6 +86,7 @@ import org.egov.demand.web.contract.BusinessServiceDetailCriteria;
 import org.egov.demand.web.contract.RequestInfoWrapper;
 import org.egov.demand.web.contract.User;
 import org.egov.demand.web.contract.factory.ResponseFactory;
+import org.egov.demand.web.validator.BillValidator;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -130,6 +131,9 @@ public class BillServicev2 {
 	
 	@Autowired
 	private IdGenRepo idGenRepo;
+	
+	@Autowired
+	private BillValidator billValidator;
 	
 	@Value("${kafka.topics.billgen.topic.name}")
 	private String notifTopicName;
@@ -255,6 +259,7 @@ public class BillServicev2 {
 	 */
 	public BillResponseV2 generateBill(GenerateBillCriteria billCriteria, RequestInfo requestInfo) {
 
+		billValidator.validateBillGenRequest(billCriteria);
 		Set<String> demandIds = new HashSet<>();
 		Set<String> consumerCodes = new HashSet<>();
 
