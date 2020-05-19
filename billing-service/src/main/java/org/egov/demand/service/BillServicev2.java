@@ -153,6 +153,7 @@ public class BillServicev2 {
 	 */
 	public BillResponseV2 fetchBill(GenerateBillCriteria billCriteria, RequestInfoWrapper requestInfoWrapper) {
 		
+		billValidator.validateBillGenRequest(billCriteria);
 		RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
 		BillResponseV2 res = searchBill(billCriteria.toBillSearchCriteria(), requestInfo);
 		List<BillV2> bills = res.getBill();
@@ -259,7 +260,6 @@ public class BillServicev2 {
 	 */
 	public BillResponseV2 generateBill(GenerateBillCriteria billCriteria, RequestInfo requestInfo) {
 
-		billValidator.validateBillGenRequest(billCriteria);
 		Set<String> demandIds = new HashSet<>();
 		Set<String> consumerCodes = new HashSet<>();
 
