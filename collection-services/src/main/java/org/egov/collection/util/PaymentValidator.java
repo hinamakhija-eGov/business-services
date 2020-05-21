@@ -347,12 +347,17 @@ public class PaymentValidator {
 
         Bill bill = paymentDetail.getBill();
 
+        // If IsAdvanceAllowed is null it is interpretated as not allowed
+        Boolean isAdvanceAllowed = !(bill.getIsAdvanceAllowed() == null || !bill.getIsAdvanceAllowed());
+
         // Total amount to be paid should be same in bill and paymentDetail
         if (paymentDetail.getTotalDue().compareTo(bill.getTotalAmount()) != 0)
             errorMap.put("INVALID_PAYMENTDETAIL",
                     "The amount to be paid is mismatching with bill for paymentDetial with bill id: " + bill.getId());
 
-        if(!Utils.isPositiveInteger(paymentDetail.getBill().getTotalAmount()))
+
+        // If advance is not allowed bill total amount should be positive integer
+        if(!isAdvanceAllowed && !Utils.isPositiveInteger(paymentDetail.getBill().getTotalAmount()))
             errorMap.put("INVALID_BILL_AMOUNT","The bill amount of bill: "+paymentDetail.getBill().getId()+" is fractional or less than zero");
 
         // Amount to be paid should be greater than minimum collection amount
@@ -382,7 +387,7 @@ public class PaymentValidator {
             errorMap.put("INVALID_PAYMENTDETAIL",
                     "The amount paid for the paymentDetail with bill number: " + paymentDetail.getBillId());
 
-        // Zero amount payment is allowed only if bill amount is zero
+        // Zero amount payment is allowed only if bill amount is not positive
         if (paymentDetail.getTotalAmountPaid().compareTo(BigDecimal.ZERO) == 0
                 && bill.getTotalAmount().compareTo(BigDecimal.ZERO) > 0)
             errorMap.put("INVALID_PAYMENTDETAIL",
