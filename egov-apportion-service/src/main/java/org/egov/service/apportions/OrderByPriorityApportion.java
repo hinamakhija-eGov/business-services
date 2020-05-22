@@ -67,7 +67,7 @@ public class OrderByPriorityApportion implements Apportion {
 
         for (BillDetail billDetail : billDetails){
 
-            if(remainingAmount.compareTo(BigDecimal.ZERO)==0){
+            if(remainingAmount.compareTo(BigDecimal.ZERO)==0 && billDetail.getAmount().compareTo(BigDecimal.ZERO)>=0){
                 billDetail.setAmountPaid(BigDecimal.ZERO);
                 continue;
             }
