@@ -184,12 +184,14 @@ public class BillServicev2 {
 				if (billDetail.getExpiryDate().compareTo(System.currentTimeMillis()) < 0)
 					cosnumerCodesToBeExpired.add(bill.getConsumerCode());
 			}
+			System.out.println("\n\nLoop bill"+cosnumerCodesToBeExpired+"\n\n");
 			if (!isBillExpired) {
 				billsToBeReturned.add(bill);
 			}
+			cosnumerCodesNotFoundInBill.remove(entry.getKey());
 			isBillExpired = false;
 		}
-		System.out.println("\n\nAfter Loop bill"+cosnumerCodesNotFoundInBill+"\n\n");
+		System.out.println("\n\nAfter Loop bill"+cosnumerCodesToBeExpired+"\n\n");
 		/*
 		 * If none of the billDetails in the bills needs to be updated then return the search result
 		 */
