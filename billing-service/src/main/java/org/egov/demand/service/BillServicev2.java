@@ -189,12 +189,11 @@ public class BillServicev2 {
 			}
 			isBillExpired = false;
 		}
-		System.out.println("\n\ncosnumerCodesNotFoundInBill"+cosnumerCodesNotFoundInBill+"\n\n");
-		System.out.println("\n\ncosnumerCodesToBeExpired"+cosnumerCodesToBeExpired+"\n\n");
+		System.out.println("\n\nAfter Loop bill"+cosnumerCodesNotFoundInBill+"\n\n");
 		/*
 		 * If none of the billDetails in the bills needs to be updated then return the search result
 		 */
-		if(CollectionUtils.isEmpty(cosnumerCodesToBeExpired))
+		if(CollectionUtils.isEmpty(cosnumerCodesToBeExpired) && CollectionUtils.isEmpty(cosnumerCodesNotFoundInBill))
 			return res;
 		else {
 			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), cosnumerCodesToBeExpired, billCriteria.getTenantId(), requestInfoWrapper);
