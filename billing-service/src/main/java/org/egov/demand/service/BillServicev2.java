@@ -172,7 +172,9 @@ public class BillServicev2 {
 		 * grouping by service code and collecting the list of 
 		 * consumerCodes against the service code
 		 */
-		List<String> cosnumerCodesNotFoundInBill = new ArrayList<>(billCriteria.getConsumerCode());
+ 		List<String> cosnumerCodesNotFoundInBill = CollectionUtils.isEmpty(billCriteria.getConsumerCode())
+				? new ArrayList<>()
+				: new ArrayList<>(billCriteria.getConsumerCode());
 		List<String> cosnumerCodesToBeExpired = new ArrayList<>();
 		List<BillV2> billsToBeReturned = new ArrayList<>();
 		Boolean isBillExpired = false;
@@ -181,12 +183,15 @@ public class BillServicev2 {
 			BillV2 bill = entry.getValue();
 
 			for (BillDetailV2 billDetail : bill.getBillDetails()) {
-				if (billDetail.getExpiryDate().compareTo(System.currentTimeMillis()) < 0)
-					cosnumerCodesToBeExpired.add(bill.getConsumerCode());
+				if (billDetail.getExpiryDate().compareTo(System.currentTimeMillis()) < 0) {
+					isBillExpired = true;
+					break;
+				}
 			}
-			if (!isBillExpired) {
+			if (!isBillExpired)
 				billsToBeReturned.add(bill);
-			}
+			else
+				cosnumerCodesToBeExpired.add(bill.getConsumerCode());
 			cosnumerCodesNotFoundInBill.remove(entry.getKey());
 			isBillExpired = false;
 		}
