@@ -236,6 +236,7 @@ public class OrderByPriorityApportion implements Apportion {
                         BigDecimal diff = totalPositiveAmount.subtract(advance);
                         BigDecimal adjustedAmount = billAccountDetail.getAdjustedAmount();
                         billAccountDetail.setAdjustedAmount(adjustedAmount.add(diff).negate());
+                        advance = totalPositiveAmount.negate();
                         break;
                     }
                     else {
@@ -247,7 +248,7 @@ public class OrderByPriorityApportion implements Apportion {
             }
 
         }
-        return totalPositiveAmount;
+        return advance.negate();
     }
 
 
