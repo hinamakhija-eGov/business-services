@@ -118,7 +118,7 @@ public class BillQueryBuilder {
 		StringBuilder maxQuery = new StringBuilder(BILL_MAX_QUERY.replace(REPLACE_STRING, selectQuery));
 
 		if (searchBillCriteria.isOrderBy())
-			maxQuery.append(" ORDER BY b.createddate desc");
+			maxQuery.append(" ORDER BY billresult.bd_consumercode ");
 
 		maxQuery.append(" LIMIT ?");
 		long pageSize = Integer.parseInt(applicationProperties.getCommonSearchDefaultLimit());
