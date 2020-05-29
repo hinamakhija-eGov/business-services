@@ -41,7 +41,8 @@ public class BillQueryBuilder {
 	
 	public static final String BILL_MAX_QUERY = "WITH billresult AS ({replace}) SELECT * FROM billresult "
 			+ " INNER JOIN (SELECT bd_consumercode, max(b_createddate) as maxdate FROM billresult GROUP BY bd_consumercode) as uniqbill"
-			+ " ON uniqbill.bd_consumercode=billresult.bd_consumercode AND uniqbill.maxdate=billresult.b_createddate ";
+			+ " ON uniqbill.bd_consumercode=billresult.bd_consumercode AND uniqbill.maxdate=billresult.b_createddate "
+			+ " INNER JOIN (select b_id from billresult LIMIT ? OFFSET ?) billlimiter ON billlimiter.b_id=billresult.b_id";
 	
 	public static final String BILL_BASE_QUERY = "SELECT b.id AS b_id,b.mobilenumber, b.tenantid AS b_tenantid,"
 			+ " b.payername AS b_payername, b.payeraddress AS b_payeraddress, b.payeremail AS b_payeremail,b.filestoreid AS b_fileStoreId,"
@@ -120,14 +121,12 @@ public class BillQueryBuilder {
 		if (searchBillCriteria.isOrderBy())
 			maxQuery.append(" ORDER BY billresult.bd_consumercode ");
 
-		maxQuery.append(" LIMIT ?");
 		long pageSize = Integer.parseInt(applicationProperties.getCommonSearchDefaultLimit());
 		if (searchBillCriteria.getSize() != null)
 			pageSize = searchBillCriteria.getSize();
 		preparedStatementValues.add(pageSize); // Set limit to pageSize
 
 		// handle offset here
-		maxQuery.append(" OFFSET ?");
 		long pageNumber = 0; // Default pageNo is zero meaning first page
 		if (searchBillCriteria.getOffset() != null)
 			pageNumber = searchBillCriteria.getOffset() - 1;
