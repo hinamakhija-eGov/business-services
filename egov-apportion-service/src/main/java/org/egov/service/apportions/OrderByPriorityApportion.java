@@ -56,7 +56,6 @@ public class OrderByPriorityApportion implements Apportion {
     public List<BillDetail> apportionPaidAmount(Bill bill, Object masterData) {
         bill.getBillDetails().sort(Comparator.comparing(BillDetail::getFromPeriod));
         List<BillDetail> billDetails = bill.getBillDetails();
-        BigDecimal amountBeforeApportion = bill.getAmountPaid();
         BigDecimal remainingAmount = bill.getAmountPaid();
         BigDecimal amount;
         Boolean isAmountPositive;
@@ -68,6 +67,8 @@ public class OrderByPriorityApportion implements Apportion {
 
         if(!config.getApportionByValueAndOrder())
             validateOrder(billDetails);
+
+        BigDecimal amountBeforeApportion = remainingAmount;
 
         for (BillDetail billDetail : billDetails){
 
@@ -113,7 +114,11 @@ public class OrderByPriorityApportion implements Apportion {
                     }
                 }
             }
-            billDetail.setAmountPaid(amountBeforeApportion.subtract(remainingAmount));
+
+            if(billDetail.getAmountPaid()==null)
+                billDetail.setAmountPaid(BigDecimal.ZERO);
+
+            billDetail.setAmountPaid(billDetail.getAmountPaid().add(amountBeforeApportion.subtract(remainingAmount)));
             amountBeforeApportion = remainingAmount;
         }
 
@@ -225,6 +230,9 @@ public class OrderByPriorityApportion implements Apportion {
         BigDecimal advance = BigDecimal.ZERO;
         for (BillDetail billDetail : billDetails) {
 
+            if(billDetail.getAmountPaid()==null)
+                billDetail.setAmountPaid(BigDecimal.ZERO);
+
             for(BillAccountDetail billAccountDetail : billDetail.getBillAccountDetails()) {
 
                 // FIX ME
@@ -237,11 +245,13 @@ public class OrderByPriorityApportion implements Apportion {
                         BigDecimal adjustedAmount = billAccountDetail.getAdjustedAmount();
                         billAccountDetail.setAdjustedAmount(adjustedAmount.add(diff).negate());
                         advance = totalPositiveAmount.negate();
+                        billDetail.setAmountPaid(billDetail.getAmountPaid().add(diff.negate()));
                         break;
                     }
                     else {
                         advance = advance.add(net);
                         billAccountDetail.setAdjustedAmount(billAccountDetail.getAmount());
+                        billDetail.setAmountPaid(billDetail.getAmountPaid().add(net));
                     }
                 }
 
