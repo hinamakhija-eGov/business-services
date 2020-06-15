@@ -3,10 +3,7 @@ package org.egov.collection.repository.querybuilder;
 import static java.util.stream.Collectors.toSet;
 
 import java.sql.SQLException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.egov.collection.model.Payment;
@@ -341,10 +338,18 @@ public class PaymentQueryBuilder {
             preparedStatementValues.put("id", searchCriteria.getIds());	
         }
 
-        if (searchCriteria.getReceiptNumbers() != null && !searchCriteria.getReceiptNumbers().isEmpty()) {
+        Set<String> receiptNumbers = new HashSet<String>();
+        if(!CollectionUtils.isEmpty(searchCriteria.getReceiptNumbers())){
+            searchCriteria.getReceiptNumbers().forEach(receiptNumber -> {
+                receiptNumbers.add(receiptNumber.toUpperCase());
+            });
+        }
+        
+
+        if (receiptNumbers != null && !receiptNumbers.isEmpty()) {
             addClauseIfRequired(preparedStatementValues, selectQuery);
             selectQuery.append(" pyd.receiptNumber IN (:receiptnumber)  ");
-            preparedStatementValues.put("receiptnumber", searchCriteria.getReceiptNumbers());
+            preparedStatementValues.put("receiptnumber", receiptNumbers);
         }
 
         if (!CollectionUtils.isEmpty(searchCriteria.getStatus())) {
