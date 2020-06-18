@@ -3,13 +3,18 @@ package org.egov.collection.service;
 import static org.egov.collection.model.enums.InstrumentTypesEnum.CARD;
 import static org.egov.collection.model.enums.InstrumentTypesEnum.ONLINE;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.egov.collection.config.ApplicationProperties;
 import org.egov.collection.model.AuditDetails;
@@ -20,21 +25,23 @@ import org.egov.collection.model.RequestInfoWrapper;
 import org.egov.collection.model.enums.PaymentModeEnum;
 import org.egov.collection.model.enums.PaymentStatusEnum;
 import org.egov.collection.model.v1.AuditDetails_v1;
+import org.egov.collection.model.v1.BillAccountDetail_v1;
+import org.egov.collection.model.v1.BillDetail_v1;
 import org.egov.collection.model.v1.Bill_v1;
 import org.egov.collection.model.v1.ReceiptSearchCriteria_v1;
 import org.egov.collection.model.v1.Receipt_v1;
 import org.egov.collection.producer.CollectionProducer;
 import org.egov.collection.repository.ServiceRequestRepository;
-import org.egov.collection.repository.rowmapper.BillIdRowMapper;
 import org.egov.collection.service.v1.CollectionService_v1;
 import org.egov.collection.web.contract.Bill;
+import org.egov.collection.web.contract.Bill.StatusEnum;
+import org.egov.collection.web.contract.BillAccountDetail;
 import org.egov.collection.web.contract.BillDetail;
 import org.egov.collection.web.contract.BillResponse;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.response.ResponseInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -59,13 +66,10 @@ public class MigrationService {
     private CollectionService_v1 collectionService;
 
     @Autowired
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
-    @Autowired
-    private BillIdRowMapper billIdRowMapper;
-
-    @Autowired
     private JdbcTemplate jdbcTemplate;
+    
+    @Autowired
+    private ObjectMapper mapper;
 
     @Autowired
     public MigrationService(ApplicationProperties properties, ServiceRequestRepository serviceRequestRepository,CollectionProducer producer) {
@@ -82,7 +86,7 @@ public class MigrationService {
         List<String> tenantIdList =jdbcTemplate.queryForList(TENANT_QUERY,String.class);
         for(String tenantid:tenantIdList){
                 while(true){
-                    long startTime = System.nanoTime();
+                    long startTime = System.currentTimeMillis();
                     ReceiptSearchCriteria_v1 criteria_v1 = ReceiptSearchCriteria_v1.builder()
                             .offset(offset).limit(batchSize).tenantId(tenantid).build();
                     List<Receipt_v1> receipts = collectionService.fetchReceipts(criteria_v1);
@@ -90,7 +94,7 @@ public class MigrationService {
                         break;
                     migrateReceipt(requestInfo, receipts, billAndBillDetails, nobillId);
                     offset += batchSize;
-                    long endtime = System.nanoTime();
+                    long endtime = System.currentTimeMillis();
                     long elapsetime = endtime - startTime;
                     System.out.println("\n\nBatch Elapsed Time--->"+elapsetime+"\n\n");
                 }
@@ -101,34 +105,160 @@ public class MigrationService {
     }
 
     public void migrateReceipt(RequestInfo requestInfo, List<Receipt_v1> receipts, Map<String, Long> billAndBillDetails,List<String> nobillId){
+    	
         List<Payment> paymentList = new ArrayList<Payment>();
-        for(Receipt_v1 receipt : receipts){
-            Payment payment = transformToPayment(requestInfo,receipt, billAndBillDetails,nobillId);
-            if(null != payment){
-                paymentList.add(payment);
-            }
-        }
+        
+		for (Receipt_v1 receipt : receipts) {
+
+			String billNumber = receipt.getBill().get(0).getBillDetails().get(0).getBillNumber();
+			Bill newBill = convertBillToNew(receipt.getBill().get(0), receipt.getAuditDetails());
+			if (newBill != null) {
+
+				Payment payment = transformToPayment(requestInfo, receipt, newBill, billAndBillDetails);
+				paymentList.add(payment);
+			} else {
+
+				nobillId.add(billNumber);
+			}
+		}
+        
         PaymentResponse paymentResponse = new PaymentResponse(new ResponseInfo(), paymentList);
         producer.producer(properties.getCollectionMigrationTopicName(), properties
                 .getCollectionMigrationTopicKey(), paymentResponse);
     }
 
-    private Payment transformToPayment(RequestInfo requestInfo, Receipt_v1 receipt, Map<String, Long> billAndBillDetails, List<String> nobillId) {
-    	Bill bill = getBillFromV2(receipt.getBill().get(0),requestInfo, nobillId);
-        if(null == bill) 
-            return null;
-        else {
-        	if(null == bill.getBillNumber()) {
-        		bill.setBillNumber("NA");
-        	}
-        	if(null != billAndBillDetails.get(bill.getId()))
-        		billAndBillDetails.put(bill.getId(), billAndBillDetails.get(bill.getId()) + 1L);
-        	else
-        		billAndBillDetails.put(bill.getId(), 1L);
-        	
-        	return getPayment(requestInfo, receipt, bill);
-        }
-    }
+	private Bill convertBillToNew(Bill_v1 bill_v1, AuditDetails_v1 oldAuditDetails) {
+		
+		BigDecimal AmountPaid = bill_v1.getBillDetails().stream().map(detail -> detail.getAmountPaid()).reduce(BigDecimal.ZERO, BigDecimal::add);
+		BigDecimal totalAmount = bill_v1.getBillDetails().stream().map(detail -> detail.getTotalAmount()).reduce(BigDecimal.ZERO, BigDecimal::add);
+		StatusEnum status = StatusEnum.fromValue(bill_v1.getBillDetails().get(0).getStatus()); 
+		status =  status != null ? status : StatusEnum.EXPIRED;
+		
+		AuditDetails auditDetails = AuditDetails.builder()
+				.lastModifiedTime(oldAuditDetails.getLastModifiedDate())
+				.lastModifiedBy(oldAuditDetails.getLastModifiedBy())
+				.createdTime(oldAuditDetails.getCreatedDate())
+				.createdBy(oldAuditDetails.getCreatedBy())
+				.build();
+		
+		JsonNode jsonNode = null;
+		
+		try {
+			if (null != bill_v1.getAdditionalDetails())
+				jsonNode = mapper.readTree(bill_v1.getAdditionalDetails().toString());
+		} catch (IOException e) {
+
+		}
+
+		List<BillDetail> billdetails = getNewBillDetails(bill_v1.getBillDetails(), auditDetails, bill_v1.getId()); 
+		
+		return Bill.builder()
+				.reasonForCancellation(bill_v1.getBillDetails().get(0).getCancellationRemarks())
+				.businessService(bill_v1.getBillDetails().get(0).getBusinessService())
+				.consumerCode(bill_v1.getBillDetails().get(0).getConsumerCode())
+				.billNumber(bill_v1.getBillDetails().get(0).getBillNumber())
+				.billDate(bill_v1.getBillDetails().get(0).getBillDate())
+				.payerAddress(bill_v1.getPayerAddress())
+				.mobileNumber(bill_v1.getMobileNumber())
+				.auditDetails(auditDetails)
+				.payerEmail(bill_v1.getPayerEmail())
+				.payerName(bill_v1.getPayerName())
+				.tenantId(bill_v1.getTenantId())
+				.payerId(bill_v1.getPayerId())
+				.paidBy(bill_v1.getPaidBy())
+				.additionalDetails(jsonNode)
+				.totalAmount(totalAmount)
+				.billDetails(billdetails)
+				.amountPaid(AmountPaid)
+				.id(bill_v1.getId())
+				.status(status)	
+				.build();
+		
+		
+	}
+
+	private List<BillDetail> getNewBillDetails(List<BillDetail_v1> billDetails, AuditDetails auditdetails, String billId) {
+
+		List<BillDetail> newDetails = new ArrayList<>();
+		
+		for (BillDetail_v1 oldDetail : billDetails) {
+			
+			List<BillAccountDetail> accDetails = getNewAccDetails(oldDetail.getBillAccountDetails(), auditdetails);
+			Long expiryDate = oldDetail.getExpiryDate() != null ? oldDetail.getExpiryDate() : 0l;
+			String demandId = oldDetail.getDemandId() != null ? oldDetail.getDemandId() : "";
+			String dId = oldDetail.getId() != null ? oldDetail.getId() : UUID.randomUUID().toString();
+			
+			BillDetail detail = BillDetail.builder()
+				.manualReceiptNumber(oldDetail.getManualReceiptNumber())
+				.cancellationRemarks(oldDetail.getCancellationRemarks())
+				.manualReceiptDate(oldDetail.getManualReceiptDate())
+				.billDescription(oldDetail.getBillDescription())
+				.collectionType(oldDetail.getCollectionType())
+				.displayMessage(oldDetail.getDisplayMessage())
+				.voucherHeader(oldDetail.getVoucherHeader())
+				.amountPaid(oldDetail.getAmountPaid())
+				.fromPeriod(oldDetail.getFromPeriod())
+				.amount(oldDetail.getTotalAmount())
+				.boundary(oldDetail.getBoundary())
+				.demandId(demandId)
+				.toPeriod(oldDetail.getToPeriod())
+				.tenantId(oldDetail.getTenantId())
+				.channel(oldDetail.getChannel())
+				.billAccountDetails(accDetails)
+				.auditDetails(auditdetails)
+				.expiryDate(expiryDate)
+				.billId(billId)
+				.id(dId)
+				.build();
+
+			newDetails.add(detail);
+		}
+		
+		return newDetails;
+	}
+
+	private List<BillAccountDetail> getNewAccDetails(List<BillAccountDetail_v1> billAccountDetails, AuditDetails auditdetails) {
+
+		 List<BillAccountDetail> newAccDetails = new ArrayList<>();
+	
+		for (BillAccountDetail_v1 oldAccDetail : billAccountDetails) {
+			
+			String DDId = oldAccDetail.getDemandDetailId() != null ? oldAccDetail.getDemandDetailId() : "";
+			String bADID = oldAccDetail.getId() != null ? oldAccDetail.getId() : UUID.randomUUID().toString();
+			String taxHeadCode = oldAccDetail.getTaxHeadCode() != null ? oldAccDetail.getTaxHeadCode() : "ADVANCE_ADJUSTMENT";
+			
+			BillAccountDetail accDetail = BillAccountDetail.builder()
+					.adjustedAmount(oldAccDetail.getAdjustedAmount())
+					.isActualDemand(oldAccDetail.getIsActualDemand())
+					.billDetailId(oldAccDetail.getBillDetail())
+					.tenantId(oldAccDetail.getTenantId())
+					.purpose(oldAccDetail.getPurpose())
+					.amount(oldAccDetail.getAmount())
+					.order(oldAccDetail.getOrder())
+					.auditDetails(auditdetails)
+					.taxHeadCode(taxHeadCode)
+					.demandDetailId(DDId)
+					.id(bADID)
+					.build();
+			
+			newAccDetails.add(accDetail);
+		}
+		
+		return newAccDetails;
+	}
+
+	private Payment transformToPayment(RequestInfo requestInfo, Receipt_v1 receipt, Bill newBill, Map<String, Long> billAndBillDetails) {
+
+		if (null == newBill.getBillNumber()) {
+			newBill.setBillNumber("NA");
+		}
+		if (null != billAndBillDetails.get(newBill.getId()))
+			billAndBillDetails.put(newBill.getId(), billAndBillDetails.get(newBill.getId()) + 1L);
+		else
+			billAndBillDetails.put(newBill.getId(), 1L);
+
+		return getPayment(requestInfo, receipt, newBill);
+	}
     
 
     private Payment getPayment(RequestInfo requestInfo, Receipt_v1 receipt, Bill newBill){
@@ -219,15 +349,38 @@ public class MigrationService {
         return newAuditDetails;
     }
 
-    private Bill getBillFromV2(Bill_v1 bill,RequestInfo requestInfo, List<String> nobillId){
-            String billDetailId = bill.getBillDetails().get(0).getBillNumber();
-            //String billId = getBillIdFromBillDetail(billDetailId);
-            String billId = billDetailId;
-            String tenantId = bill.getBillDetails().get(0).getTenantId();
-            String service = bill.getBillDetails().get(0).getBusinessService();
-            String status = bill.getBillDetails().get(0).getStatus();
+    
+    private Map<String, Bill> getBillsForReceipts(List<Receipt_v1> receipts, RequestInfo requestInfo){
+    	
+		Map<String, Bill> BillIdMap = new HashMap<>();
+		String tenantId = receipts.get(0).getTenantId();
+    	
+    	Map<String, Set<String>> businesssAndBillIdsMap = receipts.stream()
+				.flatMap(receipt -> receipt.getBill().stream().flatMap(bill -> bill.getBillDetails().stream()))
+				.collect(Collectors.groupingBy(BillDetail_v1::getBusinessService,
+						Collectors.mapping(BillDetail_v1::getBillNumber, Collectors.toSet())));
+    	
+		for (Entry<String, Set<String>> entry : businesssAndBillIdsMap.entrySet()) {
 
-            StringBuilder url = getBillSearchURI(tenantId,billId,service,status);
+			List<Bill> fetchedBills = getBillFromV2(entry.getValue(), entry.getKey(), tenantId, requestInfo);
+			if(!CollectionUtils.isEmpty(fetchedBills))
+				BillIdMap.putAll(fetchedBills.stream().collect(Collectors.toMap(Bill::getId, Function.identity())));
+		}
+		
+    	return BillIdMap;
+    	
+    }
+    
+    private List<Bill> getBillFromV2(Set<String> billids, String businessService, String tenantId, RequestInfo requestInfo){
+    	
+//            String billDetailId = bill.getBillDetails().get(0).getBillNumber();
+//            //String billId = getBillIdFromBillDetail(billDetailId);
+//            String billId = billDetailId;
+//            String tenantId = bill.getBillDetails().get(0).getTenantId();
+//            String service = bill.getBillDetails().get(0).getBusinessService();
+//            String status = bill.getBillDetails().get(0).getStatus();
+
+            StringBuilder url = getBillSearchURI(tenantId,billids,businessService);
 
             RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
 
@@ -235,49 +388,33 @@ public class MigrationService {
             ObjectMapper mapper = new ObjectMapper();
             try{
                 BillResponse billResponse = mapper.convertValue(response, BillResponse.class);
-                if(billResponse.getBill().size()<=0){
-                    log.info("No bills for billId: "+billId);
-                    nobillId.add(billId);
-                    return null;
-                }else{
-                        Bill newBill = billResponse.getBill().get(0);
-                    if(null == newBill.getStatus())
-                        newBill.setStatus(Bill.StatusEnum.EXPIRED);
-                    
-                    return newBill;
+                if(billResponse.getBill().size() > 0){
+
+                        billResponse.getBill().forEach(newBill -> {
+                        	
+                        	 if(null == newBill.getStatus())
+                                 newBill.setStatus(Bill.StatusEnum.EXPIRED);
+                        });
                 }
+                return billResponse.getBill();
+                
             }catch(Exception e) {
-                log.error("Exception: ",e);
+                log.error("bill fetch failed : ",e);
                 return null;
             }
-
     }
 
 
-    private StringBuilder getBillSearchURI(String tenantId, String billId, String service,String status){
-        StringBuilder builder = new StringBuilder(properties.getBillingServiceHostName());
-        builder.append(properties.getSearchBill()).append("?");
-        builder.append("tenantId=").append(tenantId);
-        builder.append("&service=").append(service);
-        builder.append("&billId=").append(billId);
+	private StringBuilder getBillSearchURI(String tenantId, Set<String> billIds, String service) {
+		
+		StringBuilder builder = new StringBuilder(properties.getBillingServiceHostName());
+		builder.append(properties.getSearchBill()).append("?");
+		builder.append("tenantId=").append(tenantId);
+		builder.append("&service=").append(service);
+		builder.append("&billId=").append(billIds.toString().replace("[","").replace("]",""));
 
-        return  builder;
+		return builder;
 
-    }
-
-    private String getBillIdFromBillDetail(String billDetailId){
-        String query = "SELECT billid FROM egbs_billdetail_v1 WHERE id = :id";
-        Map<String, Object> preparedStatementValues = new HashMap<>();
-        preparedStatementValues.put("id", billDetailId);
-        String billId = null;
-        try{
-            billId = namedParameterJdbcTemplate.query(query, preparedStatementValues, billIdRowMapper);
-            return billId;
-        }catch(Exception e){
-            log.error("Couldn't fetch the billId: ",e);
-            return null;
-        }
-    }
-
+	}
 
 }

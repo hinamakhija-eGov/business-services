@@ -1,14 +1,14 @@
 package org.egov.collection.repository.querybuilder.v1;
 
-import org.apache.commons.lang3.StringUtils;
-import org.egov.collection.model.v1.ReceiptSearchCriteria_v1;
+import static java.util.Objects.isNull;
+import static java.util.stream.Collectors.toSet;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 
-import static java.util.Objects.isNull;
-import static java.util.stream.Collectors.toSet;
+import org.apache.commons.lang3.StringUtils;
+import org.egov.collection.model.v1.ReceiptSearchCriteria_v1;
 
 public class CollectionQueryBuilder_v1 {
 
@@ -66,7 +66,9 @@ public class CollectionQueryBuilder_v1 {
 
         addWhereClause(selectQuery, preparedStatementValues, searchCriteria);
 
-        return addPaginationClause(selectQuery, preparedStatementValues, searchCriteria);
+        addPaginationClause(selectQuery, preparedStatementValues, searchCriteria);
+        
+        return selectQuery.toString();
     }
 
     private static void addClauseIfRequired(Map<String, Object> values, StringBuilder queryString) {
@@ -220,25 +222,16 @@ public class CollectionQueryBuilder_v1 {
         }
     }
 
-    private static String addPaginationClause(StringBuilder selectQuery, Map<String, Object> preparedStatementValues,
+    private static void addPaginationClause(StringBuilder selectQuery, Map<String, Object> preparedStatementValues,
                                               ReceiptSearchCriteria_v1 criteria) {
 
-        if (criteria.getLimit()!=null && criteria.getLimit() != 0) {
-        	addClauseIfRequired(preparedStatementValues, selectQuery);
-        	selectQuery.append(" rh.id in (select id from egcl_receiptheader_v1 where tenantid = :tenantId order by id offset :offset limit :limit)");
-            preparedStatementValues.put("offset", criteria.getOffset());
-            preparedStatementValues.put("limit", criteria.getLimit());
-
-            return addOrderByClause(selectQuery, criteria);
-
-        } else
-            return addOrderByClause(selectQuery, criteria);
-    }
-
-    private static String addOrderByClause(StringBuilder selectQuery,
-                                           ReceiptSearchCriteria_v1 criteria) {
-        return selectQuery.append(" ORDER BY rh_receiptDate DESC ").toString();
-    }
-
+		if (criteria.getLimit() != null && criteria.getLimit() != 0) {
+			addClauseIfRequired(preparedStatementValues, selectQuery);
+			selectQuery.append(
+					" rh.id in (select id from egcl_receiptheader_v1 where tenantid = :tenantId order by id offset :offset limit :limit)");
+			preparedStatementValues.put("offset", criteria.getOffset());
+			preparedStatementValues.put("limit", criteria.getLimit());
+		}
+	}
 
 }
