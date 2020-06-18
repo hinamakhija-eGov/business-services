@@ -1,11 +1,16 @@
 package org.egov.collection.service.v1;
 
-import lombok.extern.slf4j.Slf4j;
+import static java.util.Objects.isNull;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.egov.collection.config.ApplicationProperties;
 import org.egov.collection.model.v1.ReceiptRequest_v1;
 import org.egov.collection.model.v1.ReceiptSearchCriteria_v1;
 import org.egov.collection.model.v1.Receipt_v1;
-import org.egov.collection.producer.CollectionProducer;
 import org.egov.collection.repository.querybuilder.v1.CollectionQueryBuilder_v1;
 import org.egov.collection.repository.querybuilder.v1.CollectionResultSetExtractor_v1;
 import org.egov.collection.util.v1.ReceiptValidator_v1;
@@ -15,12 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static java.util.Objects.isNull;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j

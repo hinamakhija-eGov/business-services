@@ -100,7 +100,7 @@ public class MigrationService {
                 }
         }
 
-        log.info("BillAndBillDetails: "+billAndBillDetails);
+        //log.info("BillAndBillDetails: "+billAndBillDetails);
         log.info("Total receipts migrated: " + offset);
     }
 

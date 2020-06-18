@@ -228,7 +228,7 @@ public class CollectionQueryBuilder_v1 {
 		if (criteria.getLimit() != null && criteria.getLimit() != 0) {
 			addClauseIfRequired(preparedStatementValues, selectQuery);
 			selectQuery.append(
-					" rh.id in (select id from egcl_receiptheader_v1 where tenantid = :tenantId order by id offset :offset limit :limit)");
+					" rh.id in (select id from egcl_receiptheader_v1 where tenantid = :tenantId order by createddate offset :offset limit :limit)");
 			preparedStatementValues.put("offset", criteria.getOffset());
 			preparedStatementValues.put("limit", criteria.getLimit());
 		}
