@@ -73,7 +73,16 @@ public class BankAccountJdbcRepository extends JdbcRepository {
 			}
 			params.append("tenantId =:tenantId");
 			paramValues.put("tenantId", bankAccountSearchEntity.getTenantId());
+			
 		}
+		if (bankAccountSearchEntity.getBusinessDetail() != null) {
+			if (params.length() > 0) {
+				params.append(" and ");
+			}
+			params.append("businessDetail =:businessDetail");
+			paramValues.put("businessDetail", bankAccountSearchEntity.getBusinessDetail());
+		}
+		
 		if (bankAccountSearchEntity.getId() != null) {
 			if (params.length() > 0) {
 				params.append(" and ");
