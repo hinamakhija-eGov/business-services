@@ -1,15 +1,27 @@
 package org.egov.service;
 
+import org.egov.tracer.model.CustomException;
 import org.egov.web.models.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class TranslationService {
 
 
+    private TaxHeadMasterService taxHeadMasterService;
+
+
+    @Autowired
+    public TranslationService(TaxHeadMasterService taxHeadMasterService) {
+        this.taxHeadMasterService = taxHeadMasterService;
+    }
 
 
     public ApportionRequestV2 translate(Bill bill){
@@ -47,11 +59,13 @@ public class TranslationService {
 
 
 
-    public ApportionRequestV2 translate(List<Demand> demands) {
-
+    public ApportionRequestV2 translate(List<Demand> demands,Object mdmsData) {
 
         // Group by businessService before calling this function
         String businessService = demands.get(0).getBusinessService();
+
+
+        Map<String,Integer> codeToOrderMap = taxHeadMasterService.getCodeToOrderMap(businessService,mdmsData);
 
         // FIX ME
         BigDecimal amountPaid = BigDecimal.ZERO;
@@ -61,6 +75,7 @@ public class TranslationService {
         ApportionRequestV2 apportionRequestV2 = ApportionRequestV2.builder().amountPaid(amountPaid).businessService(businessService)
                 .isAdvanceAllowed(isAdvanceAllowed).build();
 
+        Map<String,String> errorMap = new HashMap<>();
 
         for(Demand demand : demands){
 
@@ -71,10 +86,15 @@ public class TranslationService {
 
             for(DemandDetail demandDetail : demand.getDemandDetails()){
 
+                Integer priority = codeToOrderMap.get(demandDetail.getTaxHeadMasterCode());
+
+                if(priority == null)
+                    errorMap.put("INVALID_TAXHEAD_CODE","Order is null or taxHead is not found for code: "+demandDetail.getTaxHeadMasterCode());
+
                 Bucket bucket = Bucket.builder().amount(demandDetail.getTaxAmount())
                         .adjustedAmount((demandDetail.getCollectionAmount()==null) ? BigDecimal.ZERO : demandDetail.getCollectionAmount())
                         .taxHeadCode(demandDetail.getTaxHeadMasterCode())
-                      //  .priority(demandDetail.getOrder())
+                        .priority(priority)
                         .build();
                 taxDetail.addBucket(bucket);
 
@@ -88,8 +108,10 @@ public class TranslationService {
 
             apportionRequestV2.addTaxDetail(taxDetail);
 
-
         }
+
+        if(!CollectionUtils.isEmpty(errorMap))
+            throw new CustomException(errorMap);
 
         return apportionRequestV2;
     }

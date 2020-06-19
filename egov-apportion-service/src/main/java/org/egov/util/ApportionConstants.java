@@ -13,6 +13,12 @@ public class ApportionConstants {
 
     public static final String ADVANCE_TAXHEAD_JSONPATH_CODE = "$.MdmsRes.BillingService.TaxHeadMaster[?(@.category=='ADVANCE_COLLECTION' && @.service==\"{}\")].code";
 
+    public static final String TAXHEAD_JSONPATH_CODE = "$.MdmsRes.BillingService.TaxHeadMaster[?(@.service==\"{}\")]";
+
+    public static final String MDMS_ORDER_KEY  = "order";
+
+    public static final String MDMS_TAXHEADCODE_KEY  = "code";
+
 
     public ApportionConstants() {
     }
