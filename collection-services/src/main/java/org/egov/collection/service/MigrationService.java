@@ -81,8 +81,8 @@ public class MigrationService {
     public static final String TENANT_QUERY = "select distinct tenantid from egcl_receiptheader_v1;";
 
     public void migrate(RequestInfo requestInfo, Integer batchSize,List<String> nobillId) throws JsonProcessingException {
+    	
         Integer offset = 0;
-        Map<String, Long> billAndBillDetails = new HashMap<>();
         List<String> tenantIdList =jdbcTemplate.queryForList(TENANT_QUERY,String.class);
         for(String tenantid:tenantIdList){
                 while(true){
@@ -92,19 +92,20 @@ public class MigrationService {
                     List<Receipt_v1> receipts = collectionService.fetchReceipts(criteria_v1);
                     if(CollectionUtils.isEmpty(receipts))
                         break;
-                    migrateReceipt(requestInfo, receipts, billAndBillDetails, nobillId);
+                    migrateReceipt(requestInfo, receipts, nobillId);
+                    
+                    log.info("Total receipts migrated: " + offset);
                     offset += batchSize;
+                    
                     long endtime = System.currentTimeMillis();
                     long elapsetime = endtime - startTime;
                     System.out.println("\n\nBatch Elapsed Time--->"+elapsetime+"\n\n");
                 }
         }
 
-        //log.info("BillAndBillDetails: "+billAndBillDetails);
-        log.info("Total receipts migrated: " + offset);
     }
 
-    public void migrateReceipt(RequestInfo requestInfo, List<Receipt_v1> receipts, Map<String, Long> billAndBillDetails,List<String> nobillId){
+    public void migrateReceipt(RequestInfo requestInfo, List<Receipt_v1> receipts,List<String> nobillId){
     	
         List<Payment> paymentList = new ArrayList<Payment>();
         
@@ -114,7 +115,7 @@ public class MigrationService {
 			Bill newBill = convertBillToNew(receipt.getBill().get(0), receipt.getAuditDetails());
 			if (newBill != null) {
 
-				Payment payment = transformToPayment(requestInfo, receipt, newBill, billAndBillDetails);
+				Payment payment = transformToPayment(requestInfo, receipt, newBill);
 				paymentList.add(payment);
 			} else {
 
@@ -247,15 +248,11 @@ public class MigrationService {
 		return newAccDetails;
 	}
 
-	private Payment transformToPayment(RequestInfo requestInfo, Receipt_v1 receipt, Bill newBill, Map<String, Long> billAndBillDetails) {
+	private Payment transformToPayment(RequestInfo requestInfo, Receipt_v1 receipt, Bill newBill) {
 
 		if (null == newBill.getBillNumber()) {
 			newBill.setBillNumber("NA");
 		}
-		if (null != billAndBillDetails.get(newBill.getId()))
-			billAndBillDetails.put(newBill.getId(), billAndBillDetails.get(newBill.getId()) + 1L);
-		else
-			billAndBillDetails.put(newBill.getId(), 1L);
 
 		return getPayment(requestInfo, receipt, newBill);
 	}
