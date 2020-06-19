@@ -78,23 +78,32 @@ public class MigrationService {
         this.producer = producer;
     }
 
-    public static final String TENANT_QUERY = "select distinct tenantid from egcl_receiptheader_v1;";
+    public static final String TENANT_QUERY = "select distinct tenantid from egcl_receiptheader_v1 order by tenantid;";
 
-    public void migrate(RequestInfo requestInfo, Integer batchSize,List<String> nobillId) throws JsonProcessingException {
+    public void migrate(RequestInfo requestInfo, Integer offsetFromApi,  Integer batchSize, String tenantId) throws JsonProcessingException {
     	
-        Integer offset = 0;
         List<String> tenantIdList =jdbcTemplate.queryForList(TENANT_QUERY,String.class);
-        for(String tenantid:tenantIdList){
+        for(String tenantIdEntry:tenantIdList){
+        
+        	Integer offset = offsetFromApi;
+        	
+			if (tenantId != null && !tenantIdEntry.equalsIgnoreCase(tenantId)) {
+				continue;
+			} else {
+				tenantId = null;
+				offsetFromApi = 0;
+			}
+        	
                 while(true){
                     long startTime = System.currentTimeMillis();
                     ReceiptSearchCriteria_v1 criteria_v1 = ReceiptSearchCriteria_v1.builder()
-                            .offset(offset).limit(batchSize).tenantId(tenantid).build();
+                            .offset(offset).limit(batchSize).tenantId(tenantIdEntry).build();
                     List<Receipt_v1> receipts = collectionService.fetchReceipts(criteria_v1);
                     if(CollectionUtils.isEmpty(receipts))
                         break;
-                    migrateReceipt(requestInfo, receipts, nobillId);
+                    migrateReceipt(requestInfo, receipts);
                     
-                    log.info("Total receipts migrated: " + offset);
+                    log.info("Total receipts migrated: " + offset + "for tenantId : " + tenantIdEntry);
                     offset += batchSize;
                     
                     long endtime = System.currentTimeMillis();
@@ -105,22 +114,16 @@ public class MigrationService {
 
     }
 
-    public void migrateReceipt(RequestInfo requestInfo, List<Receipt_v1> receipts,List<String> nobillId){
+    public void migrateReceipt(RequestInfo requestInfo, List<Receipt_v1> receipts){
     	
         List<Payment> paymentList = new ArrayList<Payment>();
         
 		for (Receipt_v1 receipt : receipts) {
 
-			String billNumber = receipt.getBill().get(0).getBillDetails().get(0).getBillNumber();
 			Bill newBill = convertBillToNew(receipt.getBill().get(0), receipt.getAuditDetails());
-			if (newBill != null) {
 
-				Payment payment = transformToPayment(requestInfo, receipt, newBill);
-				paymentList.add(payment);
-			} else {
-
-				nobillId.add(billNumber);
-			}
+			Payment payment = transformToPayment(requestInfo, receipt, newBill);
+			paymentList.add(payment);
 		}
         
         PaymentResponse paymentResponse = new PaymentResponse(new ResponseInfo(), paymentList);

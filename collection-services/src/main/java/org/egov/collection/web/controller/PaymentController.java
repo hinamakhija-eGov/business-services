@@ -40,11 +40,13 @@
 
 package org.egov.collection.web.controller;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.validation.Valid;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.egov.collection.config.ApplicationProperties;
 import org.egov.collection.model.Payment;
 import org.egov.collection.model.PaymentRequest;
@@ -52,7 +54,6 @@ import org.egov.collection.model.PaymentResponse;
 import org.egov.collection.model.PaymentSearchCriteria;
 import org.egov.collection.model.enums.ReceiptStatus;
 import org.egov.collection.model.v1.ReceiptResponse_v1;
-import org.egov.collection.model.v1.ReceiptSearchCriteria_v1;
 import org.egov.collection.model.v1.Receipt_v1;
 import org.egov.collection.producer.CollectionProducer;
 import org.egov.collection.service.MigrationService;
@@ -70,7 +71,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -179,16 +188,13 @@ public class PaymentController {
 
     @RequestMapping(value = "/_migrate", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<?> workflow(@RequestBody @Valid RequestInfoWrapper requestInfoWrapper,
-                                      @RequestParam("batchSize") Integer batchSize) throws JsonProcessingException {
-        long startTime = System.nanoTime();
-        List<String> nobillId= new ArrayList<>();
-        migrationService.migrate(requestInfoWrapper.getRequestInfo(), batchSize,nobillId);
-        long endtime = System.nanoTime();
-        long elapsetime = endtime - startTime;
-        System.out.println("\n\nElapsed Time--->"+elapsetime+"\n\n");
-        System.out.println("\n\nnobillId --->"+nobillId+"\n\n");
-        System.out.println("\n\nnobillId Size --->"+nobillId.size()+"\n\n");
+    public ResponseEntity<?> workflow(@RequestBody @Valid RequestInfoWrapper requestInfoWrapper,@RequestParam(required = false) Integer offset,
+    								  @RequestParam(required = false) String tenantId, @RequestParam(required = true) Integer batchSize) throws JsonProcessingException {
+    
+    	if(null == offset)
+    		offset = 0;
+    	
+        migrationService.migrate(requestInfoWrapper.getRequestInfo(), offset, batchSize, tenantId);
        return new ResponseEntity<>(HttpStatus.OK );
 
     }
