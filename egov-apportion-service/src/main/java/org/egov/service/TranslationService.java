@@ -39,6 +39,7 @@ public class TranslationService {
 
             TaxDetail taxDetail = TaxDetail.builder().fromPeriod(billDetail.getFromPeriod()).amountToBePaid(billDetail.getAmount())
                                   .amountPaid((billDetail.getAmountPaid() == null) ? BigDecimal.ZERO : billDetail.getAmountPaid())
+                                  .entityId(billDetail.getId())
                                   .build();
 
             billDetail.getBillAccountDetails().forEach(billAccountDetail -> {
@@ -46,6 +47,7 @@ public class TranslationService {
                                 .adjustedAmount((billAccountDetail.getAdjustedAmount()==null) ? BigDecimal.ZERO : billAccountDetail.getAdjustedAmount())
                                 .taxHeadCode(billAccountDetail.getTaxHeadCode())
                                 .priority(billAccountDetail.getOrder())
+                                .entityId(billAccountDetail.getId())
                                 .build();
                 taxDetail.addBucket(bucket);
             });
@@ -69,7 +71,7 @@ public class TranslationService {
 
         // FIX ME
         BigDecimal amountPaid = BigDecimal.ZERO;
-        Boolean isAdvanceAllowed = null;
+        Boolean isAdvanceAllowed = taxHeadMasterService.isAdvanceAllowed(businessService,mdmsData);
 
 
         ApportionRequestV2 apportionRequestV2 = ApportionRequestV2.builder().amountPaid(amountPaid).businessService(businessService)
@@ -79,7 +81,7 @@ public class TranslationService {
 
         for(Demand demand : demands){
 
-            TaxDetail taxDetail = TaxDetail.builder().fromPeriod(demand.getTaxPeriodFrom()).build();
+            TaxDetail taxDetail = TaxDetail.builder().fromPeriod(demand.getTaxPeriodFrom()).entityId(demand.getId()).build();
 
             BigDecimal amountToBePaid = BigDecimal.ZERO;
             BigDecimal collectedAmount = BigDecimal.ZERO;
@@ -95,6 +97,7 @@ public class TranslationService {
                         .adjustedAmount((demandDetail.getCollectionAmount()==null) ? BigDecimal.ZERO : demandDetail.getCollectionAmount())
                         .taxHeadCode(demandDetail.getTaxHeadMasterCode())
                         .priority(priority)
+                        .entityId(demandDetail.getId())
                         .build();
                 taxDetail.addBucket(bucket);
 
@@ -115,6 +118,7 @@ public class TranslationService {
 
         return apportionRequestV2;
     }
+
 
 
 

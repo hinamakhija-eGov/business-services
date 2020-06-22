@@ -2,13 +2,12 @@ package org.egov.web.controllers;
 
 
 import org.egov.service.ApportionService;
+import org.egov.service.apportions.OrderByPriority;
 import org.egov.util.ResponseInfoFactory;
-import org.egov.web.models.ApportionRequest;
-import org.egov.web.models.ApportionResponse;
-    import com.fasterxml.jackson.databind.ObjectMapper;
+import org.egov.web.models.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.*;
-import org.egov.web.models.AuditDetails;
-import org.egov.web.models.Bill;
+import org.egov.web.models.enums.DemandApportionRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,17 +37,20 @@ import java.util.*;
 
         private final ObjectMapper objectMapper;
 
-        @Autowired
         private ApportionService apportionService;
 
-        @Autowired
         private ResponseInfoFactory responseInfoFactory;
 
-        @Autowired
-        public ApportionController(ObjectMapper objectMapper, ApportionService apportionService) {
-            this.objectMapper = objectMapper;
-            this.apportionService = apportionService;
-        }
+
+
+    @Autowired
+    public ApportionController(ObjectMapper objectMapper, ApportionService apportionService, ResponseInfoFactory responseInfoFactory) {
+        this.objectMapper = objectMapper;
+        this.apportionService = apportionService;
+        this.responseInfoFactory = responseInfoFactory;
+    }
+
+
 
 
     /**
@@ -66,6 +68,18 @@ import java.util.*;
                             true)).build();
         return new ResponseEntity<>(response,HttpStatus.OK);
         }
+
+    @RequestMapping(value="/_apportionV2", method = RequestMethod.POST)
+    public ResponseEntity<ApportionDemandResponse> apportionPost(@Valid @RequestBody DemandApportionRequest apportionRequest){
+        List<Demand> demands = apportionService.apportionDemands(apportionRequest);
+        ApportionDemandResponse response = ApportionDemandResponse.builder()
+                .tenantId(apportionRequest.getTenantId())
+                .demands(demands)
+                .responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(apportionRequest.getRequestInfo(),
+                        true)).build();
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
 
 
 

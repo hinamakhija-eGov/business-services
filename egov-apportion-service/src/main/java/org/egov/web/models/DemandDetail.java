@@ -19,7 +19,8 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Builder
 public class DemandDetail   {
-	
+
+        @NotNull
         @JsonProperty("id")
         private String id;
         

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,11 @@ import java.util.List;
 @Data
 @Builder
 public class TaxDetail {
+
+
+    @NotNull
+    @JsonProperty("entityId")
+    private String entityId = null;
 
     @JsonProperty("amountPaid")
     private BigDecimal amountPaid = null;

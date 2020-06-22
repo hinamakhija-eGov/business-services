@@ -64,4 +64,24 @@ public class TaxHeadMasterService {
    }
 
 
+    /**
+     * Fetches the isAdvanceAllowed flag from the MDMS data for the given businessService
+     * @param businessService BusinessService for which advance flag has to be returned
+     * @param mdmsData MDMS data for Billing
+     * @return boolean flag indicating whether advance payment is allowed for the given businessService
+     */
+   public Boolean isAdvanceAllowed(String businessService, Object mdmsData){
+
+       String jsonpath = ADVANCE_BUSINESSSERVICE_JSONPATH_CODE;
+       jsonpath = jsonpath.replace("{}",businessService);
+
+       List<Boolean> isAdvanceAllowedList = JsonPath.read(mdmsData,jsonpath);
+
+       if(CollectionUtils.isEmpty(isAdvanceAllowedList))
+           throw new CustomException("NO BUSINESSSERVICE FOUND","No businessService or isAdvanceAllowed flag found for code: "+businessService);
+
+       return isAdvanceAllowedList.get(0);
+   }
+
+
 }

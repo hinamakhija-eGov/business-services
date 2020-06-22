@@ -2,6 +2,7 @@ package org.egov.web.models;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,6 +14,7 @@ import java.math.BigDecimal;
 @Data
 @Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class Bucket {
 
     @JsonProperty("taxHeadCode")
@@ -32,5 +34,8 @@ public class Bucket {
 
     @JsonProperty("purpose")
     private Purpose purpose = null;
+
+    @JsonProperty("entityId")
+    private String entityId = null;
 
 }

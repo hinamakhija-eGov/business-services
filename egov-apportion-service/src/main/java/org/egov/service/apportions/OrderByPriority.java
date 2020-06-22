@@ -1,6 +1,7 @@
 package org.egov.service.apportions;
 
 import org.egov.config.ApportionConfig;
+import org.egov.service.ApportionV2;
 import org.egov.service.TaxHeadMasterService;
 import org.egov.tracer.model.CustomException;
 import org.egov.web.models.ApportionRequestV2;
@@ -16,8 +17,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.egov.util.ApportionConstants.DEFAULT;
+
 @Service
-public class OrderByPriority {
+public class OrderByPriority implements ApportionV2 {
 
 
     private TaxHeadMasterService taxHeadMasterService;
@@ -32,6 +35,12 @@ public class OrderByPriority {
     }
 
 
+    @Override
+    public String getBusinessService() {
+        return DEFAULT;
+    }
+
+    @Override
     public List<TaxDetail> apportionPaidAmount(ApportionRequestV2 apportionRequestV2, Object masterData) {
         List<TaxDetail> taxDetails = apportionRequestV2.getTaxDetails();
         taxDetails.sort(Comparator.comparing(TaxDetail::getFromPeriod));
