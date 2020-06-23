@@ -73,7 +73,7 @@ public class OrderByPriority implements ApportionV2 {
 
             for(Bucket bucket : taxDetail.getBuckets()) {
 
-                amount = bucket.getAmount();
+                amount = bucket.getAmount().subtract(bucket.getAdjustedAmount());
                 isAmountPositive = amount.compareTo(BigDecimal.ZERO) >= 0;
 
                 if (isAmountPositive) {
