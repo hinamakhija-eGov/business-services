@@ -40,20 +40,15 @@
 package org.egov.demand.service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.demand.config.ApplicationProperties;
-import org.egov.demand.model.AuditDetails;
+import org.egov.demand.model.*;
 import org.egov.demand.model.BillV2.StatusEnum;
-import org.egov.demand.model.Demand;
-import org.egov.demand.model.DemandCriteria;
-import org.egov.demand.model.DemandDetail;
 import org.egov.demand.repository.BillRepositoryV2;
 import org.egov.demand.repository.DemandRepository;
 import org.egov.demand.repository.ServiceRequestRepository;
@@ -65,6 +60,9 @@ import org.egov.demand.web.contract.User;
 import org.egov.demand.web.contract.UserResponse;
 import org.egov.demand.web.contract.UserSearchRequest;
 import org.egov.demand.web.contract.factory.ResponseFactory;
+import org.egov.demand.web.validator.DemandValidatorV1;
+import org.egov.mdms.model.MdmsCriteriaReq;
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -74,6 +72,8 @@ import org.springframework.util.StringUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
+
+import static org.egov.demand.util.Constants.*;
 
 @Service
 @Slf4j
@@ -102,6 +102,9 @@ public class DemandService {
 	
 	@Autowired
 	private Util util;
+
+	@Autowired
+	private DemandValidatorV1 demandValidatorV1;
 	
 	/**
 	 * Method to create new demand 
@@ -113,6 +116,10 @@ public class DemandService {
 	 */
 	public DemandResponse create(DemandRequest demandRequest) {
 
+		DocumentContext mdmsData = getMDMSData(demandRequest);
+
+		demandValidatorV1.validatedemandForCreate(demandRequest, true, mdmsData);
+
 		log.info("the demand request in create async : {}", demandRequest);
 
 		RequestInfo requestInfo = demandRequest.getRequestInfo();
@@ -120,7 +127,17 @@ public class DemandService {
 		AuditDetails auditDetail = util.getAuditDetail(requestInfo);
 
 		generateAndSetIdsForNewDemands(demands, auditDetail);
-		save(demandRequest);
+
+		List<Demand> demandsToBeCreated = new ArrayList<>();
+		List<Demand> demandToBeUpdated = new ArrayList<>();
+
+		apportionAdvanceIfExist(demandRequest,mdmsData,demandsToBeCreated,demandToBeUpdated);
+
+
+		save(new DemandRequest(requestInfo,demandsToBeCreated));
+
+		if(!CollectionUtils.isEmpty(demandToBeUpdated))
+			update(new DemandRequest(requestInfo,demandToBeUpdated));
 		
 		billRepoV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()), StatusEnum.EXPIRED);
 		
@@ -131,7 +148,6 @@ public class DemandService {
 	 * Method to generate and set ids, Audit details to the demand 
 	 * and demand-detail object
 	 * 
-	 * @param demandRequest Demand request from the create/update flow
 	 */
 	private void generateAndSetIdsForNewDemands(List<Demand> demands, AuditDetails auditDetail) {
 
@@ -169,6 +185,10 @@ public class DemandService {
 	public DemandResponse updateAsync(DemandRequest demandRequest) {
 
 		log.debug("the demand service : " + demandRequest);
+
+		DocumentContext mdmsData = getMDMSData(demandRequest);
+
+		demandValidatorV1.validateForUpdate(demandRequest, mdmsData);
 
 		RequestInfo requestInfo = demandRequest.getRequestInfo();
 		List<Demand> demands = demandRequest.getDemands();
@@ -222,7 +242,9 @@ public class DemandService {
 	 * @return
 	 */
 	public List<Demand> getDemands(DemandCriteria demandCriteria, RequestInfo requestInfo) {
-		
+
+		demandValidatorV1.validateDemandCriteria(demandCriteria);
+
 		UserSearchRequest userSearchRequest = null;
 		List<User> payers = null;
 		List<Demand> demands = null;
@@ -287,4 +309,94 @@ public class DemandService {
 	public void update(DemandRequest demandRequest) {
 		demandRepository.update(demandRequest);
 	}
+
+
+
+	private void apportionAdvanceIfExist(DemandRequest demandRequest, DocumentContext mdmsData,List<Demand> demandToBeCreated,List<Demand> demandToBeUpdated){
+		List<Demand> demands = demandRequest.getDemands();
+		RequestInfo requestInfo = demandRequest.getRequestInfo();
+
+		for(Demand demand : demands) {
+			String businessService = demand.getBusinessService();
+			String consumerCode = demand.getConsumerCode();
+			String tenantId = demand.getTenantId();
+
+			DemandCriteria searchCriteria = DemandCriteria.builder().tenantId(tenantId).consumerCode(Collections.singleton(consumerCode)).businessService(businessService).build();
+
+			List<Demand> demandsFromSearch = demandRepository.getDemands(searchCriteria);
+
+			if (CollectionUtils.isEmpty(demandsFromSearch)){
+				demandToBeCreated.add(demand);
+				continue;
+			}
+
+			List<Demand> demandsToBeApportioned = getDemandsContainingAdvance(demandsFromSearch, mdmsData);
+
+			if(CollectionUtils.isEmpty(demandsToBeApportioned)){
+				demandToBeCreated.add(demand);
+				continue;
+			}
+
+			demandsToBeApportioned.add(demand);
+
+			DemandApportionRequest apportionRequest = DemandApportionRequest.builder().requestInfo(requestInfo).demands(demandsToBeApportioned).tenantId(tenantId).build();
+
+			Object response = serviceRequestRepository.fetchResult(util.getApportionURL(), apportionRequest);
+			ApportionDemandResponse apportionDemandResponse = mapper.convertValue(response, ApportionDemandResponse.class);
+
+			apportionDemandResponse.getDemands().forEach(demandFromResponse -> {
+				if(demandFromResponse.getId().equalsIgnoreCase(demand.getId()))
+					demandToBeCreated.add(demandFromResponse);
+				else demandToBeUpdated.add(demandFromResponse);
+			});
+		}
+
+	}
+
+
+	private List<Demand> getDemandsContainingAdvance(List<Demand> demands,DocumentContext mdmsData){
+
+		Set<Demand> demandsWithAdvance = new HashSet<>();
+
+		String businessService = demands.get(0).getBusinessService();
+		String jsonpath = ADVANCE_TAXHEAD_JSONPATH_CODE;
+		jsonpath = jsonpath.replace("{}",businessService);
+
+
+		List<String> taxHeads = mdmsData.read(jsonpath);
+
+		if(CollectionUtils.isEmpty(taxHeads))
+			throw new CustomException("NO TAXHEAD FOUND","No Advance taxHead found for businessService: "+businessService);
+
+		String advanceTaxHeadCode =  taxHeads.get(0);
+
+		for (Demand demand : demands){
+
+			for(DemandDetail demandDetail : demand.getDemandDetails()){
+
+				if(demandDetail.getTaxHeadMasterCode().equalsIgnoreCase(advanceTaxHeadCode)
+						&& demandDetail.getTaxAmount().compareTo(demandDetail.getCollectionAmount()) != 0){
+					demandsWithAdvance.add(demand);
+					break;
+				}
+			}
+		}
+
+		return new ArrayList<>(demandsWithAdvance);
+	}
+
+	private DocumentContext getMDMSData(DemandRequest demandRequest){
+		String tenantId = demandRequest.getDemands().get(0).getTenantId();
+		RequestInfo requestInfo = demandRequest.getRequestInfo();
+
+		/*
+		 * Preparing the mdms request with billing service master and calling the mdms search API
+		 */
+		MdmsCriteriaReq mdmsReq = util.prepareMdMsRequest(tenantId, MODULE_NAME, MDMS_MASTER_NAMES, MDMS_CODE_FILTER,
+				requestInfo);
+		DocumentContext mdmsData = util.getAttributeValues(mdmsReq);
+
+		return mdmsData;
+	}
+
 }

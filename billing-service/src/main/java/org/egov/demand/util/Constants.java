@@ -130,5 +130,7 @@ public class Constants {
 	public static final String BUSINESSSERVICE_SERVICES_FILTER = "@.code in [VAL]";
 	public static final String MDMS_NO_FILTER_BUSINESSSERVICE = "$.MdmsRes.BillingService.BusinessService.*";
 
+	public static final String ADVANCE_TAXHEAD_JSONPATH_CODE = "$.MdmsRes.BillingService.TaxHeadMaster[?(@.category=='ADVANCE_COLLECTION' && @.service==\"{}\")].code";
+
 	private Constants() {}
 }

@@ -107,18 +107,12 @@ public class DemandValidatorV1 {
 	 * 
 	 * @param demandRequest 
 	 */
-	public void validatedemandForCreate(DemandRequest demandRequest, Boolean isCreate, HttpHeaders headers) {
+	public void validatedemandForCreate(DemandRequest demandRequest, Boolean isCreate, DocumentContext mdmsData) {
 
 		RequestInfo requestInfo = demandRequest.getRequestInfo();
 		List<Demand> demands = demandRequest.getDemands();
 		String tenantId = demands.get(0).getTenantId();
 
-		/*
-		 * Preparing the mdms request with billing service master and calling the mdms search API
-		 */
-		MdmsCriteriaReq mdmsReq = util.prepareMdMsRequest(tenantId, MODULE_NAME, MDMS_MASTER_NAMES, MDMS_CODE_FILTER,
-				requestInfo);
-		DocumentContext mdmsData = util.getAttributeValues(mdmsReq);
 
 		/*
 		 * Extracting the respective masters from DocumentContext 
@@ -456,9 +450,8 @@ public class DemandValidatorV1 {
 	 * 
 	 * internally calls the create method to validate the new demands
 	 * @param demandRequest
-	 * @param errorMap
 	 */
-	public void validateForUpdate(DemandRequest demandRequest, HttpHeaders headers) {
+	public void validateForUpdate(DemandRequest demandRequest, DocumentContext mdmsData) {
 
 		Map<String, String> errorMap = new HashMap<>();
 		List<Demand> demands = demandRequest.getDemands();
@@ -496,7 +489,7 @@ public class DemandValidatorV1 {
 		 * 
 		 * error map will be thrown in the create method itself
 		 */
-		validatedemandForCreate(demandRequest, false, headers);
+		validatedemandForCreate(demandRequest, false,mdmsData);
 	}
 	
 	/**

@@ -155,5 +155,12 @@ public class Util {
         	throw new CustomException(Constants.EG_BS_JSON_EXCEPTION_KEY, Constants.EG_BS_JSON_EXCEPTION_MSG);
         }
     }
+
+
+    public String getApportionURL(){
+		StringBuilder builder = new StringBuilder(appProps.getApportionHost());
+		builder.append(appProps.getApportionEndpoint());
+		return builder.toString();
+	}
 	
 }
