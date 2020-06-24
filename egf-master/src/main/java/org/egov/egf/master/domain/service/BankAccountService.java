@@ -136,9 +136,9 @@ public class BankAccountService {
 						throw new InvalidDataException("tenantId", ErrorCode.MANDATORY_VALUE_MISSING.getCode(),
 								bankaccount.getTenantId());
 					}
-					if (bankaccount.getBusinessDetail() == null) {
-						throw new InvalidDataException("businessDetail", ErrorCode.MANDATORY_VALUE_MISSING.getCode(),
-								bankaccount.getBusinessDetail());
+					if (bankaccount.getBusinessService() == null) {
+						throw new InvalidDataException("businessService", ErrorCode.MANDATORY_VALUE_MISSING.getCode(),
+								bankaccount.getBusinessService());
 					}
 				}
 				break;

@@ -33,7 +33,7 @@ public class BankAccountEntity extends AuditableEntity {
 	private Boolean active;
 	private String payTo;
 	private String type;
-	private String businessDetail;
+	private String businessService;
 
 	public BankAccount toDomain() {
 		BankAccount bankAccount = new BankAccount();
@@ -48,7 +48,7 @@ public class BankAccountEntity extends AuditableEntity {
 		bankAccount.setActive(this.active);
 		bankAccount.setPayTo(this.payTo);
 		bankAccount.setType(BankAccountType.valueOf(this.type));
-		bankAccount.setBusinessDetail(this.businessDetail);
+		bankAccount.setBusinessService(this.businessService);
 		return bankAccount;
 	}
 
@@ -64,7 +64,7 @@ public class BankAccountEntity extends AuditableEntity {
 		this.description = bankAccount.getDescription();
 		this.active = bankAccount.getActive();
 		this.payTo = bankAccount.getPayTo();
-		this.businessDetail = bankAccount.getBusinessDetail();
+		this.businessService = bankAccount.getBusinessService();
 		this.type = bankAccount.getType() != null ? bankAccount.getType().toString() : null;
 		return this;
 	}

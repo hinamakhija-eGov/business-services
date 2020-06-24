@@ -73,16 +73,15 @@ public class BankAccountJdbcRepository extends JdbcRepository {
 			}
 			params.append("tenantId =:tenantId");
 			paramValues.put("tenantId", bankAccountSearchEntity.getTenantId());
-			
 		}
 		if (bankAccountSearchEntity.getBusinessDetail() != null) {
 			if (params.length() > 0) {
 				params.append(" and ");
 			}
-			params.append("businessDetail =:businessDetail");
-			paramValues.put("businessDetail", bankAccountSearchEntity.getBusinessDetail());
+			params.append("businessService =:businessService");
+			paramValues.put("businessService", bankAccountSearchEntity.getBusinessDetail());
 		}
-		
+
 		if (bankAccountSearchEntity.getId() != null) {
 			if (params.length() > 0) {
 				params.append(" and ");
@@ -90,6 +89,7 @@ public class BankAccountJdbcRepository extends JdbcRepository {
 			params.append("id =:id");
 			paramValues.put("id", bankAccountSearchEntity.getId());
 		}
+
 		if (bankAccountSearchEntity.getIds() != null) {
 			if (params.length() > 0) {
 				params.append(" and ");
@@ -104,6 +104,7 @@ public class BankAccountJdbcRepository extends JdbcRepository {
 			params.append("bankBranchId =:bankBranch");
 			paramValues.put("bankBranch", bankAccountSearchEntity.getBankBranchId());
 		}
+
 		if (bankAccountSearchEntity.getChartOfAccountId() != null) {
 			if (params.length() > 0) {
 				params.append(" and ");
@@ -184,7 +185,6 @@ public class BankAccountJdbcRepository extends JdbcRepository {
 
 		searchQuery = searchQuery.replace(":pagination",
 				"limit " + page.getPageSize() + " offset " + page.getOffset() * page.getPageSize());
-
 		BeanPropertyRowMapper row = new BeanPropertyRowMapper(BankAccountEntity.class);
 
 		List<BankAccountEntity> bankAccountEntities = namedParameterJdbcTemplate.query(searchQuery.toString(),

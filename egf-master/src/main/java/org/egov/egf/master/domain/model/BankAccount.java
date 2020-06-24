@@ -92,6 +92,6 @@ public class BankAccount extends Auditable {
 	private BankAccountType type;
 	
 	@NotNull
-	private String businessDetail;
+	private String businessService;
 
 }

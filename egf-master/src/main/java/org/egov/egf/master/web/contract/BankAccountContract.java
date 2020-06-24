@@ -60,7 +60,7 @@ import lombok.Setter;
 @NoArgsConstructor
 
 @JsonPropertyOrder({ "id", "bankBranch", "chartOfAccount", "fund", "accountNumber", "accountType", "description",
-		"active", "payTo", "type", "businessDetail" })
+		"active", "payTo", "type", "businessService" })
 public class BankAccountContract extends AuditableContract {
 
 	private String id;
@@ -98,6 +98,6 @@ public class BankAccountContract extends AuditableContract {
 	}
 	
 	@NotNull
-	private String businessDetail;
+	private String businessService;
 
 }
