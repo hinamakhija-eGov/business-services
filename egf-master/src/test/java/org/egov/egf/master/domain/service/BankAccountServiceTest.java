@@ -197,7 +197,7 @@ public class BankAccountServiceTest {
 
 	private BankAccount getBankAccount() {
 		return BankAccount.builder().id("1").chartOfAccount(getChartOfAccount()).fund(getFund())
-				.bankBranch(getBankBranch()).build();
+				.bankBranch(getBankBranch()).businessService("pg").build();
 	}
 
 	private BankAccountSearch getBankAccountSearch() {
@@ -206,6 +206,7 @@ public class BankAccountServiceTest {
 		bankAccountSearch.setPageSize(0);
 		bankAccountSearch.setOffset(0);
 		bankAccountSearch.setSortBy("Sort");
+		bankAccountSearch.setBusinessService("pg");
 		return bankAccountSearch;
 	}
 }
