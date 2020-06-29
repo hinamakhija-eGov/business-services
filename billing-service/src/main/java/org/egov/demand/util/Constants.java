@@ -19,7 +19,7 @@ public class Constants {
 	
 	public static final String TAXPERIOD_PATH_CODE = "$.MdmsRes.BillingService.TaxPeriod";
 	public static final String TAXHEADMASTER_PATH_CODE = "$.MdmsRes.BillingService.TaxHeadMaster";
-	public static final String BUSINESSSERVICE_PATH_CODE = "$.MdmsRes.BillingService.BusinessService";
+	public static final String BUSINESSSERVICE_PATH_CODE = "$.MdmsRes.BillingService.BusinessService.*.code";
 	
 	public static final String TAXPERIOD_MASTERNAME = "TaxPeriod";
 	public static final String TAXHEAD_MASTERNAME = "TaxHeadMaster";
@@ -131,6 +131,9 @@ public class Constants {
 	public static final String MDMS_NO_FILTER_BUSINESSSERVICE = "$.MdmsRes.BillingService.BusinessService.*";
 
 	public static final String ADVANCE_TAXHEAD_JSONPATH_CODE = "$.MdmsRes.BillingService.TaxHeadMaster[?(@.category=='ADVANCE_COLLECTION' && @.service==\"{}\")].code";
+	public static final String ADVANCE_BUSINESSSERVICE_JSONPATH_CODE = "$.MdmsRes.BillingService.BusinessService[?(@.code==\"{}\")].isAdvanceAllowed";
+
+
 
 	private Constants() {}
 }

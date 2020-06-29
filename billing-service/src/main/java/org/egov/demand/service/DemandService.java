@@ -131,8 +131,15 @@ public class DemandService {
 		List<Demand> demandsToBeCreated = new ArrayList<>();
 		List<Demand> demandToBeUpdated = new ArrayList<>();
 
-		apportionAdvanceIfExist(demandRequest,mdmsData,demandsToBeCreated,demandToBeUpdated);
+		String businessService = demandRequest.getDemands().get(0).getBusinessService();
+		Boolean isAdvanceAllowed = util.getIsAdvanceAllowed(businessService, mdmsData);
 
+		if(isAdvanceAllowed){
+			apportionAdvanceIfExist(demandRequest,mdmsData,demandsToBeCreated,demandToBeUpdated);
+		}
+		else {
+			demandsToBeCreated.addAll(demandRequest.getDemands());
+		}
 
 		save(new DemandRequest(requestInfo,demandsToBeCreated));
 
@@ -311,7 +318,13 @@ public class DemandService {
 	}
 
 
-
+	/**
+	 * Calls the demand apportion API if any advance amoount is available for that comsumer code
+	 * @param demandRequest The demand request for create
+	 * @param mdmsData The master data for billing service
+	 * @param demandToBeCreated The list which maintains the demand that has to be created in the system
+	 * @param demandToBeUpdated The list which maintains the demand that has to be updated in the system
+	 */
 	private void apportionAdvanceIfExist(DemandRequest demandRequest, DocumentContext mdmsData,List<Demand> demandToBeCreated,List<Demand> demandToBeUpdated){
 		List<Demand> demands = demandRequest.getDemands();
 		RequestInfo requestInfo = demandRequest.getRequestInfo();
@@ -321,22 +334,26 @@ public class DemandService {
 			String consumerCode = demand.getConsumerCode();
 			String tenantId = demand.getTenantId();
 
+			// Searching demands based on consumer code of the current demand (demand which has to be created)
 			DemandCriteria searchCriteria = DemandCriteria.builder().tenantId(tenantId).consumerCode(Collections.singleton(consumerCode)).businessService(businessService).build();
-
 			List<Demand> demandsFromSearch = demandRepository.getDemands(searchCriteria);
 
+			// If no demand is found means there is no advance available. The current demand is added for creation
 			if (CollectionUtils.isEmpty(demandsFromSearch)){
 				demandToBeCreated.add(demand);
 				continue;
 			}
 
+			// Fetch the demands containing advance amount
 			List<Demand> demandsToBeApportioned = getDemandsContainingAdvance(demandsFromSearch, mdmsData);
 
+			// If no demand is found with advance amount the code continues to next demand and adds the current demand for creation
 			if(CollectionUtils.isEmpty(demandsToBeApportioned)){
 				demandToBeCreated.add(demand);
 				continue;
 			}
 
+			// The current demand is added to get apportioned
 			demandsToBeApportioned.add(demand);
 
 			DemandApportionRequest apportionRequest = DemandApportionRequest.builder().requestInfo(requestInfo).demands(demandsToBeApportioned).tenantId(tenantId).build();
@@ -344,6 +361,7 @@ public class DemandService {
 			Object response = serviceRequestRepository.fetchResult(util.getApportionURL(), apportionRequest);
 			ApportionDemandResponse apportionDemandResponse = mapper.convertValue(response, ApportionDemandResponse.class);
 
+			// Only the current demand is to be created rest all are to be updated
 			apportionDemandResponse.getDemands().forEach(demandFromResponse -> {
 				if(demandFromResponse.getId().equalsIgnoreCase(demand.getId()))
 					demandToBeCreated.add(demandFromResponse);
@@ -354,21 +372,32 @@ public class DemandService {
 	}
 
 
+	/**
+	 * Returns demands which has advance amount avaialable for apportion
+	 * @param demands List of demands from which demands with advance has to be picked
+	 * @param mdmsData Master Data for billing service
+	 * @return
+	 */
 	private List<Demand> getDemandsContainingAdvance(List<Demand> demands,DocumentContext mdmsData){
 
 		Set<Demand> demandsWithAdvance = new HashSet<>();
 
+		// Create the jsonPath to fetch the advance taxhead for the given businessService
 		String businessService = demands.get(0).getBusinessService();
 		String jsonpath = ADVANCE_TAXHEAD_JSONPATH_CODE;
 		jsonpath = jsonpath.replace("{}",businessService);
 
-
+		// Apply the jsonPath on the master Data to fetch the value. The output will be an array with single element
 		List<String> taxHeads = mdmsData.read(jsonpath);
 
 		if(CollectionUtils.isEmpty(taxHeads))
 			throw new CustomException("NO TAXHEAD FOUND","No Advance taxHead found for businessService: "+businessService);
 
 		String advanceTaxHeadCode =  taxHeads.get(0);
+
+		/*
+		* Loop through each demand and each demandDetail to find the demandDetail for which advance amount is available
+		* */
 
 		for (Demand demand : demands){
 
@@ -385,6 +414,11 @@ public class DemandService {
 		return new ArrayList<>(demandsWithAdvance);
 	}
 
+	/**
+	 * Fetches the required master data from MDMS service
+	 * @param demandRequest The request for which master data has to be fetched
+	 * @return
+	 */
 	private DocumentContext getMDMSData(DemandRequest demandRequest){
 		String tenantId = demandRequest.getDemands().get(0).getTenantId();
 		RequestInfo requestInfo = demandRequest.getRequestInfo();
