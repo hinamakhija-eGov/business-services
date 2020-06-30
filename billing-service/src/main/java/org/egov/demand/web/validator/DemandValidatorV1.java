@@ -424,13 +424,14 @@ public class DemandValidatorV1 {
 				errors.add(INVALID_DEMAND_DETAIL_ERROR_MSG
 						.replace(INVALID_DEMAND_DETAIL_COLLECTION_TEXT, collection.toString())
 						.replace(INVALID_DEMAND_DETAIL_TAX_TEXT, tax.toString()));
-			} else if (tax.compareTo(BigDecimal.ZERO) < 0 && collection.compareTo(BigDecimal.ZERO) != 0 && collection.compareTo(tax) != 0) {
+			}
+			/*else if (tax.compareTo(BigDecimal.ZERO) < 0 && collection.compareTo(BigDecimal.ZERO) != 0 && collection.compareTo(tax) != 0) {
 
 					errors.add(INVALID_NEGATIVE_DEMAND_DETAIL_ERROR_MSG
 							.replace(INVALID_DEMAND_DETAIL_COLLECTION_TEXT, collection.toString())
 							.replace(INVALID_DEMAND_DETAIL_TAX_TEXT, tax.toString()));
 				
-			}
+			}*/
 		}
 		if (!CollectionUtils.isEmpty(errors))
 			errorMap.put(INVALID_DEMAND_DETAIL_KEY,
