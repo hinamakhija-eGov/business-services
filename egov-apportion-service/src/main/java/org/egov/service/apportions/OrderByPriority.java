@@ -131,11 +131,19 @@ public class OrderByPriority implements ApportionV2 {
     private void addAdvanceBillAccountDetail(BigDecimal advanceAmount, ApportionRequestV2 apportionRequestV2, Object masterData){
         List<TaxDetail> taxDetails = apportionRequestV2.getTaxDetails();
         String taxHead = taxHeadMasterService.getAdvanceTaxHead(apportionRequestV2.getBusinessService(),masterData);
+
+        // Creating the advance bucket
         Bucket bucketForAdvance = new Bucket();
         bucketForAdvance.setAmount(advanceAmount.negate());
         bucketForAdvance.setPurpose(Purpose.ADVANCE_AMOUNT);
         bucketForAdvance.setTaxHeadCode(taxHead);
+
+        // Setting the advance bucket in the latest taxDetail
         taxDetails.get(taxDetails.size()-1).getBuckets().add(bucketForAdvance);
+
+        // Updating the amountPaid in the taxDetail
+        BigDecimal amountPaid = taxDetails.get(taxDetails.size()-1).getAmountPaid();
+        taxDetails.get(taxDetails.size()-1).setAmountPaid(amountPaid.add(advanceAmount));
     }
 
 
