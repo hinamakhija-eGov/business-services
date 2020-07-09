@@ -219,7 +219,6 @@ public class ApportionServiceV2 {
                 if(billAccountDetail.getTaxHeadCode().contains("ADVANCE")){
                     billAccountDetail.setAmount(idToBucket.get(billAccountDetail.getId()).getAmount());
                 }
-
             });
         });
     }
