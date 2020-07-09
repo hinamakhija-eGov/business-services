@@ -1,8 +1,6 @@
-/*package org.egov.collection.repository;
+package org.egov.collection.repository;
 
 import lombok.extern.slf4j.Slf4j;
-import org.egov.collection.model.Payment;
-import org.egov.collection.model.PaymentDetail;
 import org.egov.collection.model.ReceiptSearchCriteria;
 import org.egov.collection.repository.querybuilder.CollectionsQueryBuilder;
 import org.egov.collection.repository.rowmapper.CollectionResultSetExtractor;
@@ -20,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 import static org.egov.collection.repository.querybuilder.CollectionsQueryBuilder.*;
-import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.*;
 
 @Repository
 @Slf4j
@@ -65,7 +62,6 @@ public class CollectionRepository {
             throw new CustomException("RECEIPT_CREATION_FAILED", e.getMessage());
         }
     }
-
     
     public void updateReceipt(List<Receipt> receipts){
         List<MapSqlParameterSource> receiptHeaderSource = new ArrayList<>();
@@ -151,4 +147,3 @@ public class CollectionRepository {
     }
 
 }
-*/

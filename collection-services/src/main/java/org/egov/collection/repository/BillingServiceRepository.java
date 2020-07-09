@@ -1,7 +1,6 @@
 package org.egov.collection.repository;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.egov.collection.config.ApplicationProperties;
 import org.egov.collection.web.contract.Bill;
 import org.egov.collection.web.contract.BillRequest;
@@ -60,10 +59,10 @@ public class BillingServiceRepository {
     }
 
 
-    public List<Bill> fetchBill(RequestInfo requestInfo, String tenantId, List<String> billIds) {
+    public List<Bill> fetchBill(RequestInfo requestInfo, String tenantId, String billId) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
         queryParams.add("tenantId", tenantId);
-        queryParams.add("billId", StringUtils.join(billIds,","));
+        queryParams.add("billId", billId);
 
         String uri = UriComponentsBuilder
                 .fromHttpUrl(applicationProperties.getBillingServiceHostName())
@@ -78,10 +77,10 @@ public class BillingServiceRepository {
             BillResponse response = restTemplate.postForObject(uri, wrapper, BillResponse.class);
             return response.getBill();
         } catch (HttpClientErrorException e) {
-            log.error("Unable to fetch bill for Bill ID: {} in tenant {}", billIds, tenantId, e);
+            log.error("Unable to fetch bill for Bill ID: {} in tenant {}", billId, tenantId, e);
             throw new ServiceCallException(e.getResponseBodyAsString());
         } catch (Exception e) {
-            log.error("Unable to fetch bill for Bill ID: {} in tenant {}", billIds, tenantId, e);
+            log.error("Unable to fetch bill for Bill ID: {} in tenant {}", billId, tenantId, e);
             throw new CustomException("BILLING_SERVICE_ERROR", "Failed to fetch bill, unknown error occurred");
         }
     }

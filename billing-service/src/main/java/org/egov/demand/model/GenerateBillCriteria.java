@@ -44,7 +44,6 @@ import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
-import org.egov.demand.model.BillV2.StatusEnum;
 import org.hibernate.validator.constraints.Email;
 
 import lombok.AllArgsConstructor;
@@ -67,9 +66,8 @@ public class GenerateBillCriteria {
 	
 	private String demandId;
 	
-	private Set<String> consumerCode;
+	private String consumerCode;
 	
-	@NotNull
 	private String businessService;
 	
 	@Email
@@ -80,37 +78,19 @@ public class GenerateBillCriteria {
 	public DemandCriteria toDemandCriteria() {
 		
 		Set<String> consumerCodeSet = new HashSet<>();
-		consumerCodeSet.addAll(consumerCode);
+		consumerCodeSet.add(consumerCode);
 		
 		Set<String> demandIdSet = new HashSet<>();
 		demandIdSet.add(demandId);
 		
-		return DemandCriteria.builder()
-				.businessService(businessService)
-				.consumerCode(consumerCodeSet)
-				.mobileNumber(mobileNumber)
-				.demandId(demandIdSet)
-				.tenantId(tenantId)
-				.email(email)
-				.build();
+		return DemandCriteria.builder().businessService(businessService).consumerCode(consumerCodeSet)
+				.tenantId(tenantId).demandId(demandIdSet).email(email).mobileNumber(mobileNumber).build();
 	}
 	
-	/**
-	 * Converts Gen Bill criteria to search bill criteria to fetch only active bills
-	 * 
-	 * @return BillSearchCriteria
-	 */
 	public BillSearchCriteria toBillSearchCriteria() {
 
-		return BillSearchCriteria.builder()
-				.consumerCode(consumerCode)
-				.mobileNumber(mobileNumber)
-				.status(StatusEnum.ACTIVE)
-				.service(businessService)
-				.tenantId(tenantId)
-				.isOrderBy(true)
-				.email(email)
-				.build();
+		return BillSearchCriteria.builder().service(businessService).consumerCode(consumerCode).isOrderBy(true)
+				.mobileNumber(mobileNumber).email(email).tenantId(tenantId).build();
 	}
 
 }

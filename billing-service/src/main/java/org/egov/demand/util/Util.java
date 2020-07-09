@@ -3,10 +3,8 @@ package org.egov.demand.util;
 import static org.egov.demand.util.Constants.INVALID_TENANT_ID_MDMS_KEY;
 import static org.egov.demand.util.Constants.INVALID_TENANT_ID_MDMS_MSG;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import org.egov.common.contract.request.RequestInfo;
@@ -18,13 +16,9 @@ import org.egov.mdms.model.MdmsCriteria;
 import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.mdms.model.ModuleDetail;
 import org.egov.tracer.model.CustomException;
-import org.postgresql.util.PGobject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 
@@ -36,9 +30,6 @@ public class Util {
 
 	@Autowired
 	private ApplicationProperties appProps;
-	
-	@Autowired
-	private ObjectMapper mapper;
 
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
@@ -119,41 +110,5 @@ public class Util {
 		}
 		return builder.toString();
 	}
-	
-	/**
-	 * converts the object to a pgObject for persistence
-	 * 
-	 * @param additionalDetails
-	 * @return
-	 */
-	public PGobject getPGObject(Object additionalDetails) {
-
-		String value = null;
-		try {
-			value = mapper.writeValueAsString(additionalDetails);
-		} catch (JsonProcessingException e) {
-			throw new CustomException(Constants.EG_BS_JSON_EXCEPTION_KEY, Constants.EG_BS_JSON_EXCEPTION_MSG);
-		}
-
-		PGobject json = new PGobject();
-		json.setType(Constants.DB_TYPE_JSONB);
-		try {
-			json.setValue(value);
-		} catch (SQLException e) {
-			throw new CustomException(Constants.EG_BS_JSON_EXCEPTION_KEY, Constants.EG_BS_JSON_EXCEPTION_MSG);
-		}
-		return json;
-	}
-	
-    public JsonNode getJsonValue(PGobject pGobject){
-        try {
-            if(Objects.isNull(pGobject) || Objects.isNull(pGobject.getValue()))
-                return null;
-            else
-                return mapper.readTree( pGobject.getValue());
-        } catch (Exception e) {
-        	throw new CustomException(Constants.EG_BS_JSON_EXCEPTION_KEY, Constants.EG_BS_JSON_EXCEPTION_MSG);
-        }
-    }
 	
 }

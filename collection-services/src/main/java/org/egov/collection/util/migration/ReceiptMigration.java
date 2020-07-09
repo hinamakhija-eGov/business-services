@@ -1,4 +1,4 @@
-/*package org.egov.collection.util.migration;
+package org.egov.collection.util.migration;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -154,4 +154,3 @@ public class ReceiptMigration {
 		return amountPaid;
 	}
 }
-*/
