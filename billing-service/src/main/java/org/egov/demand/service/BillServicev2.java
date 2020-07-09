@@ -68,7 +68,7 @@ import org.egov.demand.model.BillAccountDetailV2;
 import org.egov.demand.model.BillDetailV2;
 import org.egov.demand.model.BillSearchCriteria;
 import org.egov.demand.model.BillV2;
-import org.egov.demand.model.BillV2.StatusEnum;
+import org.egov.demand.model.BillV2.BillStatus;
 import org.egov.demand.model.BusinessServiceDetail;
 import org.egov.demand.model.Demand;
 import org.egov.demand.model.DemandCriteria;
@@ -206,7 +206,7 @@ public class BillServicev2 {
 			billCriteria.getConsumerCode().retainAll(cosnumerCodesToBeExpired);
 			billCriteria.getConsumerCode().addAll(cosnumerCodesNotFoundInBill);
 			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), billCriteria.getConsumerCode(), billCriteria.getTenantId(), requestInfoWrapper);
-			billRepository.updateBillStatus(cosnumerCodesToBeExpired, StatusEnum.EXPIRED);
+			billRepository.updateBillStatus(cosnumerCodesToBeExpired, BillStatus.EXPIRED);
 			BillResponseV2 finalResponse = generateBill(billCriteria, requestInfo);
 			finalResponse.getBill().addAll(billsToBeReturned);
 			return finalResponse;
@@ -369,7 +369,7 @@ public class BillServicev2 {
 					.businessService(business.getCode())
 					.payerName(payer.getName())
 					.consumerCode(consumerCode)
-					.status(StatusEnum.ACTIVE)
+					.status(BillStatus.ACTIVE)
 					.billDetails(billDetails)
 					.totalAmount(billAmount)
 					.billNumber(billNumber)
