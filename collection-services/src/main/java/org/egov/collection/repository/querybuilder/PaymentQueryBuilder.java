@@ -313,9 +313,9 @@ public class PaymentQueryBuilder {
 
         addWhereClause(selectQuery, preparedStatementValues, searchCriteria);
 
-        addOrderByClause(selectQuery);
+        return addOrderByClause(selectQuery);
 
-        return addPaginationClause(selectQuery, preparedStatementValues, searchCriteria);
+        //return addPaginationClause(selectQuery, preparedStatementValues, searchCriteria);
     }
 
 
