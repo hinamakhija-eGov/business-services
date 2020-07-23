@@ -205,7 +205,7 @@ public class PaymentService {
         if (ids.isEmpty())
             return Collections.emptyList();
 
-        PaymentSearchCriteria criteria = PaymentSearchCriteria.builder().ids((Set<String>) ids).build();
+        PaymentSearchCriteria criteria = PaymentSearchCriteria.builder().ids(new HashSet<String>(ids)).build();
         return paymentRepository.fetchPayments(criteria);
     }
 }
