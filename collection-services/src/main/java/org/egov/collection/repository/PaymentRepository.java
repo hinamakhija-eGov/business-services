@@ -23,6 +23,7 @@ import org.egov.collection.repository.rowmapper.PaymentRowMapper;
 import org.egov.collection.web.contract.Bill;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -41,12 +42,12 @@ public class PaymentRepository {
     private PaymentQueryBuilder paymentQueryBuilder;
 
     private PaymentRowMapper paymentRowMapper;
-    
+
     private BillRowMapper billRowMapper;
 
     @Autowired
-    public PaymentRepository(NamedParameterJdbcTemplate namedParameterJdbcTemplate, PaymentQueryBuilder paymentQueryBuilder, 
-    		PaymentRowMapper paymentRowMapper, BillRowMapper billRowMapper) {
+    public PaymentRepository(NamedParameterJdbcTemplate namedParameterJdbcTemplate, PaymentQueryBuilder paymentQueryBuilder,
+                             PaymentRowMapper paymentRowMapper, BillRowMapper billRowMapper) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
         this.paymentQueryBuilder = paymentQueryBuilder;
         this.paymentRowMapper = paymentRowMapper;
@@ -54,10 +55,8 @@ public class PaymentRepository {
     }
 
 
-
-
     @Transactional
-    public void savePayment(Payment payment){
+    public void savePayment(Payment payment) {
         try {
 
             List<MapSqlParameterSource> paymentDetailSource = new ArrayList<>();
@@ -80,61 +79,60 @@ public class PaymentRepository {
             namedParameterJdbcTemplate.batchUpdate(INSERT_PAYMENTDETAIL_SQL, paymentDetailSource.toArray(new MapSqlParameterSource[0]));
             namedParameterJdbcTemplate.batchUpdate(INSERT_BILL_SQL, billSource.toArray(new MapSqlParameterSource[0]));
             namedParameterJdbcTemplate.batchUpdate(INSERT_BILLDETAIL_SQL, billDetailSource.toArray(new MapSqlParameterSource[0]));
-            namedParameterJdbcTemplate.batchUpdate(INSERT_BILLACCOUNTDETAIL_SQL,  billAccountDetailSource.toArray(new MapSqlParameterSource[0]));
+            namedParameterJdbcTemplate.batchUpdate(INSERT_BILLACCOUNTDETAIL_SQL, billAccountDetailSource.toArray(new MapSqlParameterSource[0]));
 
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("Failed to persist payment to database", e);
             throw new CustomException("PAYMENT_CREATION_FAILED", e.getMessage());
         }
     }
 
 
-    public List<Payment> fetchPayments(PaymentSearchCriteria paymentSearchCriteria){
+    public List<Payment> fetchPayments(PaymentSearchCriteria paymentSearchCriteria) {
         Map<String, Object> preparedStatementValues = new HashMap<>();
         String query = paymentQueryBuilder.getPaymentSearchQuery(paymentSearchCriteria, preparedStatementValues);
-        log.info("Query: "+query);
-        log.info("preparedStatementValues: "+preparedStatementValues);
-        List<Payment> payments = namedParameterJdbcTemplate.query(query, preparedStatementValues,paymentRowMapper);
-        if(!CollectionUtils.isEmpty(payments)) {
+        log.info("Query: " + query);
+        log.info("preparedStatementValues: " + preparedStatementValues);
+        List<Payment> payments = namedParameterJdbcTemplate.query(query, preparedStatementValues, paymentRowMapper);
+        if (!CollectionUtils.isEmpty(payments)) {
             Set<String> billIds = new HashSet<>();
-            for(Payment payment : payments) {
-            	billIds.addAll(payment.getPaymentDetails().stream().map(detail -> detail.getBillId()).collect(Collectors.toSet()));
+            for (Payment payment : payments) {
+                billIds.addAll(payment.getPaymentDetails().stream().map(detail -> detail.getBillId()).collect(Collectors.toSet()));
             }
             Map<String, Bill> billMap = getBills(billIds);
-            for(Payment payment : payments) {
-            	payment.getPaymentDetails().forEach(detail -> {
-            		detail.setBill(billMap.get(detail.getBillId()));
-            	});
+            for (Payment payment : payments) {
+                payment.getPaymentDetails().forEach(detail -> {
+                    detail.setBill(billMap.get(detail.getBillId()));
+                });
             }
-           payments.sort(reverseOrder(Comparator.comparingLong(Payment::getTransactionDate)));
+            payments.sort(reverseOrder(Comparator.comparingLong(Payment::getTransactionDate)));
         }
 
         return payments;
     }
-    
-    private Map<String, Bill> getBills(Set<String> ids){
-    	Map<String, Bill> mapOfIdAndBills = new HashMap<>();
+
+    private Map<String, Bill> getBills(Set<String> ids) {
+        Map<String, Bill> mapOfIdAndBills = new HashMap<>();
         Map<String, Object> preparedStatementValues = new HashMap<>();
         preparedStatementValues.put("id", ids);
         String query = paymentQueryBuilder.getBillQuery();
         List<Bill> bills = namedParameterJdbcTemplate.query(query, preparedStatementValues, billRowMapper);
         bills.forEach(bill -> {
-        	mapOfIdAndBills.put(bill.getId(), bill);
+            mapOfIdAndBills.put(bill.getId(), bill);
         });
-        
+
         return mapOfIdAndBills;
 
     }
 
 
-
-    public void updateStatus(List<Payment> payments){
+    public void updateStatus(List<Payment> payments) {
         List<MapSqlParameterSource> paymentSource = new ArrayList<>();
         List<MapSqlParameterSource> paymentDetailSource = new ArrayList<>();
         List<MapSqlParameterSource> billSource = new ArrayList<>();
         try {
 
-            for(Payment payment : payments){
+            for (Payment payment : payments) {
                 paymentSource.add(getParametersForPaymentStatusUpdate(payment));
                 for (PaymentDetail paymentDetail : payment.getPaymentDetails()) {
                     paymentDetailSource.add(getParametersForPaymentDetailStatusUpdate(paymentDetail));
@@ -148,15 +146,14 @@ public class PaymentRepository {
             namedParameterJdbcTemplate.batchUpdate(STATUS_UPDATE_PAYMENT_SQL, paymentSource.toArray(new MapSqlParameterSource[0]));
             namedParameterJdbcTemplate.batchUpdate(STATUS_UPDATE_PAYMENTDETAIL_SQL, paymentDetailSource.toArray(new MapSqlParameterSource[0]));
             namedParameterJdbcTemplate.batchUpdate(STATUS_UPDATE_BILL_SQL, billSource.toArray(new MapSqlParameterSource[0]));
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             log.error("Failed to persist cancel Receipt to database", e);
             throw new CustomException("CANCEL_RECEIPT_FAILED", "Unable to cancel Receipt");
         }
     }
 
 
-    public void updatePayment(List<Payment> payments){
+    public void updatePayment(List<Payment> payments) {
         List<MapSqlParameterSource> paymentSource = new ArrayList<>();
         List<MapSqlParameterSource> paymentDetailSource = new ArrayList<>();
         List<MapSqlParameterSource> billSource = new ArrayList<>();
@@ -184,27 +181,36 @@ public class PaymentRepository {
             namedParameterJdbcTemplate.batchUpdate(COPY_PAYMENTDETAIL_SQL, paymentDetailSource.toArray(new MapSqlParameterSource[0]));
             namedParameterJdbcTemplate.batchUpdate(COPY_BILL_SQL, billSource.toArray(new MapSqlParameterSource[0]));
             namedParameterJdbcTemplate.batchUpdate(COPY_BILLDETAIL_SQL, billDetailSource.toArray(new MapSqlParameterSource[0]));
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("Failed to update receipt to database", e);
             throw new CustomException("RECEIPT_UPDATION_FAILED", "Unable to update receipt");
         }
     }
 
 
-    public void updateFileStoreId(List<Map<String,String>> idToFileStoreIdMaps){
+    public void updateFileStoreId(List<Map<String, String>> idToFileStoreIdMaps) {
 
         List<MapSqlParameterSource> fileStoreIdSource = new ArrayList<>();
 
         idToFileStoreIdMaps.forEach(map -> {
             MapSqlParameterSource sqlParameterSource = new MapSqlParameterSource();
-            sqlParameterSource.addValue("id",map.get(KEY_ID));
-            sqlParameterSource.addValue("filestoreid",map.get(KEY_FILESTOREID));
+            sqlParameterSource.addValue("id", map.get(KEY_ID));
+            sqlParameterSource.addValue("filestoreid", map.get(KEY_FILESTOREID));
             fileStoreIdSource.add(sqlParameterSource);
         });
 
-        namedParameterJdbcTemplate.batchUpdate(FILESTOREID_UPDATE_PAYMENT_SQL,fileStoreIdSource.toArray(new MapSqlParameterSource[0]));
+        namedParameterJdbcTemplate.batchUpdate(FILESTOREID_UPDATE_PAYMENT_SQL, fileStoreIdSource.toArray(new MapSqlParameterSource[0]));
 
     }
 
 
+    public List<String> fetchPaymentIds(PaymentSearchCriteria paymentSearchCriteria) {
+
+        Map<String, Object> preparedStatementValues = new HashMap<>();
+        preparedStatementValues.put("offset", paymentSearchCriteria.getOffset());
+        preparedStatementValues.put("limit", paymentSearchCriteria.getLimit());
+
+        return namedParameterJdbcTemplate.query("SELECT id from egcl_payment ORDER BY createdtime offset " + ":offset " + "limit :limit", preparedStatementValues, new SingleColumnRowMapper<>(String.class));
+
+    }
 }

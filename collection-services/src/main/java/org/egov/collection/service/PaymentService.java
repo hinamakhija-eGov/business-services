@@ -2,12 +2,7 @@ package org.egov.collection.service;
 
 import static java.util.Objects.isNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.egov.collection.config.ApplicationProperties;
@@ -58,7 +53,6 @@ public class PaymentService {
     }
 
 
-
     /**
      * Fetch all receipts matching the given criteria, enrich receipts with instruments
      *
@@ -67,7 +61,7 @@ public class PaymentService {
      * @return List of matching receipts
      */
     public List<Payment> getPayments(RequestInfo requestInfo, PaymentSearchCriteria paymentSearchCriteria) {
-    	
+
         Map<String, String> errorMap = new HashMap<>();
         paymentValidator.validateUserInfo(requestInfo, errorMap);
         if (!errorMap.isEmpty())
@@ -90,8 +84,8 @@ public class PaymentService {
 
         return payments;
     }
-    
-    
+
+
     /**
      * Handles creation of a receipt, including multi-service, involves the following steps, - Enrich receipt from billing service
      * using bill id - Validate the receipt object - Enrich receipt with receipt numbers, coll type etc - Apportion paid amount -
@@ -102,7 +96,7 @@ public class PaymentService {
      */
     @Transactional
     public Payment createPayment(PaymentRequest paymentRequest) {
-    	
+
         paymentEnricher.enrichPaymentPreValidate(paymentRequest);
         paymentValidator.validatePaymentForCreate(paymentRequest);
         paymentEnricher.enrichPaymentPostValidate(paymentRequest);
@@ -110,10 +104,10 @@ public class PaymentService {
         Payment payment = paymentRequest.getPayment();
         Map<String, Bill> billIdToApportionedBill = apportionerService.apportionBill(paymentRequest);
         paymentEnricher.enrichAdvanceTaxHead(new LinkedList<>(billIdToApportionedBill.values()));
-        setApportionedBillsToPayment(billIdToApportionedBill,payment);
+        setApportionedBillsToPayment(billIdToApportionedBill, payment);
 
         String payerId = createUser(paymentRequest);
-        if(!StringUtils.isEmpty(payerId))
+        if (!StringUtils.isEmpty(payerId))
             payment.setPayerId(payerId);
         paymentRepository.savePayment(payment);
 
@@ -127,25 +121,25 @@ public class PaymentService {
 
     /**
      * If Citizen is paying, the id of the logged in user becomes payer id.
-     * If Employee is paying, 
+     * If Employee is paying,
      * 1. the id of the owner of the bill will be attached as payer id.
      * 2. In case the bill is for a misc payment, payer id is empty.
-     * 
+     *
      * @param paymentRequest
      * @return
      */
     public String createUser(PaymentRequest paymentRequest) {
-    	
+
         String id = null;
-        if(paymentRequest.getRequestInfo().getUserInfo().getType().equals("CITIZEN")) {
+        if (paymentRequest.getRequestInfo().getUserInfo().getType().equals("CITIZEN")) {
             id = paymentRequest.getRequestInfo().getUserInfo().getUuid();
-        }else {
-            if(applicationProperties.getIsUserCreateEnabled()) {
+        } else {
+            if (applicationProperties.getIsUserCreateEnabled()) {
                 Payment payment = paymentRequest.getPayment();
                 Map<String, String> res = userService.getUser(paymentRequest.getRequestInfo(), payment.getMobileNumber(), payment.getTenantId());
-                if(CollectionUtils.isEmpty(res.keySet())) {
+                if (CollectionUtils.isEmpty(res.keySet())) {
                     id = userService.createUser(paymentRequest);
-                }else {
+                } else {
                     id = res.get("id");
                 }
             }
@@ -154,14 +148,15 @@ public class PaymentService {
     }
 
 
-    private void setApportionedBillsToPayment(Map<String, Bill> billIdToApportionedBill,Payment payment){
-        Map<String,String> errorMap = new HashMap<>();
+    private void setApportionedBillsToPayment(Map<String, Bill> billIdToApportionedBill, Payment payment) {
+        Map<String, String> errorMap = new HashMap<>();
         payment.getPaymentDetails().forEach(paymentDetail -> {
-            if(billIdToApportionedBill.get(paymentDetail.getBillId())!=null)
+            if (billIdToApportionedBill.get(paymentDetail.getBillId()) != null)
                 paymentDetail.setBill(billIdToApportionedBill.get(paymentDetail.getBillId()));
-            else errorMap.put("APPORTIONING_ERROR","The bill id: "+paymentDetail.getBillId()+" not present in apportion response");
+            else
+                errorMap.put("APPORTIONING_ERROR", "The bill id: " + paymentDetail.getBillId() + " not present in apportion response");
         });
-        if(!errorMap.isEmpty())
+        if (!errorMap.isEmpty())
             throw new CustomException(errorMap);
     }
 
@@ -178,12 +173,11 @@ public class PaymentService {
 
         return validatedPayments;
     }
-    
-    
-    
+
+
     /**
      * Used by payment gateway to validate provisional receipts of the payment
-     * 
+     *
      * @param paymentRequest
      * @return
      */
@@ -191,10 +185,27 @@ public class PaymentService {
     public Payment vaidateProvisonalPayment(PaymentRequest paymentRequest) {
         paymentEnricher.enrichPaymentPreValidate(paymentRequest);
         paymentValidator.validatePaymentForCreate(paymentRequest);
-        
+
         return paymentRequest.getPayment();
     }
 
 
+    public List<Payment> plainSearch(PaymentSearchCriteria paymentSearchCriteria) {
+        PaymentSearchCriteria searchCriteria = new PaymentSearchCriteria();
 
+        if (applicationProperties.isPaymentsSearchPaginationEnabled()) {
+            searchCriteria.setOffset(isNull(paymentSearchCriteria.getOffset()) ? 0 : paymentSearchCriteria.getOffset());
+            searchCriteria.setLimit(isNull(paymentSearchCriteria.getLimit()) ? applicationProperties.getReceiptsSearchDefaultLimit() : paymentSearchCriteria.getLimit());
+        } else {
+            searchCriteria.setOffset(0);
+            searchCriteria.setLimit(applicationProperties.getReceiptsSearchDefaultLimit());
+        }
+
+        List<String> ids = paymentRepository.fetchPaymentIds(searchCriteria);
+        if (ids.isEmpty())
+            return Collections.emptyList();
+
+        PaymentSearchCriteria criteria = PaymentSearchCriteria.builder().ids((Set<String>) ids).build();
+        return paymentRepository.fetchPayments(criteria);
+    }
 }
