@@ -111,6 +111,31 @@ public class PaymentRepository {
         return payments;
     }
 
+    public List<Payment> fetchPaymentsForPlainSearch(PaymentSearchCriteria paymentSearchCriteria) {
+        Map<String, Object> preparedStatementValues = new HashMap<>();
+        String query = paymentQueryBuilder.getPaymentSearchQueryForPlainSearch(paymentSearchCriteria, preparedStatementValues);
+        log.info("Query: " + query);
+        log.info("preparedStatementValues: " + preparedStatementValues);
+        List<Payment> payments = namedParameterJdbcTemplate.query(query, preparedStatementValues, paymentRowMapper);
+        if (!CollectionUtils.isEmpty(payments)) {
+            Set<String> billIds = new HashSet<>();
+            for (Payment payment : payments) {
+                billIds.addAll(payment.getPaymentDetails().stream().map(detail -> detail.getBillId()).collect(Collectors.toSet()));
+            }
+            Map<String, Bill> billMap = getBills(billIds);
+            for (Payment payment : payments) {
+                payment.getPaymentDetails().forEach(detail -> {
+                    detail.setBill(billMap.get(detail.getBillId()));
+                });
+            }
+            payments.sort(reverseOrder(Comparator.comparingLong(Payment::getTransactionDate)));
+        }
+
+        return payments;
+    }
+
+
+
     private Map<String, Bill> getBills(Set<String> ids) {
         Map<String, Bill> mapOfIdAndBills = new HashMap<>();
         Map<String, Object> preparedStatementValues = new HashMap<>();
