@@ -117,9 +117,9 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 					// Source references to be prepare a map of fieldName & value
 					for (SourceReferences ref : indexConfig.getSourceReferences()){
 						String arg = ref.getFieldName();
-						LOGGER.info("arg120## " + String.join(",", argVal));
+						LOGGER.info("arg120## " + arg);
 						String argVal = copyNode.findValue(arg).asText();
-						LOGGER.info("argVal122## " + String.join(",", argVal));
+						LOGGER.info("argVal122## " + argVal);
 						String[] values = argVal.split(ref.getSeperator());
 						String[] exps = ref.getExpression().split(ref.getSeperator());
 						LOGGER.info("values125## " + String.join(",", values));
