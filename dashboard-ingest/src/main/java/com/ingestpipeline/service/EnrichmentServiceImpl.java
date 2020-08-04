@@ -105,9 +105,13 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 			if(indexConfig != null){
 				String indexName = indexConfig.getIndexName();
 				String query = indexConfig.getQuery();
+				LOGGER.info("indexName 108 ## "+indexName);
+				LOGGER.info("Index Query 109 ## "+query);
+				
 
 				try {
 					ObjectNode queryNode = new ObjectMapper().readValue(query, ObjectNode.class);
+					LOGGER.info("queryNode 114 ## "+queryNode.toString());
 
 					Map<String, Object> expValMap = new HashMap<>();
 					// Source references to be prepare a map of fieldName & value
@@ -147,6 +151,7 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 					LOGGER.info("Data Transformed");
 
 				} catch (Exception e) {
+					e.printStackTrace();
 					LOGGER.error("Pre-processing enrichment - failed  :: {}" , e.getMessage());
 				}
 			} else {
