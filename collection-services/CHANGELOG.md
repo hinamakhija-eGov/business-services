@@ -4,9 +4,12 @@
 All notable changes to this module will be documented in this file.
 
 
-## [Unreleased]
-### Changed
-- None
+## 1.1.1 - 2020-08-04
+- Migration status mapping fix receipt to payment
+
+## 1.1.1
+
+## 1.1.0 - 2020-06-25
 
 ## [1.1.0] - 2018-12-06
 ### Added
