@@ -386,10 +386,10 @@ public class PaymentQueryBuilder {
 //            selectQuery.append(" py.mobileNumber = :mobileNo");
 //            preparedStatementValues.put("mobileNumber", searchCriteria.getMobileNumber());
 //        }
-        if (searchCriteria.getMobileNumber() != null && !searchCriteria.getMobileNumber().isEmpty()) {
+        if (searchCriteria.getMobileNo() != null && !searchCriteria.getMobileNo().isEmpty()) {
             addClauseIfRequired(preparedStatementValues, selectQuery);
-            selectQuery.append(" py.mobileNumber = :mobileNumber");
-            preparedStatementValues.put("mobileNumber", searchCriteria.getMobileNumber());
+            selectQuery.append(" py.mobileNumber = :mobileNo");
+            preparedStatementValues.put("mobileNumber", searchCriteria.getMobileNo());
         }
 
         if (StringUtils.isNotBlank(searchCriteria.getTransactionNumber())) {
