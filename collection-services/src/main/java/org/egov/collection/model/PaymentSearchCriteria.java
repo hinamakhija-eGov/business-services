@@ -37,7 +37,7 @@ public class PaymentSearchCriteria {
 
     private String transactionNumber;
 
-    private String mobileNumber;
+    private Set<String> mobileNumber;
 
     private Long fromDate;
 

@@ -383,7 +383,7 @@ public class PaymentQueryBuilder {
 
 //        if (StringUtils.isNotBlank(searchCriteria.getMobileNumber())) {
 //            addClauseIfRequired(preparedStatementValues, selectQuery);
-//            selectQuery.append(" py.mobileNumber = :mobileNumber");
+//            selectQuery.append(" py.mobileNumber = :mobileNo");
 //            preparedStatementValues.put("mobileNumber", searchCriteria.getMobileNumber());
 //        }
         if (searchCriteria.getMobileNumber() != null && !searchCriteria.getMobileNumber().isEmpty()) {
