@@ -306,8 +306,19 @@ public class PaymentQueryBuilder {
     }
 
 
-
     public static String getPaymentSearchQuery(PaymentSearchCriteria searchCriteria,
+                                               Map<String, Object> preparedStatementValues) {
+        StringBuilder selectQuery = new StringBuilder(SELECT_PAYMENT_SQL);
+
+        addWhereClause(selectQuery, preparedStatementValues, searchCriteria);
+
+        addOrderByClause(selectQuery);
+
+        return addPaginationClause(selectQuery, preparedStatementValues, searchCriteria);
+    }
+
+
+    public static String getPaymentSearchQueryForPlainSearch(PaymentSearchCriteria searchCriteria,
                                                Map<String, Object> preparedStatementValues) {
         StringBuilder selectQuery = new StringBuilder(SELECT_PAYMENT_SQL);
 
@@ -315,7 +326,6 @@ public class PaymentQueryBuilder {
 
         return addOrderByClause(selectQuery);
 
-        //return addPaginationClause(selectQuery, preparedStatementValues, searchCriteria);
     }
 
 
