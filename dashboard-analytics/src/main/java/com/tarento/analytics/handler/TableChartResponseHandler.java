@@ -130,7 +130,7 @@ public class TableChartResponseHandler implements IResponseHandler {
     private void addPlotFromBucketForString(String headerPath, JsonNode bucket, Map<String, Plot> plotMap){
 
         JsonNode valueNode = bucket.findPath(headerPath);
-        if(valueNode == null){
+        if(valueNode != null){
             String key = valueNode.findValue(IResponseHandler.KEY).asText();
             Plot plot = new Plot(headerPath, key, STRING_DATATYPE);
             plotMap.put(headerPath, plot);
