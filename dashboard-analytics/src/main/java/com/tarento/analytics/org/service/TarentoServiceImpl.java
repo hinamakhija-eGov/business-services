@@ -146,6 +146,7 @@ public class TarentoServiceImpl implements ClientService {
 					nodes.set(indexName,aggrNode.get(Constants.JsonPaths.AGGREGATIONS));
 				}catch (Exception e) {
 					logger.error("Encountered an Exception while Executing the Query : " + e.getMessage());
+					throw new RuntimeException(e);
 				}
 				aggrObjectNode.set(Constants.JsonPaths.AGGREGATIONS, nodes);
 

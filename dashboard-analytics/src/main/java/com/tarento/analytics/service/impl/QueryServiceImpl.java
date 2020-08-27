@@ -455,7 +455,8 @@ public class QueryServiceImpl implements QueryService {
 			objectNode.put(Constants.JsonPaths.AGGS, mapper.readTree(aggrQuery).get(Constants.JsonPaths.AGGS));
 		} catch (Exception ex) {
 			logger.error("Encountered an Exception while parsing the JSON : " + ex.getMessage());
-		}
+			throw new RuntimeException(ex);
+	    }
 	    return objectNode; 
 		
 	}
