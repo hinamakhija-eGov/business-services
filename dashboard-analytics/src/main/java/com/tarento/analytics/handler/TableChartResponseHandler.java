@@ -128,18 +128,17 @@ public class TableChartResponseHandler implements IResponseHandler {
      * @param plotMap
      */
     private void addPlotFromBucketForString(String headerPath, JsonNode bucket, Map<String, Plot> plotMap){
-
-        JsonNode valueNode = bucket.findPath(headerPath);
-        if(valueNode != null){
+        try{
+            JsonNode valueNode = bucket.findPath(headerPath);
             String key = valueNode.findValue(IResponseHandler.KEY).asText();
             Plot plot = new Plot(headerPath, key, STRING_DATATYPE);
             plotMap.put(headerPath, plot);
         }
-        else {
-            logger.info("DATA_NOT_FOUND","No data found for aggregation path: "+headerPath+" bucket: "+bucket.asText());
+        catch (Exception e){
+            e.printStackTrace();
+            logger.info("headerPath: "+headerPath);
+            logger.info("bucket: "+bucket);
         }
-
-
     }
 
 }
