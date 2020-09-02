@@ -136,8 +136,7 @@ public class MigrationService {
 		
 		BigDecimal AmountPaid = bill_v1.getBillDetails().stream().map(detail -> detail.getAmountPaid()).reduce(BigDecimal.ZERO, BigDecimal::add);
 		BigDecimal totalAmount = bill_v1.getBillDetails().stream().map(detail -> detail.getTotalAmount()).reduce(BigDecimal.ZERO, BigDecimal::add);
-		StatusEnum status = StatusEnum.fromValue(bill_v1.getBillDetails().get(0).getStatus()); 
-		status =  status != null ? status : StatusEnum.EXPIRED;
+		StatusEnum status = StatusEnum.ACTIVE;
 		
 		AuditDetails auditDetails = AuditDetails.builder()
 				.lastModifiedTime(oldAuditDetails.getLastModifiedDate())
