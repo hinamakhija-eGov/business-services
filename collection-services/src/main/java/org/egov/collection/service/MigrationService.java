@@ -82,7 +82,9 @@ public class MigrationService {
 
     public void migrate(RequestInfo requestInfo, Integer offsetFromApi,  Integer batchSize, String tenantId) throws JsonProcessingException {
     	
-        List<String> tenantIdList =jdbcTemplate.queryForList(TENANT_QUERY,String.class);
+//        List<String> tenantIdList =jdbcTemplate.queryForList(TENANT_QUERY,String.class);
+		List<String> tenantIdList = new ArrayList<String>();
+		tenantIdList.add(tenantId);
         for(String tenantIdEntry:tenantIdList){
         
         	Integer offset = offsetFromApi;
