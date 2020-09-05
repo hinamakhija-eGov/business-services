@@ -5,16 +5,12 @@ import static org.egov.collection.model.enums.InstrumentTypesEnum.ONLINE;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.egov.collection.config.ApplicationProperties;
 import org.egov.collection.model.AuditDetails;
@@ -81,7 +77,9 @@ public class MigrationService {
     public static final String TENANT_QUERY = "select distinct tenantid from egcl_receiptheader_v1 order by tenantid;";
 
     public void migrate(RequestInfo requestInfo, Integer offsetFromApi,  Integer batchSize, String tenantId) throws JsonProcessingException {
-    	
+
+		Set<String> receiptSearch = Stream.of( "PT/101/2019-20/000693", "PT/101/2019-20/000694", "PT/101/2019-20/000695", "PT/101/2019-20/000696", "PT/101/2019-20/000697", "PT/101/2019-20/000698", "PT/101/2019-20/000699", "PT/101/2019-20/000702", "PT/101/2019-20/000701", "PT/101/2019-20/000700", "PT/101/2019-20/000703", "PT/101/2019-20/000707", "PT/101/2019-20/000704", "PT/101/2019-20/000705", "PT/101/2019-20/000706", "PT/101/2019-20/000708", "PT/101/2019-20/000709", "PT/101/2019-20/000710", "PT/101/2019-20/000711", "PT/101/2019-20/000712", "PT/101/2019-20/000713", "PT/101/2019-20/000714", "PT/101/2019-20/000715", "PT/101/2019-20/000716", "PT/101/2019-20/000717", "PT/101/2019-20/000718", "PT/101/2019-20/000719", "PT/101/2019-20/000720", "PT/101/2019-20/000721", "PT/101/2019-20/000722", "PT/101/2019-20/000723", "PT/101/2019-20/000725", "PT/101/2019-20/000724", "PT/101/2019-20/000726", "PT/101/2019-20/000727", "PT/101/2019-20/000728", "PT/101/2019-20/000729", "PT/101/2019-20/000731", "PT/101/2019-20/000730", "PT/101/2019-20/000732", "PT/101/2019-20/000733", "PT/101/2019-20/000734", "PT/101/2019-20/000735", "PT/101/2019-20/000736", "PT/101/2019-20/000737", "PT/101/2019-20/000738", "PT/101/2019-20/000739", "PT/101/2019-20/000740", "PT/101/2019-20/000741", "PT/101/2019-20/000742", "PT/101/2019-20/000743", "PT/101/2019-20/000744", "PT/101/2019-20/000745", "PT/101/2019-20/000746", "PT/101/2019-20/000749", "PT/101/2019-20/000747", "PT/101/2019-20/000748", "PT/101/2019-20/000750", "PT/101/2019-20/000751", "PT/101/2019-20/000752", "PT/101/2019-20/000753", "PT/101/2019-20/000754", "PT/101/2019-20/000755", "PT/101/2019-20/000756", "PT/101/2019-20/000757", "PT/101/2019-20/000758", "PT/101/2019-20/000759", "PT/101/2019-20/000760", "PT/101/2019-20/000761", "PT/101/2019-20/000765", "PT/101/2019-20/000762", "PT/101/2019-20/000763", "PT/101/2019-20/000764", "PT/101/2019-20/000768", "PT/101/2019-20/000766", "PT/101/2019-20/000767", "PT/101/2019-20/000769", "PT/101/2019-20/000770", "PT/101/2019-20/000771", "PT/101/2019-20/000772", "PT/101/2019-20/000775", "PT/101/2019-20/000773", "PT/101/2019-20/000774", "PT/101/2019-20/000776", "PT/101/2019-20/000777", "PT/101/2019-20/000778", "PT/101/2019-20/000779", "PT/101/2019-20/000780", "PT/101/2019-20/000781", "PT/101/2019-20/000782", "PT/101/2019-20/000783", "PT/101/2019-20/000784", "PT/101/2019-20/000785", "PT/101/2019-20/000786", "PT/101/2019-20/000787", "PT/101/2019-20/000788", "PT/101/2019-20/000789", "PT/101/2019-20/000790", "PT/101/2019-20/000791", "PT/101/2019-20/000792").collect(Collectors.toCollection(HashSet::new));
+
 //        List<String> tenantIdList =jdbcTemplate.queryForList(TENANT_QUERY,String.class);
 		List<String> tenantIdList = new ArrayList<String>();
 		tenantIdList.add(tenantId);
@@ -99,7 +97,7 @@ public class MigrationService {
                 while(true){
                     long startTime = System.currentTimeMillis();
                     ReceiptSearchCriteria_v1 criteria_v1 = ReceiptSearchCriteria_v1.builder()
-                            .offset(offset).limit(batchSize).tenantId(tenantIdEntry).build();
+                            .offset(offset).limit(batchSize).tenantId(tenantIdEntry).receiptNumbers(receiptSearch).build();
                     List<Receipt_v1> receipts = collectionService.fetchReceipts(criteria_v1);
                     if(CollectionUtils.isEmpty(receipts))
                         break;
