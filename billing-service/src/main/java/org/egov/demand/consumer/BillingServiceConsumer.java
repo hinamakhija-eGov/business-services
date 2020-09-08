@@ -150,13 +150,13 @@ public class BillingServiceConsumer {
 			BigDecimal amtPaid = null != amtPaidList.get(i) ? amtPaidList.get(i) : BigDecimal.ZERO; 
 
 			if (isReceiptCancelled) {
-				bill.setStatus(org.egov.demand.model.BillV2.StatusEnum.CANCELLED);
+				bill.setStatus(org.egov.demand.model.BillV2.BillStatus.CANCELLED);
 
 			} else if (bill.getTotalAmount().compareTo(amtPaid) > 0) {
-				bill.setStatus(org.egov.demand.model.BillV2.StatusEnum.PARTIALLY_PAID);
+				bill.setStatus(org.egov.demand.model.BillV2.BillStatus.PARTIALLY_PAID);
 
 			} else {
-				bill.setStatus(org.egov.demand.model.BillV2.StatusEnum.PAID);
+				bill.setStatus(org.egov.demand.model.BillV2.BillStatus.PAID);
 		}
 	}
 		

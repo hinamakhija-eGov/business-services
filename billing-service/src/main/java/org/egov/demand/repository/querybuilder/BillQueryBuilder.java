@@ -16,6 +16,7 @@ public class BillQueryBuilder {
 	@Autowired
 	private ApplicationProperties applicationProperties;
 	
+	public static final String REPLACE_STRING = "{replace}";
 	
 	public static final String BILL_STATUS_UPDATE_QUERY = "UPDATE egbs_bill_v1 SET status=? WHERE status='ACTIVE' ";
 	
@@ -36,6 +37,12 @@ public class BillQueryBuilder {
 			+ "createdby, createddate, lastmodifiedby, lastmodifieddate, taxheadcode)"
 			+"values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 	
+	
+	
+	public static final String BILL_MAX_QUERY = "WITH billresult AS ({replace}) SELECT * FROM billresult "
+			+ " INNER JOIN (SELECT bd_consumercode, max(b_createddate) as maxdate FROM billresult GROUP BY bd_consumercode) as uniqbill"
+			+ " ON uniqbill.bd_consumercode=billresult.bd_consumercode AND uniqbill.maxdate=billresult.b_createddate ";
+	
 	public static final String BILL_BASE_QUERY = "SELECT b.id AS b_id,b.mobilenumber, b.tenantid AS b_tenantid,"
 			+ " b.payername AS b_payername, b.payeraddress AS b_payeraddress, b.payeremail AS b_payeremail,b.filestoreid AS b_fileStoreId,"
 			+ " b.isactive AS b_isactive, b.iscancelled AS b_iscancelled, b.createdby AS b_createdby, b.status as b_status,"
@@ -50,7 +57,7 @@ public class BillQueryBuilder {
 			+ " ad.orderno AS ad_orderno, ad.accountdescription AS ad_accountdescription,"
 			+ " ad.amount AS ad_amount, ad.adjustedamount AS ad_adjustedamount, ad.taxheadcode AS ad_taxheadcode, ad.demanddetailid,"
 			+ " ad.isactualdemand AS ad_isactualdemand, ad.purpose AS ad_purpose,"
-			+ " b.additionaldetails as b_additionaldetails,  bd.additionaldetails as bd_additionaldetails,  ad.additionaldetails as ad_additionaldetails"
+			+ " b.additionaldetails as b_additionaldetails,  bd.additionaldetails as bd_additionaldetails "
 			+ " FROM egbs_bill_v1 b"
 			+ " LEFT OUTER JOIN egbs_billdetail_v1 bd ON b.id = bd.billid AND b.tenantid = bd.tenantid"
 			+ " LEFT OUTER JOIN egbs_billaccountdetail_v1 ad ON bd.id = ad.billdetail AND bd.tenantid = ad.tenantid"
@@ -61,9 +68,9 @@ public class BillQueryBuilder {
 		StringBuilder billQuery = new StringBuilder(BILL_BASE_QUERY);
 		preparedStatementValues.add(billSearchCriteria.getTenantId());
 		addWhereClause(billQuery, preparedStatementValues, billSearchCriteria);
-		addPagingClause(billQuery, preparedStatementValues, billSearchCriteria);
+		StringBuilder maxQuery = addPagingClause(billQuery, preparedStatementValues, billSearchCriteria);
 		
-		return billQuery.toString();
+		return maxQuery.toString();
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -105,25 +112,28 @@ public class BillQueryBuilder {
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void addPagingClause(final StringBuilder selectQuery, final List preparedStatementValues,
+	private StringBuilder addPagingClause(final StringBuilder selectQuery, final List preparedStatementValues,
 			final BillSearchCriteria searchBillCriteria) {
+		
+		StringBuilder maxQuery = new StringBuilder(BILL_MAX_QUERY.replace(REPLACE_STRING, selectQuery));
 
 		if (searchBillCriteria.isOrderBy())
-			selectQuery.append(" ORDER BY b.createddate desc");
+			maxQuery.append(" ORDER BY billresult.bd_consumercode ");
 
-		selectQuery.append(" LIMIT ?");
-		long pageSize = Integer.parseInt(applicationProperties.getCommonSearchDefaultLimit());
-		if (searchBillCriteria.getSize() != null)
-			pageSize = searchBillCriteria.getSize();
-		preparedStatementValues.add(pageSize); // Set limit to pageSize
-
-		// handle offset here
-		selectQuery.append(" OFFSET ?");
-		long pageNumber = 0; // Default pageNo is zero meaning first page
-		if (searchBillCriteria.getOffset() != null)
-			pageNumber = searchBillCriteria.getOffset() - 1;
-		preparedStatementValues.add(pageNumber * pageSize); // Set offset to
-															// pageNo * pageSize
+//		maxQuery.append(" LIMIT ?");
+//		long pageSize = Integer.parseInt(applicationProperties.getCommonSearchDefaultLimit());
+//		if (searchBillCriteria.getSize() != null)
+//			pageSize = searchBillCriteria.getSize();
+//		preparedStatementValues.add(pageSize); // Set limit to pageSize
+//
+//		// handle offset here
+//		maxQuery.append(" OFFSET ?");
+//		long pageNumber = 0; // Default pageNo is zero meaning first page
+//		if (searchBillCriteria.getOffset() != null)
+//			pageNumber = searchBillCriteria.getOffset() - 1;
+//		preparedStatementValues.add(pageNumber * pageSize); // Set offset to
+//															// pageNo * pageSize
+		return maxQuery;
 	}
 	
 	/**

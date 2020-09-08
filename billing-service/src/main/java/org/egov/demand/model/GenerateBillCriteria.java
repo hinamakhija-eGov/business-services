@@ -44,7 +44,7 @@ import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
-import org.egov.demand.model.BillV2.StatusEnum;
+import org.egov.demand.model.BillV2.BillStatus;
 import org.hibernate.validator.constraints.Email;
 
 import lombok.AllArgsConstructor;
@@ -105,7 +105,7 @@ public class GenerateBillCriteria {
 		return BillSearchCriteria.builder()
 				.consumerCode(consumerCode)
 				.mobileNumber(mobileNumber)
-				.status(StatusEnum.ACTIVE)
+				.status(BillStatus.ACTIVE)
 				.service(businessService)
 				.tenantId(tenantId)
 				.isOrderBy(true)

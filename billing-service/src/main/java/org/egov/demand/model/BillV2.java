@@ -37,7 +37,7 @@ public class BillV2 {
 	private String payerEmail;
 
 	@JsonProperty("status")
-	private StatusEnum status;
+	private BillStatus status;
 
 	@JsonProperty("totalAmount")
 	private BigDecimal totalAmount;
@@ -73,7 +73,7 @@ public class BillV2 {
 	/**
 	 * status of the bill .
 	 */
-	public enum StatusEnum {
+	public enum BillStatus {
 		
 		ACTIVE("ACTIVE"),
 
@@ -89,7 +89,7 @@ public class BillV2 {
 
 		private String value;
 
-		StatusEnum(String value) {
+		BillStatus(String value) {
 			this.value = value;
 		}
 
@@ -100,8 +100,8 @@ public class BillV2 {
 		}
 
 		@JsonCreator
-		public static StatusEnum fromValue(String text) {
-			for (StatusEnum b : StatusEnum.values()) {
+		public static BillStatus fromValue(String text) {
+			for (BillStatus b : BillStatus.values()) {
 				if (String.valueOf(b.value).equalsIgnoreCase(text)) {
 					return b;
 				}

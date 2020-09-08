@@ -68,7 +68,7 @@ import org.egov.demand.model.BillAccountDetailV2;
 import org.egov.demand.model.BillDetailV2;
 import org.egov.demand.model.BillSearchCriteria;
 import org.egov.demand.model.BillV2;
-import org.egov.demand.model.BillV2.StatusEnum;
+import org.egov.demand.model.BillV2.BillStatus;
 import org.egov.demand.model.BusinessServiceDetail;
 import org.egov.demand.model.Demand;
 import org.egov.demand.model.DemandCriteria;
@@ -86,6 +86,7 @@ import org.egov.demand.web.contract.BusinessServiceDetailCriteria;
 import org.egov.demand.web.contract.RequestInfoWrapper;
 import org.egov.demand.web.contract.User;
 import org.egov.demand.web.contract.factory.ResponseFactory;
+import org.egov.demand.web.validator.BillValidator;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -131,6 +132,9 @@ public class BillServicev2 {
 	@Autowired
 	private IdGenRepo idGenRepo;
 	
+	@Autowired
+	private BillValidator billValidator;
+	
 	@Value("${kafka.topics.billgen.topic.name}")
 	private String notifTopicName;
 	
@@ -149,10 +153,13 @@ public class BillServicev2 {
 	 */
 	public BillResponseV2 fetchBill(GenerateBillCriteria billCriteria, RequestInfoWrapper requestInfoWrapper) {
 		
+		billValidator.validateBillGenRequest(billCriteria);
+		if (CollectionUtils.isEmpty(billCriteria.getConsumerCode()))
+			billCriteria.setConsumerCode(new HashSet<>());
 		RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
 		BillResponseV2 res = searchBill(billCriteria.toBillSearchCriteria(), requestInfo);
 		List<BillV2> bills = res.getBill();
-		
+
 		/* 
 		 * If no existing bills found then Generate new bill 
 		 */
@@ -167,7 +174,7 @@ public class BillServicev2 {
 		 * grouping by service code and collecting the list of 
 		 * consumerCodes against the service code
 		 */
-		List<String> cosnumerCodesNotFoundInBill = new ArrayList<>(billCriteria.getConsumerCode());
+ 		List<String> cosnumerCodesNotFoundInBill = new ArrayList<>(billCriteria.getConsumerCode());
 		List<String> cosnumerCodesToBeExpired = new ArrayList<>();
 		List<BillV2> billsToBeReturned = new ArrayList<>();
 		Boolean isBillExpired = false;
@@ -176,12 +183,15 @@ public class BillServicev2 {
 			BillV2 bill = entry.getValue();
 
 			for (BillDetailV2 billDetail : bill.getBillDetails()) {
-				if (billDetail.getExpiryDate().compareTo(System.currentTimeMillis()) < 0)
-					cosnumerCodesToBeExpired.add(bill.getConsumerCode());
+				if (billDetail.getExpiryDate().compareTo(System.currentTimeMillis()) < 0) {
+					isBillExpired = true;
+					break;
+				}
 			}
-			if (!isBillExpired) {
+			if (!isBillExpired)
 				billsToBeReturned.add(bill);
-			}
+			else
+				cosnumerCodesToBeExpired.add(bill.getConsumerCode());
 			cosnumerCodesNotFoundInBill.remove(entry.getKey());
 			isBillExpired = false;
 		}
@@ -192,10 +202,11 @@ public class BillServicev2 {
 		if(CollectionUtils.isEmpty(cosnumerCodesToBeExpired) && CollectionUtils.isEmpty(cosnumerCodesNotFoundInBill))
 			return res;
 		else {
-			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), cosnumerCodesToBeExpired, billCriteria.getTenantId(), requestInfoWrapper);
-			billRepository.updateBillStatus(cosnumerCodesToBeExpired, StatusEnum.EXPIRED);
+			
 			billCriteria.getConsumerCode().retainAll(cosnumerCodesToBeExpired);
 			billCriteria.getConsumerCode().addAll(cosnumerCodesNotFoundInBill);
+			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), billCriteria.getConsumerCode(), billCriteria.getTenantId(), requestInfoWrapper);
+			billRepository.updateBillStatus(cosnumerCodesToBeExpired, BillStatus.EXPIRED);
 			BillResponseV2 finalResponse = generateBill(billCriteria, requestInfo);
 			finalResponse.getBill().addAll(billsToBeReturned);
 			return finalResponse;
@@ -209,7 +220,7 @@ public class BillServicev2 {
 	 * @param serviceAndConsumerCodeListMap
 	 * @param tenantId
 	 */
-	private void updateDemandsForexpiredBillDetails(String businessService, List<String> consumerCodesTobeUpdated, String tenantId, RequestInfoWrapper requestInfoWrapper) {
+	private void updateDemandsForexpiredBillDetails(String businessService, Set<String> consumerCodesTobeUpdated, String tenantId, RequestInfoWrapper requestInfoWrapper) {
 
 		Map<String, String> serviceUrlMap = appProps.getBusinessCodeAndDemandUpdateUrlMap();
 
@@ -358,7 +369,7 @@ public class BillServicev2 {
 					.businessService(business.getCode())
 					.payerName(payer.getName())
 					.consumerCode(consumerCode)
-					.status(StatusEnum.ACTIVE)
+					.status(BillStatus.ACTIVE)
 					.billDetails(billDetails)
 					.totalAmount(billAmount)
 					.billNumber(billNumber)
