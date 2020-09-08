@@ -102,7 +102,7 @@ public class DemandController {
 		/*
 		 * validating master data using mdms and user data
 		 */
-		demandValidatorV1.validatedemandForCreate(demandRequest, true, headers);
+		//demandValidatorV1.validatedemandForCreate(demandRequest, true, headers);
 		DemandResponse demandResponse = demandService.create(demandRequest);
 
 		return new ResponseEntity<>(demandResponse, HttpStatus.CREATED);
@@ -114,7 +114,7 @@ public class DemandController {
 		/*
 		 * validating master data using mdms and user data
 		 */
-		demandValidatorV1.validateForUpdate(demandRequest, headers);
+		//demandValidatorV1.validateForUpdate(demandRequest, headers);
 		return new ResponseEntity<>(demandService.updateAsync(demandRequest), HttpStatus.CREATED);
 	}
 
