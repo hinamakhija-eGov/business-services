@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.demand.config.ApplicationProperties;
@@ -14,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
-import java.util.UUID;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -35,7 +37,7 @@ public class UserService {
      * @param phoneNo
      * @return
      */
-	public Map<String, String> getUser(RequestInfo requestInfo, String phoneNo, String tenantId) {
+	public Map<String, String> getUser(RequestInfo requestInfo, String phoneNo, String name, String tenantId) {
 		
 		Map<String, Object> request = new HashMap<>();
 		UserResponse userResponse = null;
@@ -43,6 +45,7 @@ public class UserService {
 		request.put("RequestInfo", requestInfo);
 		request.put("userName", phoneNo);
 		request.put("type", "CITIZEN");
+		request.put("name", name);
 		request.put("tenantId", tenantId.split("\\.")[0]);
 		
 		StringBuilder url = new StringBuilder();
@@ -52,8 +55,10 @@ public class UserService {
 			
 			userResponse = restTemplate.postForObject(url.toString(), request, UserResponse.class);
 			if (null != userResponse) {
-				if (!CollectionUtils.isEmpty(userResponse.getUser()))
+				if (!CollectionUtils.isEmpty(userResponse.getUser())) {
+
 					response.put("id", userResponse.getUser().get(0).getUuid());
+				}
 			}
 		} catch (Exception e) {
 			log.error("Exception while fetching user: ", e);
