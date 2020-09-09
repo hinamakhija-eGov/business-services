@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
-
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -78,7 +78,7 @@ public class UserService {
 
 		user.put("name", payer.getName());
 		user.put("mobileNumber", payer.getMobileNumber());
-		user.put("userName", payer.getMobileNumber());
+		user.put("userName", UUID.randomUUID().toString());
 		user.put("active", true);
 		user.put("type", "CITIZEN");
 		user.put("tenantId", demand.getTenantId().split("\\.")[0]);
