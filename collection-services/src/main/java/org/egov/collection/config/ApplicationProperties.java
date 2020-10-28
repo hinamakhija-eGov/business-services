@@ -162,6 +162,14 @@ public class ApplicationProperties {
     @Value("${kafka.topics.payment.receiptlink.key}")
     private String paymentReceiptLinkTopicKey;
 
+    @Value("${coll.notification.ui.host}")
+    private String uiHost;
+
+    @Value("${coll.notification.ui.redirect.url}")
+    private String uiRedirectUrl;
+
+    @Value("${coll.notification.fallback.locale}")
+    private String fallBackLocale;
 
 
     // Payment properties
@@ -182,21 +190,30 @@ public class ApplicationProperties {
     @Value("${kafka.topics.payment.cancel.key}")
     private String cancelPaymentTopicKey;
 
-
     @Value("${kafka.topics.payment.update.name}")
     private String updatePaymentTopicName;
 
     @Value("${kafka.topics.payment.update.key}")
     private String updatePaymentTopicKey;
 
+    @Value("${kafka.topics.notification.sms}")
+    private String smsTopic;
+
+    @Value("${kafka.topics.notification.sms.key}")
+    private String smsTopickey;
+
+
 
     //MDMS
+
     @Value("${egov.mdms.host}")
     private String mdmsHost;
 
     @Value("${egov.mdms.search.endpoint}")
     private String mdmsSearchEndpoint;
 
+    @Value("${egov.mdms.search.endpoint}")
+    private String mdmsUrl;
 
     @Value("${kafka.topics.collection.migrate.name}")
     private String collectionMigrationTopicName;
@@ -204,7 +221,13 @@ public class ApplicationProperties {
     @Value("${kafka.topics.collection.migrate.key}")
     private String collectionMigrationTopicKey;
 
+    //Localization
 
+    @Value("${egov.localization.host}")
+    private String localizationHost;
+
+    @Value("${egov.localization.search.endpoint}")
+    private String localizationEndpoint;
 
 
 }
