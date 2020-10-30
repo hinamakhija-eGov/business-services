@@ -78,7 +78,7 @@ public class CollectionNotificationConsumer{
                     Map<String, Object> request = new HashMap<>();
                     request.put("mobileNumber", mobNo);
                     request.put("message", message);
-
+                    log.info("The notification message for sms : " + message);
                     producer.producer(applicationProperties.getSmsTopic(), applicationProperties.getSmsTopickey(), request);
                 }
                 else{
