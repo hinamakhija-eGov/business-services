@@ -153,12 +153,12 @@ public class MigrationService {
 				@Override
 				public void setValues(PreparedStatement ps) throws SQLException {
 					
-					ps.setString(0, UUID.randomUUID().toString());
-					ps.setInt(1, receipt_criteria_v1.getOffset()); // batch
-					ps.setInt(2, receipt_criteria_v1.getLimit()); // batchsize
-					ps.setLong(3, System.currentTimeMillis());
-					ps.setString(4,receipt_criteria_v1.getTenantId());
-					ps.setInt(5, receipt_criteria_v1.getOffset() + receipt_criteria_v1.getLimit()); // recordCount
+					ps.setString(1, UUID.randomUUID().toString());
+					ps.setInt(2, receipt_criteria_v1.getOffset()); // batch
+					ps.setInt(3, receipt_criteria_v1.getLimit()); // batchsize
+					ps.setLong(4, System.currentTimeMillis());
+					ps.setString(5,receipt_criteria_v1.getTenantId());
+					ps.setInt(6, receipt_criteria_v1.getOffset() + receipt_criteria_v1.getLimit()); // recordCount
 					
 				}
 			});
@@ -513,8 +513,7 @@ public class MigrationService {
 	
 	
 	   public long getTenantCount(String tenantid){
-	       String query = COUNT_QUERY.replace("{}",tenantid);
-	       long count = jdbcTemplate.queryForObject(query, Integer.class);
+	       long count = jdbcTemplate.queryForObject(COUNT_QUERY, new Object[]{tenantid} ,Integer.class);
 	       return count;
 	   }
 
