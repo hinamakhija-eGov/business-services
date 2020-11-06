@@ -68,12 +68,16 @@ public class CollectionNotificationConsumer{
         List<String> businessServiceAllowed = fetchBusinessServiceFromMDMS(paymentReq.getRequestInfo(), paymentReq.getPayment().getTenantId());
         if(!CollectionUtils.isEmpty(businessServiceAllowed)){
             for(PaymentDetail detail : payment.getPaymentDetails()){
-                Bill bill = detail.getBill();
+                String mobNo = payment.getMobileNumber();
+                String paymentStatus;
+                if(payment.getPaymentStatus() == null) {
+                    paymentStatus = getValueOrDefault(null, "NEW");
+                }
+                else{
+                    paymentStatus = payment.getPaymentStatus().toString();
+                }
 
-                String mobNo = bill.getMobileNumber();
-                String paymentStatus = payment.getPaymentStatus().toString();
-
-                String message = buildSmsBody(bill, detail, paymentReq.getRequestInfo(), paymentStatus);
+                String message = buildSmsBody(detail, paymentReq.getRequestInfo(), payment, paymentStatus);
                 if(!StringUtils.isEmpty(message)){
                     Map<String, Object> request = new HashMap<>();
                     request.put("mobileNumber", mobNo);
@@ -91,45 +95,51 @@ public class CollectionNotificationConsumer{
         }
     }
 
-    private String buildSmsBody(Bill bill, PaymentDetail paymentDetail, RequestInfo requestInfo, String paymentStatus){
+    private String buildSmsBody(PaymentDetail paymentDetail, RequestInfo requestInfo, Payment payment, String paymentStatus){
         String message = null;
         String content = null;
         switch(paymentStatus.toUpperCase()){
             case "NEW":
-                content = fetchContentFromLocalization(requestInfo, paymentDetail.getTenantId(), COLLECTION_LOCALIZATION_MODULE, WF_MT_STATUS_OPEN_CODE);
+                content = fetchContentFromLocalization(requestInfo, payment.getTenantId(), COLLECTION_LOCALIZATION_MODULE, WF_MT_STATUS_OPEN_CODE);
                 break;
             case "DEPOSITED":
-                content = fetchContentFromLocalization(requestInfo, paymentDetail.getTenantId(), COLLECTION_LOCALIZATION_MODULE, WF_MT_STATUS_DEPOSITED_CODE);
+                content = fetchContentFromLocalization(requestInfo, payment.getTenantId(), COLLECTION_LOCALIZATION_MODULE, WF_MT_STATUS_DEPOSITED_CODE);
                 break;
             case "CANCELLED":
-                content = fetchContentFromLocalization(requestInfo, paymentDetail.getTenantId(), COLLECTION_LOCALIZATION_MODULE, WF_MT_STATUS_CANCELLED_CODE);
+                content = fetchContentFromLocalization(requestInfo, payment.getTenantId(), COLLECTION_LOCALIZATION_MODULE, WF_MT_STATUS_CANCELLED_CODE);
                 break;
             case "DISHONOURED":
-                content = fetchContentFromLocalization(requestInfo, paymentDetail.getTenantId(), COLLECTION_LOCALIZATION_MODULE, WF_MT_STATUS_DISHONOURED_CODE);
+                content = fetchContentFromLocalization(requestInfo, payment.getTenantId(), COLLECTION_LOCALIZATION_MODULE, WF_MT_STATUS_DISHONOURED_CODE);
                 break;
             default:
                 break;
         }
         if(!StringUtils.isEmpty(content)){
             StringBuilder link = new StringBuilder();
-            link.append(applicationProperties.getUiHost() + "/citizen").append("/otpLogin?mobileNo=").append(bill.getMobileNumber()).append("&redirectTo=")
-                    .append(applicationProperties.getUiRedirectUrl()).append("&params=").append(paymentDetail.getTenantId() + "," + paymentDetail.getReceiptNumber());
+            link.append(applicationProperties.getUiHost() + "/citizen").append("/otpLogin?mobileNo=").append(payment.getMobileNumber()).append("&redirectTo=")
+                    .append(applicationProperties.getUiRedirectUrl()).append("&params=").append(payment.getTenantId() + "," + paymentDetail.getReceiptNumber());
 
             content = content.replaceAll("<rcpt_link>", link.toString());
 
-            String moduleName = fetchContentFromLocalization(requestInfo, paymentDetail.getTenantId(),
+            String moduleName = fetchContentFromLocalization(requestInfo, payment.getTenantId(),
                     BUSINESSSERVICE_LOCALIZATION_MODULE, formatCodes(paymentDetail.getBusinessService()));
 
             if(StringUtils.isEmpty(moduleName)) {
-                moduleName = "Adhoc Tax";
+                if(paymentDetail.getBusinessService().equals("SW")){
+                    moduleName = "Water Connection";
+                }
+                else {
+                    moduleName = "Adhoc Tax";
+                }
             }
 
-            content = content.replaceAll("<owner_name>", bill.getPaidBy());
+            content = content.replaceAll("<owner_name>", payment.getPayerName());
             content = content.replaceAll("<mod_name>", moduleName);
-            content = content.replaceAll("<rcpt_no>",  paymentDetail.getReceiptNumber());
+
             if(content.contains("<amount_paid>"))
-                content = content.replaceAll("<amount_paid>", bill.getAmountPaid().toString());
-            content = content.replaceAll("<unique_id>", bill.getConsumerCode());
+                content = content.replaceAll("<amount_paid>", paymentDetail.getTotalAmountPaid().toString());
+
+            content = content.replace(" with <unique_id>", "");
             message = content;
         }
         return message;
@@ -146,8 +156,10 @@ public class CollectionNotificationConsumer{
         if(StringUtils.isEmpty(locale))
             locale = applicationProperties.getFallBackLocale();
         StringBuilder uri = new StringBuilder();
+        log.info(tenantId);
         uri.append(applicationProperties.getLocalizationHost()).append(applicationProperties.getLocalizationEndpoint());
         uri.append("?tenantId=").append(tenantId.split("\\.")[0]).append("&locale=").append(locale).append("&module=").append(module);
+
         Map<String, Object> request = new HashMap<>();
         request.put("RequestInfo", requestInfo);
         try {
@@ -203,4 +215,9 @@ public class CollectionNotificationConsumer{
 
         return BUSINESSSERVICELOCALIZATION_CODE_PREFIX + code.toUpperCase();
     }
+
+    public static <String> String getValueOrDefault(String value, String defaultValue) {
+        return value == null ? defaultValue : value;
+    }
+
 }
