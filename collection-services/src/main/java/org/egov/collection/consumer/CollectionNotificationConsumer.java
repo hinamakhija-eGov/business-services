@@ -6,15 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.egov.collection.model.Payment;
-import org.egov.collection.web.contract.Bill;
 import org.egov.collection.model.PaymentDetail;
 import org.egov.collection.model.PaymentRequest;
 import org.egov.collection.producer.CollectionProducer;
+import org.egov.collection.web.contract.Bill;
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.mdms.model.MdmsCriteria;
-import org.egov.mdms.model.MdmsCriteriaReq;
-import org.egov.mdms.model.MasterDetail;
-import org.egov.mdms.model.ModuleDetail;
 import org.egov.collection.config.ApplicationProperties;
 
 import org.egov.tracer.model.CustomException;
@@ -50,45 +46,33 @@ public class CollectionNotificationConsumer{
     @Autowired
     private RestTemplate restTemplate;
 
-    @KafkaListener(topics = {"${kafka.topics.payment.create.name}",
-            "${kafka.topics.payment.cancel.name}",})
+    @KafkaListener(topics = { "${kafka.topics.payment.create.name}" })
     public void listen(HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic){
-
         try{
             PaymentRequest req = objectMapper.convertValue(record, PaymentRequest.class);
             sendNotification(req);
         }catch(Exception e){
             log.error("Exception while reading from the queue: ", e);
         }
-
     }
 
-    private void sendNotification(PaymentRequest paymentReq){
-        Payment payment = paymentReq.getPayment();
-        List<String> businessServiceAllowed = fetchBusinessServiceFromMDMS(paymentReq.getRequestInfo(), paymentReq.getPayment().getTenantId());
-        if(!CollectionUtils.isEmpty(businessServiceAllowed)){
-            for(PaymentDetail detail : payment.getPaymentDetails()){
-                Bill bill = detail.getBill();
-
-                String mobNo = bill.getMobileNumber();
-                String paymentStatus = payment.getPaymentStatus().toString();
-
-                String message = buildSmsBody(bill, detail, paymentReq.getRequestInfo(), paymentStatus);
-                if(!StringUtils.isEmpty(message)){
-                    Map<String, Object> request = new HashMap<>();
-                    request.put("mobileNumber", mobNo);
-                    request.put("message", message);
-                    log.info("The notification message for sms : " + message);
-                    producer.producer(applicationProperties.getSmsTopic(), applicationProperties.getSmsTopickey(), request);
-                }
-                else{
-                    log.error("Message not configured! No notification will be sent.");
-                }
+    private void sendNotification(PaymentRequest paymentRequest){
+        Payment payment = paymentRequest.getPayment();
+        for (PaymentDetail paymentDetail : payment.getPaymentDetails()) {
+            String mobNo = payment.getMobileNumber();
+            String paymentStatus = (payment.getPaymentStatus().toString() == null ? "NEW" : payment.getPaymentStatus().toString());
+            Bill bill = paymentDetail.getBill();
+            String message = buildSmsBody(bill, paymentDetail, paymentRequest.getRequestInfo(), paymentStatus);
+            if (!StringUtils.isEmpty(message)) {
+                HashMap<String, Object> request = new HashMap<>();
+                request.put("mobileNumber", mobNo);
+                request.put("message", message);
+                producer.producer(applicationProperties.getSmsTopic(), request);
+            } else {
+                log.error("Message not configured! No notification will be sent.");
             }
         }
-        else{
-            log.info("Business services to which notifications are to be sent, couldn't be retrieved! Notifications will not be sent.");
-        }
+
     }
 
     private String buildSmsBody(Bill bill, PaymentDetail paymentDetail, RequestInfo requestInfo, String paymentStatus){
@@ -120,15 +104,16 @@ public class CollectionNotificationConsumer{
             String moduleName = fetchContentFromLocalization(requestInfo, paymentDetail.getTenantId(),
                     BUSINESSSERVICE_LOCALIZATION_MODULE, formatCodes(paymentDetail.getBusinessService()));
 
-            if(StringUtils.isEmpty(moduleName)) {
+            if(StringUtils.isEmpty(moduleName))
                 moduleName = "Adhoc Tax";
-            }
 
-            content = content.replaceAll("<owner_name>", bill.getPaidBy());
-            content = content.replaceAll("<mod_name>", moduleName);
-            content = content.replaceAll("<rcpt_no>",  paymentDetail.getReceiptNumber());
+            content = content.replaceAll("<owner_name>", bill.getPayerName());
+
             if(content.contains("<amount_paid>"))
-                content = content.replaceAll("<amount_paid>", bill.getAmountPaid().toString());
+                content = content.replaceAll("<amount_paid>", paymentDetail.getTotalAmountPaid().toString());
+
+            content = content.replaceAll("<rcpt_no>", paymentDetail.getReceiptNumber());
+            content = content.replaceAll("<mod_name>", moduleName);
             content = content.replaceAll("<unique_id>", bill.getConsumerCode());
             message = content;
         }
@@ -148,6 +133,7 @@ public class CollectionNotificationConsumer{
         StringBuilder uri = new StringBuilder();
         uri.append(applicationProperties.getLocalizationHost()).append(applicationProperties.getLocalizationEndpoint());
         uri.append("?tenantId=").append(tenantId.split("\\.")[0]).append("&locale=").append(locale).append("&module=").append(module);
+
         Map<String, Object> request = new HashMap<>();
         request.put("RequestInfo", requestInfo);
         try {
@@ -166,34 +152,6 @@ public class CollectionNotificationConsumer{
             }
         }
         return message;
-    }
-    private List<String> fetchBusinessServiceFromMDMS(RequestInfo requestInfo, String tenantId){
-        List<String> masterData = new ArrayList<>();
-        StringBuilder uri = new StringBuilder();
-        uri.append(applicationProperties.getMdmsHost()).append(applicationProperties.getMdmsUrl());
-        if(StringUtils.isEmpty(tenantId))
-            return masterData;
-        MdmsCriteriaReq request = getRequestForEvents(requestInfo, tenantId.split("\\.")[0]);
-        try {
-            Object response = restTemplate.postForObject(uri.toString(), request, Map.class);
-            masterData = JsonPath.read(response, BUSINESSSERVICE_CODES_JSONPATH);
-        }catch(Exception e) {
-            log.error("Exception while fetching business service codes: ",e);
-        }
-        return masterData;
-    }
-
-    private MdmsCriteriaReq getRequestForEvents(RequestInfo requestInfo, String tenantId) {
-        MasterDetail masterDetail = org.egov.mdms.model.MasterDetail.builder()
-                .name(BUSINESSSERVICE_MDMS_MASTER).filter(BUSINESSSERVICE_CODES_FILTER).build();
-        List<MasterDetail> masterDetails = new ArrayList<>();
-        masterDetails.add(masterDetail);
-        ModuleDetail moduleDetail = ModuleDetail.builder().moduleName(BUSINESSSERVICE_MDMS_MODULE)
-                .masterDetails(masterDetails).build();
-        List<ModuleDetail> moduleDetails = new ArrayList<>();
-        moduleDetails.add(moduleDetail);
-        MdmsCriteria mdmsCriteria = MdmsCriteria.builder().tenantId(tenantId).moduleDetails(moduleDetails).build();
-        return MdmsCriteriaReq.builder().requestInfo(requestInfo).mdmsCriteria(mdmsCriteria).build();
     }
 
     private String formatCodes(String code){

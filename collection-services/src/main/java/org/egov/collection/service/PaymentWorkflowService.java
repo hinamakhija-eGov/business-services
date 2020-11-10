@@ -154,8 +154,7 @@ public class PaymentWorkflowService {
         paymentRepository.updateStatus(validatedPayments);
 
         validatedPayments.forEach(payment -> {
-            collectionProducer.producer(applicationProperties.getCancelPaymentTopicName(), applicationProperties
-                    .getCancelPaymentTopicKey(), new PaymentRequest(requestInfo, payment));
+            collectionProducer.producer(applicationProperties.getCancelPaymentTopicName(), new PaymentRequest(requestInfo, payment));
         });
 
 
@@ -206,8 +205,7 @@ public class PaymentWorkflowService {
         paymentRepository.updateStatus(validatedPayments);
 
         validatedPayments.forEach(payment -> {
-            collectionProducer.producer(applicationProperties.getCancelPaymentTopicName(), applicationProperties
-                    .getCancelPaymentTopicKey(), new PaymentRequest(requestInfo, payment));
+            collectionProducer.producer(applicationProperties.getCancelPaymentTopicName(), new PaymentRequest(requestInfo, payment));
         });
 
         return validatedPayments;
@@ -253,8 +251,7 @@ public class PaymentWorkflowService {
         paymentRepository.updateStatus(validatedPayments);
 
         validatedPayments.forEach(payment -> {
-            collectionProducer.producer(applicationProperties.getCancelPaymentTopicName(), applicationProperties
-                    .getCancelPaymentTopicKey(), new PaymentRequest(requestInfo, payment));
+            collectionProducer.producer(applicationProperties.getCancelPaymentTopicName(), new PaymentRequest(requestInfo, payment));
         });
         return validatedPayments;
     }
