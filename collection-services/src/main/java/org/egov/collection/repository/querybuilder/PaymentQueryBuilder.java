@@ -332,6 +332,19 @@ public class PaymentQueryBuilder {
 
         }
 
+        Set<String> tenantIds = new HashSet<String>();
+        if(!CollectionUtils.isEmpty(searchCriteria.getTenantIds())){
+            searchCriteria.getTenantIds().forEach(tenantId -> {
+                tenantIds.add(tenantId);
+            });
+        }
+
+        if (tenantIds != null && !tenantIds.isEmpty()) {
+            addClauseIfRequired(preparedStatementValues, selectQuery);
+            selectQuery.append(" py.tenantId IN (:tenantId)");
+            preparedStatementValues.put("tenantId", tenantIds);
+        }
+
         if(searchCriteria.getFromDate() != null && searchCriteria.getToDate() != null){
             addClauseIfRequired(preparedStatementValues, selectQuery);
             selectQuery.append(" py.createdtime BETWEEN (:fromDate) AND (:toDate)");
