@@ -331,6 +331,13 @@ public class PaymentQueryBuilder {
             }
 
         }
+
+        if(searchCriteria.getFromDate() != null && searchCriteria.getToDate() != null){
+            addClauseIfRequired(preparedStatementValues, selectQuery);
+            selectQuery.append(" py.createdtime BETWEEN (:fromDate) AND (:toDate)");
+            preparedStatementValues.put("fromDate", searchCriteria.getFromDate());
+            preparedStatementValues.put("toDate", searchCriteria.getToDate());
+        }
         
         if(!CollectionUtils.isEmpty(searchCriteria.getIds())) {
             addClauseIfRequired(preparedStatementValues, selectQuery);
