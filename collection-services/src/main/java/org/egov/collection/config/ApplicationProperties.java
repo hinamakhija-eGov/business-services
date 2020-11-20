@@ -75,6 +75,9 @@ public class ApplicationProperties {
     @Value("${egov.services.hostname}")
     private String egovServiceHost;
 
+    @Value("${egov.pdf.service.create}")
+    private String egovPdfCreate;
+
     @Value("${egov.egfcommonmasters.hostname}")
     private String egfcommonmastersHost;
 
@@ -122,6 +125,9 @@ public class ApplicationProperties {
 
     @Value("${kafka.topics.bankaccountservicemapping.create.name}")
     private String createBankAccountServiceMappingTopicName;
+
+    @Value("${kafka.topics.filestore}")
+    private String fileStore;
     
     @Value("${receiptnumber.idname}")
     private String receiptNumberIdName;
