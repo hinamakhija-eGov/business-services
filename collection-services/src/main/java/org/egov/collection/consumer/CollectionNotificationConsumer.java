@@ -46,7 +46,7 @@ public class CollectionNotificationConsumer{
     @Autowired
     private RestTemplate restTemplate;
 
-    @KafkaListener(topics = { "${kafka.topics.payment.create.name}" })
+    @KafkaListener(topics = { "${kafka.topics.payment.create.name}", "${kafka.topics.payment.receiptlink.name}" })
     public void listen(HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic){
         try{
             PaymentRequest req = objectMapper.convertValue(record, PaymentRequest.class);

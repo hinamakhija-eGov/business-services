@@ -107,7 +107,7 @@ public class NotificationConsumer {
 	 * @param record
 	 * @param topic
 	 */
-	@KafkaListener(topics = { "${kafka.topics.payment.receiptlink.name}" })
+	//@KafkaListener(topics = { "${kafka.topics.payment.receiptlink.name}" })
 	public void listen(HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 		try {
 			PaymentRequest req = objectMapper.convertValue(record, PaymentRequest.class);
