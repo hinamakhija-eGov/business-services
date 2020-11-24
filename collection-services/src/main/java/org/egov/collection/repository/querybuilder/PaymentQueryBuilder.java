@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class PaymentQueryBuilder {
 
 
-
     public static final String SELECT_PAYMENT_SQL = "SELECT py.*,pyd.*,bill.*,bd.*,bacdt.*, " +
             "py.id as py_id,py.tenantId as py_tenantId,py.totalAmountPaid as py_totalAmountPaid,py.createdBy as py_createdBy,py.createdtime as py_createdtime," +
             "py.lastModifiedBy as py_lastModifiedBy,py.lastmodifiedtime as py_lastmodifiedtime,py.additionalDetails as py_additionalDetails," +
@@ -120,8 +119,8 @@ public class PaymentQueryBuilder {
     public static final String COPY_PAYMENT_SQL = "INSERT INTO egcl_payment_audit SELECT * FROM egcl_payment WHERE id = :id;";
 
     public static final String COPY_PAYMENTDETAIL_SQL = "INSERT INTO egcl_paymentdetail_audit SELECT id, tenantid, paymentid, due, amountpaid, receiptnumber, "
-    		+ "businessservice, billid, additionaldetails,  createdby, createdtime, lastmodifiedby, lastmodifiedtime, manualreceiptnumber, "
-    		+ "manualreceiptdate, receiptdate, receipttype FROM egcl_paymentdetail WHERE id = :id ;";
+            + "businessservice, billid, additionaldetails,  createdby, createdtime, lastmodifiedby, lastmodifiedtime, manualreceiptnumber, "
+            + "manualreceiptdate, receiptdate, receipttype FROM egcl_paymentdetail WHERE id = :id ;";
 
     public static final String COPY_BILL_SQL = "INSERT INTO egcl_bill_audit SELECT * FROM egcl_bill WHERE id = :id;";
 
@@ -130,14 +129,13 @@ public class PaymentQueryBuilder {
     public static final String FILESTOREID_UPDATE_PAYMENT_SQL = "UPDATE egcl_payment SET filestoreid=:filestoreid WHERE id=:id;";
 
 
-
     // Payment update queries
 
     public static final String UPDATE_PAYMENT_SQL = "UPDATE egcl_payment SET additionaldetails=:additionaldetails, paidby=:paidby, payername=:payername," +
             " payeraddress=:payeraddress, payeremail=:payeremail, payerid=:payerid,paymentstatus=:paymentstatus, createdby=:createdby, createdtime=:createdtime," +
             " lastmodifiedby=:lastmodifiedby, lastmodifiedtime=:lastmodifiedtime WHERE id=:id ";
 
-    public static final String UPDATE_PAYMENTDETAIL_SQL ="UPDATE egcl_paymentdetail SET additionaldetails=:additionaldetails, createdby=:createdby," +
+    public static final String UPDATE_PAYMENTDETAIL_SQL = "UPDATE egcl_paymentdetail SET additionaldetails=:additionaldetails, createdby=:createdby," +
             "createdtime=:createdtime, lastmodifiedby=:lastmodifiedby, lastmodifiedtime=:lastmodifiedtime" +
             "WHERE id=:id;";
 
@@ -147,29 +145,28 @@ public class PaymentQueryBuilder {
     public static final String UPDATE_BILLDETAIL_SQL = "UPDATE egcl_billdetial SET additionaldetails=:additionaldetails, voucherheader=:voucherheader," +
             " manualreceiptnumber=:manualreceiptnumber, manualreceiptdate=:manualreceiptdate, billdescription=:billdescription,displaymessage=:displaymessage," +
             "createdby=:createdby, createdtime=:createdtime, lastmodifiedby=:lastmodifiedby,lastmodifiedtime=:lastmodifiedtime WHERE id=:id ";
-    
-    
-	public static final String BILL_BASE_QUERY = "SELECT b.id AS b_id, b.tenantid AS b_tenantid, b.iscancelled AS b_iscancelled, b.businessservice AS b_businessservice, "
-			+ "b.billnumber AS b_billnumber, b.billdate AS b_billdate, b.consumercode AS b_consumercode, b.createdby AS b_createdby, b.status as b_status, b.minimumamounttobepaid AS b_minimumamounttobepaid, "
-			+ "b.totalamount AS b_totalamount, b.partpaymentallowed AS b_partpaymentallowed, b.isadvanceallowed as b_isadvanceallowed, "
-			+ "b.collectionmodesnotallowed AS b_collectionmodesnotallowed, b.createdtime AS b_createdtime, b.lastmodifiedby AS b_lastmodifiedby, "
-			+ "b.lastmodifiedtime AS b_lastmodifiedtime, bd.id AS bd_id, bd.billid AS bd_billid, bd.tenantid AS bd_tenantid, bd.demandid, "
-			+ "bd.fromperiod, bd.toperiod, bd.billdescription AS bd_billdescription, bd.displaymessage AS bd_displaymessage, bd.amount AS bd_amount, bd.amountpaid AS bd_amountpaid, "
-			+ "bd.callbackforapportioning AS bd_callbackforapportioning, bd.expirydate AS bd_expirydate, ad.id AS ad_id, ad.tenantid AS ad_tenantid, "
-			+ "ad.billdetailid AS ad_billdetailid, ad.order AS ad_order, ad.amount AS ad_amount, ad.adjustedamount AS ad_adjustedamount, "
-			+ "ad.taxheadcode AS ad_taxheadcode, ad.demanddetailid as ad_demanddetailid, ad.isactualdemand AS ad_isactualdemand, b.additionaldetails as b_additionaldetails,  "
-			+ "bd.additionaldetails as bd_additionaldetails,  ad.additionaldetails as ad_additionaldetails "
-			+ "FROM egcl_bill b LEFT OUTER JOIN egcl_billdetial bd ON b.id = bd.billid AND b.tenantid = bd.tenantid "
-			+ "LEFT OUTER JOIN egcl_billaccountdetail ad ON bd.id = ad.billdetailid AND bd.tenantid = ad.tenantid "
-			+ "WHERE b.id IN (:id);"; 
 
 
+    public static final String BILL_BASE_QUERY = "SELECT b.id AS b_id, b.tenantid AS b_tenantid, b.iscancelled AS b_iscancelled, b.businessservice AS b_businessservice, "
+            + "b.billnumber AS b_billnumber, b.billdate AS b_billdate, b.consumercode AS b_consumercode, b.createdby AS b_createdby, b.status as b_status, b.minimumamounttobepaid AS b_minimumamounttobepaid, "
+            + "b.totalamount AS b_totalamount, b.partpaymentallowed AS b_partpaymentallowed, b.isadvanceallowed as b_isadvanceallowed, "
+            + "b.collectionmodesnotallowed AS b_collectionmodesnotallowed, b.createdtime AS b_createdtime, b.lastmodifiedby AS b_lastmodifiedby, "
+            + "b.lastmodifiedtime AS b_lastmodifiedtime, bd.id AS bd_id, bd.billid AS bd_billid, bd.tenantid AS bd_tenantid, bd.demandid, "
+            + "bd.fromperiod, bd.toperiod, bd.billdescription AS bd_billdescription, bd.displaymessage AS bd_displaymessage, bd.amount AS bd_amount, bd.amountpaid AS bd_amountpaid, "
+            + "bd.callbackforapportioning AS bd_callbackforapportioning, bd.expirydate AS bd_expirydate, ad.id AS ad_id, ad.tenantid AS ad_tenantid, "
+            + "ad.billdetailid AS ad_billdetailid, ad.order AS ad_order, ad.amount AS ad_amount, ad.adjustedamount AS ad_adjustedamount, "
+            + "ad.taxheadcode AS ad_taxheadcode, ad.demanddetailid as ad_demanddetailid, ad.isactualdemand AS ad_isactualdemand, b.additionaldetails as b_additionaldetails,  "
+            + "bd.additionaldetails as bd_additionaldetails,  ad.additionaldetails as ad_additionaldetails "
+            + "FROM egcl_bill b LEFT OUTER JOIN egcl_billdetial bd ON b.id = bd.billid AND b.tenantid = bd.tenantid "
+            + "LEFT OUTER JOIN egcl_billaccountdetail ad ON bd.id = ad.billdetailid AND bd.tenantid = ad.tenantid "
+            + "WHERE b.id IN (:id);";
 
-	public static String getBillQuery() {
-		return BILL_BASE_QUERY;
-	}
-	
-	
+
+    public static String getBillQuery() {
+        return BILL_BASE_QUERY;
+    }
+
+
     public static MapSqlParameterSource getParametersForPaymentCreate(Payment payment) {
         MapSqlParameterSource sqlParameterSource = new MapSqlParameterSource();
 
@@ -202,7 +199,7 @@ public class PaymentQueryBuilder {
     }
 
 
-    public static MapSqlParameterSource getParametersForPaymentDetailCreate(String paymentId,PaymentDetail paymentDetail) {
+    public static MapSqlParameterSource getParametersForPaymentDetailCreate(String paymentId, PaymentDetail paymentDetail) {
         MapSqlParameterSource sqlParameterSource = new MapSqlParameterSource();
 
         sqlParameterSource.addValue("id", paymentDetail.getId());
@@ -228,17 +225,16 @@ public class PaymentQueryBuilder {
     }
 
 
-
-    public static MapSqlParameterSource getParamtersForBillCreate(Bill bill){
+    public static MapSqlParameterSource getParamtersForBillCreate(Bill bill) {
 
         MapSqlParameterSource sqlParameterSource = new MapSqlParameterSource();
 
         sqlParameterSource.addValue("id", bill.getId());
         sqlParameterSource.addValue("status", bill.getStatus().toString());
         sqlParameterSource.addValue("iscancelled", bill.getIsCancelled());
-        sqlParameterSource.addValue("additionaldetails",getJsonb(bill.getAdditionalDetails()));
+        sqlParameterSource.addValue("additionaldetails", getJsonb(bill.getAdditionalDetails()));
         sqlParameterSource.addValue("tenantid", bill.getTenantId());
-        sqlParameterSource.addValue("collectionmodesnotallowed", StringUtils.join(bill.getCollectionModesNotAllowed(),","));
+        sqlParameterSource.addValue("collectionmodesnotallowed", StringUtils.join(bill.getCollectionModesNotAllowed(), ","));
         sqlParameterSource.addValue("partpaymentallowed", bill.getPartPaymentAllowed());
         sqlParameterSource.addValue("isadvanceallowed", bill.getIsAdvanceAllowed());
         sqlParameterSource.addValue("minimumamounttobepaid", bill.getMinimumAmountToBePaid());
@@ -255,7 +251,6 @@ public class PaymentQueryBuilder {
 
         return sqlParameterSource;
     }
-
 
 
     public static MapSqlParameterSource getParamtersForBillDetailCreate(BillDetail billDetail) {
@@ -304,7 +299,6 @@ public class PaymentQueryBuilder {
     }
 
 
-
     public static String getPaymentSearchQuery(PaymentSearchCriteria searchCriteria,
                                                Map<String, Object> preparedStatementValues, Boolean isPlainSearch) {
         StringBuilder selectQuery = new StringBuilder(SELECT_PAYMENT_SQL);
@@ -318,30 +312,35 @@ public class PaymentQueryBuilder {
 
     private static void addWhereClause(StringBuilder selectQuery, Map<String, Object> preparedStatementValues,
                                        PaymentSearchCriteria searchCriteria, Boolean isPlainSearch) {
-	    if(isPlainSearch) {
+
+        if (isPlainSearch) {
             if (!CollectionUtils.isEmpty(searchCriteria.getTenantIds())) {
                 addClauseIfRequired(preparedStatementValues, selectQuery);
                 selectQuery.append(" py.tenantId IN (:tenantIds)  ");
                 preparedStatementValues.put("tenantIds", searchCriteria.getTenantIds());
+            } else {
+                throw new CustomException("TENANT_ID_LIST_NULL", "Tenant ids are not provided for searching.");
             }
-        }
-        if(!isPlainSearch && StringUtils.isNotBlank(searchCriteria.getTenantId())) {
-            addClauseIfRequired(preparedStatementValues, selectQuery);
-            if(searchCriteria.getTenantId().split("\\.").length > 1) {
-                selectQuery.append(" py.tenantId =:tenantId");
-                preparedStatementValues.put("tenantId", searchCriteria.getTenantId());
-            }
-            else {
-                selectQuery.append(" py.tenantId LIKE :tenantId");
-                preparedStatementValues.put("tenantId", searchCriteria.getTenantId() + "%");
+        } else {
+            if (StringUtils.isNotBlank(searchCriteria.getTenantId())) {
+                addClauseIfRequired(preparedStatementValues, selectQuery);
+                if (searchCriteria.getTenantId().split("\\.").length > 1) {
+                    selectQuery.append(" py.tenantId =:tenantId");
+                    preparedStatementValues.put("tenantId", searchCriteria.getTenantId());
+                } else {
+                    selectQuery.append(" py.tenantId LIKE :tenantId");
+                    preparedStatementValues.put("tenantId", searchCriteria.getTenantId() + "%");
+                }
+            } else {
+                throw new CustomException("TENANT_ID_NULL", "Tenant id is not provided for searching.");
             }
         }
 
-        if(searchCriteria.getFromDate() != null){
+        if (searchCriteria.getFromDate() != null) {
             addClauseIfRequired(preparedStatementValues, selectQuery);
 
             // If user does NOT specify toDate, take today's date as the toDate by default
-            if(searchCriteria.getToDate() == null){
+            if (searchCriteria.getToDate() == null) {
                 searchCriteria.setToDate(Instant.now().toEpochMilli());
             }
 
@@ -350,14 +349,14 @@ public class PaymentQueryBuilder {
             preparedStatementValues.put("toDate", searchCriteria.getToDate());
         }
 
-        if(!CollectionUtils.isEmpty(searchCriteria.getIds())) {
+        if (!CollectionUtils.isEmpty(searchCriteria.getIds())) {
             addClauseIfRequired(preparedStatementValues, selectQuery);
             selectQuery.append(" py.id IN (:id)  ");
-            preparedStatementValues.put("id", searchCriteria.getIds());	
+            preparedStatementValues.put("id", searchCriteria.getIds());
         }
 
         Set<String> receiptNumbers = new HashSet<String>();
-        if(!CollectionUtils.isEmpty(searchCriteria.getReceiptNumbers())){
+        if (!CollectionUtils.isEmpty(searchCriteria.getReceiptNumbers())) {
             searchCriteria.getReceiptNumbers().forEach(receiptNumber -> {
                 receiptNumbers.add(receiptNumber.toUpperCase());
             });
@@ -438,7 +437,7 @@ public class PaymentQueryBuilder {
             selectQuery.append(" py.payerid IN (:payerid)  ");
             preparedStatementValues.put("payerid", searchCriteria.getPayerIds());
         }
-        
+
         if (!CollectionUtils.isEmpty(searchCriteria.getBusinessServices())) {
             addClauseIfRequired(preparedStatementValues, selectQuery);
             selectQuery.append(" pyd.businessService IN (:businessService)  ");
@@ -463,11 +462,11 @@ public class PaymentQueryBuilder {
     private static String addPaginationClause(StringBuilder selectQuery, Map<String, Object> preparedStatementValues,
                                               PaymentSearchCriteria criteria) {
 
-            String finalQuery = PAGINATION_WRAPPER.replace("{baseQuery}", selectQuery);
-            preparedStatementValues.put("offset", criteria.getOffset());
-            preparedStatementValues.put("limit", criteria.getOffset() + criteria.getLimit());
+        String finalQuery = PAGINATION_WRAPPER.replace("{baseQuery}", selectQuery);
+        preparedStatementValues.put("offset", criteria.getOffset());
+        preparedStatementValues.put("limit", criteria.getOffset() + criteria.getLimit());
 
-            return finalQuery;
+        return finalQuery;
     }
 
     private static String addOrderByClause(StringBuilder selectQuery) {
@@ -484,8 +483,7 @@ public class PaymentQueryBuilder {
     }
 
 
-
-    public static MapSqlParameterSource getParamtersForBillStatusUpdate(Bill bill){
+    public static MapSqlParameterSource getParamtersForBillStatusUpdate(Bill bill) {
 
         MapSqlParameterSource sqlParameterSource = new MapSqlParameterSource();
 
@@ -506,7 +504,7 @@ public class PaymentQueryBuilder {
         MapSqlParameterSource sqlParameterSource = new MapSqlParameterSource();
 
         sqlParameterSource.addValue("id", paymentDetail.getId());
-        sqlParameterSource.addValue("additionaldetails",getJsonb(paymentDetail.getAdditionalDetails()));
+        sqlParameterSource.addValue("additionaldetails", getJsonb(paymentDetail.getAdditionalDetails()));
         sqlParameterSource.addValue("lastmodifiedby", paymentDetail.getAuditDetails().getLastModifiedBy());
         sqlParameterSource.addValue("lastmodifiedtime", paymentDetail.getAuditDetails().getLastModifiedTime());
 
@@ -524,11 +522,10 @@ public class PaymentQueryBuilder {
         sqlParameterSource.addValue("additionaldetails", getJsonb(payment.getAdditionalDetails()));
         sqlParameterSource.addValue("lastmodifiedby", payment.getAuditDetails().getLastModifiedBy());
         sqlParameterSource.addValue("lastmodifiedtime", payment.getAuditDetails().getLastModifiedTime());
-        
+
         return sqlParameterSource;
 
     }
-
 
 
     // Payment update
@@ -564,12 +561,12 @@ public class PaymentQueryBuilder {
     }
 
 
-    public static MapSqlParameterSource getParamtersForBillUpdate(Bill bill){
+    public static MapSqlParameterSource getParamtersForBillUpdate(Bill bill) {
 
         MapSqlParameterSource sqlParameterSource = new MapSqlParameterSource();
 
         sqlParameterSource.addValue("id", bill.getId());
-        sqlParameterSource.addValue("additionaldetails", getJsonb(bill.getAdditionalDetails()) );
+        sqlParameterSource.addValue("additionaldetails", getJsonb(bill.getAdditionalDetails()));
         sqlParameterSource.addValue("createdby", bill.getAuditDetails().getCreatedBy());
         sqlParameterSource.addValue("createdtime", bill.getAuditDetails().getCreatedTime());
         sqlParameterSource.addValue("lastmodifiedby", bill.getAuditDetails().getLastModifiedBy());
@@ -598,9 +595,6 @@ public class PaymentQueryBuilder {
     }
 
 
-
-
-
     private static PGobject getJsonb(JsonNode node) {
         if (Objects.isNull(node))
             return null;
@@ -615,16 +609,6 @@ public class PaymentQueryBuilder {
         }
 
     }
-
-
-
-
-
-
-
-
-
-
 
 
 }
