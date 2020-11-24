@@ -90,6 +90,20 @@ public class PaymentService {
 
         return payments;
     }
+
+    public List<Payment> getPaymentsPlainSearch(PaymentSearchCriteria criteria){
+        if(criteria.getLimit() != null && criteria.getLimit() > applicationProperties.getReceiptsSearchDefaultLimit()){
+            criteria.setLimit(applicationProperties.getReceiptsSearchDefaultLimit());
+        }
+        if(criteria.getLimit() == null){
+            criteria.setLimit(applicationProperties.getReceiptsSearchDefaultLimit());
+        }
+        if(criteria.getOffset() == null){
+            criteria.setOffset(0);
+        }
+        List<Payment> payments = paymentRepository.getPaymentsForBulkSearch(criteria);
+        return payments;
+    }
     
     
     /**

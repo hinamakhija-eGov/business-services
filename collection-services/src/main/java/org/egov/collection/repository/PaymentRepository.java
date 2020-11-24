@@ -91,7 +91,8 @@ public class PaymentRepository {
 
     public List<Payment> fetchPayments(PaymentSearchCriteria paymentSearchCriteria){
         Map<String, Object> preparedStatementValues = new HashMap<>();
-        String query = paymentQueryBuilder.getPaymentSearchQuery(paymentSearchCriteria, preparedStatementValues);
+        Boolean isPlainSearch = false;
+        String query = paymentQueryBuilder.getPaymentSearchQuery(paymentSearchCriteria, preparedStatementValues, isPlainSearch);
         log.info("Query: "+query);
         log.info("preparedStatementValues: "+preparedStatementValues);
         List<Payment> payments = namedParameterJdbcTemplate.query(query, preparedStatementValues,paymentRowMapper);
@@ -109,6 +110,27 @@ public class PaymentRepository {
            payments.sort(reverseOrder(Comparator.comparingLong(Payment::getTransactionDate)));
         }
 
+        return payments;
+    }
+
+    public List<Payment> getPaymentsForBulkSearch(PaymentSearchCriteria criteria){
+        Map<String, Object> preparedStmtList = new HashMap<>();
+        Boolean isPlainSearch = true;
+        String query = paymentQueryBuilder.getPaymentSearchQuery(criteria, preparedStmtList, isPlainSearch);
+        List<Payment> payments = namedParameterJdbcTemplate.query(query, preparedStmtList,paymentRowMapper);
+        if(!CollectionUtils.isEmpty(payments)) {
+            Set<String> billIds = new HashSet<>();
+            for(Payment payment : payments) {
+                billIds.addAll(payment.getPaymentDetails().stream().map(detail -> detail.getBillId()).collect(Collectors.toSet()));
+            }
+            Map<String, Bill> billMap = getBills(billIds);
+            for(Payment payment : payments) {
+                payment.getPaymentDetails().forEach(detail -> {
+                    detail.setBill(billMap.get(detail.getBillId()));
+                });
+            }
+            payments.sort(reverseOrder(Comparator.comparingLong(Payment::getTransactionDate)));
+        }
         return payments;
     }
     

@@ -3,6 +3,7 @@ package org.egov.collection.repository.querybuilder;
 import static java.util.stream.Collectors.toSet;
 
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
@@ -305,21 +306,26 @@ public class PaymentQueryBuilder {
 
 
     public static String getPaymentSearchQuery(PaymentSearchCriteria searchCriteria,
-                                               Map<String, Object> preparedStatementValues) {
+                                               Map<String, Object> preparedStatementValues, Boolean isPlainSearch) {
         StringBuilder selectQuery = new StringBuilder(SELECT_PAYMENT_SQL);
 
-        addWhereClause(selectQuery, preparedStatementValues, searchCriteria);
+        addWhereClause(selectQuery, preparedStatementValues, searchCriteria, isPlainSearch);
 
         addOrderByClause(selectQuery);
 
         return addPaginationClause(selectQuery, preparedStatementValues, searchCriteria);
     }
 
-
     private static void addWhereClause(StringBuilder selectQuery, Map<String, Object> preparedStatementValues,
-                                       PaymentSearchCriteria searchCriteria) {
-
-        if (StringUtils.isNotBlank(searchCriteria.getTenantId())) {
+                                       PaymentSearchCriteria searchCriteria, Boolean isPlainSearch) {
+	    if(isPlainSearch) {
+            if (!CollectionUtils.isEmpty(searchCriteria.getTenantIds())) {
+                addClauseIfRequired(preparedStatementValues, selectQuery);
+                selectQuery.append(" py.tenantId IN (:tenantIds)  ");
+                preparedStatementValues.put("tenantIds", searchCriteria.getTenantIds());
+            }
+        }
+        if(!isPlainSearch && StringUtils.isNotBlank(searchCriteria.getTenantId())) {
             addClauseIfRequired(preparedStatementValues, selectQuery);
             if(searchCriteria.getTenantId().split("\\.").length > 1) {
                 selectQuery.append(" py.tenantId =:tenantId");
@@ -329,16 +335,21 @@ public class PaymentQueryBuilder {
                 selectQuery.append(" py.tenantId LIKE :tenantId");
                 preparedStatementValues.put("tenantId", searchCriteria.getTenantId() + "%");
             }
-
         }
 
-        if(searchCriteria.getFromDate() != null && searchCriteria.getToDate() != null){
+        if(searchCriteria.getFromDate() != null){
             addClauseIfRequired(preparedStatementValues, selectQuery);
-            selectQuery.append(" py.createdtime BETWEEN (:fromDate) AND (:toDate)");
+
+            // If user does NOT specify toDate, take today's date as the toDate by default
+            if(searchCriteria.getToDate() == null){
+                searchCriteria.setToDate(Instant.now().toEpochMilli());
+            }
+
+            selectQuery.append(" py.transactionDate BETWEEN (:fromDate) AND (:toDate) ");
             preparedStatementValues.put("fromDate", searchCriteria.getFromDate());
             preparedStatementValues.put("toDate", searchCriteria.getToDate());
         }
-        
+
         if(!CollectionUtils.isEmpty(searchCriteria.getIds())) {
             addClauseIfRequired(preparedStatementValues, selectQuery);
             selectQuery.append(" py.id IN (:id)  ");
@@ -351,7 +362,6 @@ public class PaymentQueryBuilder {
                 receiptNumbers.add(receiptNumber.toUpperCase());
             });
         }
-        
 
         if (receiptNumbers != null && !receiptNumbers.isEmpty()) {
             addClauseIfRequired(preparedStatementValues, selectQuery);
@@ -405,6 +415,7 @@ public class PaymentQueryBuilder {
             preparedStatementValues.put("transactionNumber", searchCriteria.getTransactionNumber());
         }
 
+        /*
         if (searchCriteria.getFromDate() != null) {
             addClauseIfRequired(preparedStatementValues, selectQuery);
             selectQuery.append(" py.transactionDate >= :fromDate");
@@ -421,7 +432,7 @@ public class PaymentQueryBuilder {
 
             preparedStatementValues.put("toDate", searchCriteria.getToDate());
         }
-
+        */
         if (!CollectionUtils.isEmpty(searchCriteria.getPayerIds())) {
             addClauseIfRequired(preparedStatementValues, selectQuery);
             selectQuery.append(" py.payerid IN (:payerid)  ");
@@ -448,7 +459,6 @@ public class PaymentQueryBuilder {
         }
 
     }
-
 
     private static String addPaginationClause(StringBuilder selectQuery, Map<String, Object> preparedStatementValues,
                                               PaymentSearchCriteria criteria) {
