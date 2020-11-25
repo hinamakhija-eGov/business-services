@@ -117,6 +117,8 @@ public class PaymentRepository {
         Map<String, Object> preparedStmtList = new HashMap<>();
         Boolean isPlainSearch = true;
         String query = paymentQueryBuilder.getPaymentSearchQuery(criteria, preparedStmtList, isPlainSearch);
+        log.info("Query: "+query);
+        log.info("preparedStatementValues: "+preparedStmtList);
         List<Payment> payments = namedParameterJdbcTemplate.query(query, preparedStmtList,paymentRowMapper);
         if(!CollectionUtils.isEmpty(payments)) {
             Set<String> billIds = new HashSet<>();
