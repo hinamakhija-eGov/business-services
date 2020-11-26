@@ -92,11 +92,11 @@ public class PaymentService {
     }
 
     public List<Payment> getPaymentsPlainSearch(PaymentSearchCriteria criteria){
-        if(criteria.getLimit() != null && criteria.getLimit() > applicationProperties.getReceiptsSearchDefaultLimit()){
-            criteria.setLimit(applicationProperties.getReceiptsSearchDefaultLimit());
-        }
         if(criteria.getLimit() == null){
             criteria.setLimit(applicationProperties.getReceiptsSearchDefaultLimit());
+        }
+        if(criteria.getLimit() != null && criteria.getLimit() > applicationProperties.getReceiptsSearchMaxLimit()){
+            criteria.setLimit(applicationProperties.getReceiptsSearchMaxLimit());
         }
         if(criteria.getOffset() == null){
             criteria.setOffset(0);

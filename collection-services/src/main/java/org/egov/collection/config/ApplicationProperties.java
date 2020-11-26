@@ -143,6 +143,9 @@ public class ApplicationProperties {
 
     @Value("${collection.receipts.search.default.size}")
     private Integer receiptsSearchDefaultLimit;
+
+    @Value("${collection.receipts.search.max.size}")
+    private Integer receiptsSearchMaxLimit;
     
     @Value("${egov.apportion.service.host}")
     private String apportionHost;
