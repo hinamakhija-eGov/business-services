@@ -47,7 +47,6 @@ import java.util.Set;
 
 import javax.validation.Valid;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.egov.collection.model.Payment;
 import org.egov.collection.model.PaymentRequest;
 import org.egov.collection.model.PaymentResponse;
@@ -66,7 +65,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 @RestController
 @RequestMapping("/payments")
@@ -131,16 +139,12 @@ public class PaymentController {
         return getSuccessResponse(payments, receiptWorkflowRequest.getRequestInfo());
     }
 
-        List<Payment> payments = workflowService.performWorkflow(receiptWorkflowRequest);
-        return getSuccessResponse(payments, receiptWorkflowRequest.getRequestInfo());
-    }
-
-    @RequestMapping(value = "/_update", method = RequestMethod.POST)
-    @ResponseBody
-    public ResponseEntity<?> update(@RequestBody @Valid PaymentRequest paymentRequest) {
-        List<Payment> payments = paymentService.updatePayment(paymentRequest);
-        return getSuccessResponse(payments, paymentRequest.getRequestInfo());
-    }
+//    @RequestMapping(value = "/_update", method = RequestMethod.POST)
+//    @ResponseBody
+//    public ResponseEntity<?> update(@RequestBody @Valid PaymentRequest paymentRequest) {
+//        List<Payment> payments = paymentService.updatePayment(paymentRequest);
+//        return getSuccessResponse(payments, paymentRequest.getRequestInfo());
+//    }
 
     @RequestMapping(value = "/_validate", method = RequestMethod.POST)
     @ResponseBody
