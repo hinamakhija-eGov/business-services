@@ -122,9 +122,14 @@ public class PaymentController {
 
     }
 
-    @RequestMapping(value = "/_workflow", method = RequestMethod.POST)
-    @ResponseBody
-    public ResponseEntity<?> workflow(@RequestBody @Valid PaymentWorkflowRequest receiptWorkflowRequest) {
+
+   @RequestMapping(value = "/{moduleName}/_workflow", method = RequestMethod.POST)
+   @ResponseBody
+   public ResponseEntity<?> workflow(@RequestBody @Valid PaymentWorkflowRequest receiptWorkflowRequest, @PathVariable String moduleName) {
+
+        List<Payment> payments = workflowService.performWorkflow(receiptWorkflowRequest);
+        return getSuccessResponse(payments, receiptWorkflowRequest.getRequestInfo());
+    }
 
         List<Payment> payments = workflowService.performWorkflow(receiptWorkflowRequest);
         return getSuccessResponse(payments, receiptWorkflowRequest.getRequestInfo());
