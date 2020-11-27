@@ -5,13 +5,7 @@ import static org.egov.collection.config.CollectionServiceConstants.KEY_FILESTOR
 import static org.egov.collection.config.CollectionServiceConstants.KEY_ID;
 import static org.egov.collection.repository.querybuilder.PaymentQueryBuilder.*;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.egov.collection.model.Payment;
@@ -90,7 +84,13 @@ public class PaymentRepository {
 
     public List<Payment> fetchPayments(PaymentSearchCriteria paymentSearchCriteria) {
         Map<String, Object> preparedStatementValues = new HashMap<>();
-        String query = paymentQueryBuilder.getPaymentSearchQuery(paymentSearchCriteria, preparedStatementValues);
+
+        List<String> ids = fetchPaymentIdsByCriteria(paymentSearchCriteria);
+
+        if(CollectionUtils.isEmpty(ids))
+            return new LinkedList<>();
+
+        String query = paymentQueryBuilder.getPaymentSearchQuery(ids, preparedStatementValues);
         log.info("Query: " + query);
         log.info("preparedStatementValues: " + preparedStatementValues);
         List<Payment> payments = namedParameterJdbcTemplate.query(query, preparedStatementValues, paymentRowMapper);
@@ -238,4 +238,11 @@ public class PaymentRepository {
         return namedParameterJdbcTemplate.query("SELECT id from egcl_payment ORDER BY createdtime offset " + ":offset " + "limit :limit", preparedStatementValues, new SingleColumnRowMapper<>(String.class));
 
     }
+
+    public List<String> fetchPaymentIdsByCriteria(PaymentSearchCriteria paymentSearchCriteria) {
+        Map<String, Object> preparedStatementValues = new HashMap<>();
+        String query = paymentQueryBuilder.getIdQuery(paymentSearchCriteria, preparedStatementValues);
+        return namedParameterJdbcTemplate.query(query, preparedStatementValues, new SingleColumnRowMapper<>(String.class));
+    }
+
 }
