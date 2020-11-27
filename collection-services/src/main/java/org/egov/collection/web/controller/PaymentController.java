@@ -44,6 +44,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -122,9 +123,9 @@ public class PaymentController {
 
     }
 
-    @RequestMapping(value = "/_workflow", method = RequestMethod.POST)
+    @RequestMapping(value = "/{moduleName}/_workflow", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<?> workflow(@RequestBody @Valid PaymentWorkflowRequest receiptWorkflowRequest) {
+    public ResponseEntity<?> workflow(@RequestBody @Valid PaymentWorkflowRequest receiptWorkflowRequest, @PathVariable String moduleName) {
 
         List<Payment> payments = workflowService.performWorkflow(receiptWorkflowRequest);
         return getSuccessResponse(payments, receiptWorkflowRequest.getRequestInfo());
@@ -133,6 +134,7 @@ public class PaymentController {
     @RequestMapping(value = "/_update", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<?> update(@RequestBody @Valid PaymentRequest paymentRequest) {
+    	
         List<Payment> payments = paymentService.updatePayment(paymentRequest);
         return getSuccessResponse(payments, paymentRequest.getRequestInfo());
     }
