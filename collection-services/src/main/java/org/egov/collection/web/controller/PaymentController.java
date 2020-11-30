@@ -92,10 +92,11 @@ public class PaymentController {
     @Value("#{'${search.ignore.status}'.split(',')}")
     private List<String> searchIgnoreStatus;
 
-    @RequestMapping(value = "/_search", method = RequestMethod.POST)
+    @RequestMapping(value = "/{moduleName}/_search", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<PaymentResponse> search(@ModelAttribute PaymentSearchCriteria paymentSearchCriteria,
-                                             @RequestBody @Valid final RequestInfoWrapper requestInfoWrapper) {
+                                             @RequestBody @Valid final RequestInfoWrapper requestInfoWrapper,
+                                             @PathVariable String moduleName) {
 
         final RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
 
