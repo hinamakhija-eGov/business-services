@@ -40,11 +40,7 @@
 package org.egov.demand.service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
@@ -148,7 +144,6 @@ public class DemandService {
 	 * Method to generate and set ids, Audit details to the demand 
 	 * and demand-detail object
 	 * 
-	 * @param demandRequest Demand request from the create/update flow
 	 */
 	private void generateAndSetIdsForNewDemands(List<Demand> demands, AuditDetails auditDetail) {
 
@@ -298,8 +293,29 @@ public class DemandService {
 		if (!CollectionUtils.isEmpty(demands) && !CollectionUtils.isEmpty(payers))
 			demands = demandEnrichmentUtil.enrichPayer(demands, payers);
 
-		return demands;
+		List<Demand> filteredDemands = filterMultipleActiveDemands(demands);
+
+		return filteredDemands;
 	}
+
+
+
+	private List<Demand> filterMultipleActiveDemands(List<Demand> demands){
+
+		Comparator<Demand> comparator = Comparator.comparing(h -> h.getAuditDetails().getCreatedTime());
+		demands.sort(comparator);
+
+
+		Map<Long,Demand> fromPeriodToDemand = new LinkedHashMap<>();
+
+		demands.forEach(demand -> {
+			fromPeriodToDemand.put(demand.getTaxPeriodFrom(),demand);
+		});
+
+		return new LinkedList<>(fromPeriodToDemand.values());
+
+	}
+
 
 	public void save(DemandRequest demandRequest) {
 		demandRepository.save(demandRequest);
