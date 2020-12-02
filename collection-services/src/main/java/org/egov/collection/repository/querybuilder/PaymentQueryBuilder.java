@@ -39,7 +39,7 @@ public class PaymentQueryBuilder {
             " INNER JOIN egcl_paymentdetail pyd ON pyd.paymentid = py.id ";
 
 
-    public static final String ID_QUERY = "SELECT py.id " +
+    public static final String ID_QUERY = "SELECT distinct(py.id) " +
             " FROM egcl_payment py  " +
             " INNER JOIN egcl_paymentdetail pyd ON pyd.paymentid = py.id " +
             " INNER JOIN egcl_bill bill ON bill.id = pyd.billid " +
