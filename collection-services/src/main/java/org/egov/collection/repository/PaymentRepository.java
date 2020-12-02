@@ -38,7 +38,7 @@ public class PaymentRepository {
     private PaymentRowMapper paymentRowMapper;
 
     private BillRowMapper billRowMapper;
-
+    
     @Autowired
     public PaymentRepository(NamedParameterJdbcTemplate namedParameterJdbcTemplate, PaymentQueryBuilder paymentQueryBuilder,
                              PaymentRowMapper paymentRowMapper, BillRowMapper billRowMapper) {
@@ -242,6 +242,7 @@ public class PaymentRepository {
     public List<String> fetchPaymentIdsByCriteria(PaymentSearchCriteria paymentSearchCriteria) {
         Map<String, Object> preparedStatementValues = new HashMap<>();
         String query = paymentQueryBuilder.getIdQuery(paymentSearchCriteria, preparedStatementValues);
+        log.info("query: "+query);
         return namedParameterJdbcTemplate.query(query, preparedStatementValues, new SingleColumnRowMapper<>(String.class));
     }
 

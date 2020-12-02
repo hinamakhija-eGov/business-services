@@ -39,7 +39,7 @@ public class PaymentQueryBuilder {
             " INNER JOIN egcl_paymentdetail pyd ON pyd.paymentid = py.id ";
 
 
-    public static final String ID_QUERY = "SELECT py.id " +
+    public static final String ID_QUERY = "SELECT DISTINCT py.id as id,py.transactiondate as date " +
             " FROM egcl_payment py  " +
             " INNER JOIN egcl_paymentdetail pyd ON pyd.paymentid = py.id " +
             " INNER JOIN egcl_bill bill ON bill.id = pyd.billid " +
@@ -331,9 +331,17 @@ public class PaymentQueryBuilder {
     public String getIdQuery(PaymentSearchCriteria searchCriteria, Map<String, Object> preparedStatementValues){
 	    StringBuilder selectQuery = new StringBuilder(ID_QUERY);
         addWhereClause(selectQuery, preparedStatementValues, searchCriteria);
-        StringBuilder finalQuery = new StringBuilder(addOrderByClause(selectQuery));
+        StringBuilder finalQuery = addWrapperQuery(selectQuery);
         addPagination(finalQuery,preparedStatementValues,searchCriteria);
         return finalQuery.toString();
+    }
+
+    private StringBuilder addWrapperQuery(StringBuilder builder){
+	    String wrapper = "select id from ( {{PLACEHOLDER}} ) t ORDER BY date DESC";
+	    wrapper = wrapper.replace("{{PLACEHOLDER}}", builder.toString());
+
+	    return new StringBuilder(wrapper);
+
     }
 
 
