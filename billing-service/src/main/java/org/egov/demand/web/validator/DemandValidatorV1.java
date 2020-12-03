@@ -27,9 +27,6 @@ import static org.egov.demand.util.Constants.INVALID_DEMAND_DETAIL_MSG;
 import static org.egov.demand.util.Constants.INVALID_DEMAND_DETAIL_REPLACETEXT;
 import static org.egov.demand.util.Constants.INVALID_DEMAND_DETAIL_TAX_TEXT;
 import static org.egov.demand.util.Constants.INVALID_NEGATIVE_DEMAND_DETAIL_ERROR_MSG;
-import static org.egov.demand.util.Constants.MDMS_CODE_FILTER;
-import static org.egov.demand.util.Constants.MDMS_MASTER_NAMES;
-import static org.egov.demand.util.Constants.MODULE_NAME;
 import static org.egov.demand.util.Constants.TAXHEADMASTER_PATH_CODE;
 import static org.egov.demand.util.Constants.TAXHEADS_NOT_FOUND_KEY;
 import static org.egov.demand.util.Constants.TAXHEADS_NOT_FOUND_MSG;
@@ -70,15 +67,13 @@ import org.egov.demand.web.contract.DemandRequest;
 import org.egov.demand.web.contract.User;
 import org.egov.demand.web.contract.UserResponse;
 import org.egov.demand.web.contract.UserSearchRequest;
-import org.egov.mdms.model.MdmsCriteriaReq;
-import org.egov.tracer.http.HttpUtils;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.DocumentContext;
 
@@ -474,6 +469,13 @@ public class DemandValidatorV1 {
 	 */
 	public void validateForUpdate(DemandRequest demandRequest, DocumentContext mdmsData) {
 
+		try {
+			log.info("The update Request : " + mapper.writeValueAsString(demandRequest));
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		Map<String, String> errorMap = new HashMap<>();
 		List<Demand> demands = demandRequest.getDemands();
 		String tenantId = demands.get(0).getTenantId();
@@ -547,8 +549,17 @@ public class DemandValidatorV1 {
 		}
 		
 		DemandCriteria demandCriteria = DemandCriteria.builder().tenantId(tenantId).demandId(demandIds).build();
-		Map<String, Demand> demandMap = demandRepository.getDemands(demandCriteria).stream()
-				.collect(Collectors.toMap(Demand::getId, Function.identity()));
+		List<Demand> demandsFromDb = demandRepository.getDemands(demandCriteria);
+		
+		Map<String, Demand> demandMap= demandsFromDb.stream().collect(Collectors.toMap(Demand::getId, Function.identity()));
+		
+		try {
+			System.err.println(" The result from update req DB : " + mapper.writeValueAsString(demandsFromDb));
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		Map<String, DemandDetail> dbDemandDetailMap = new HashMap<>();
 
 		/*
@@ -563,6 +574,8 @@ public class DemandValidatorV1 {
 						.collect(Collectors.toMap(DemandDetail::getId, Function.identity())));
 			}
 		}
+		
+		log.info(" The Db demanddetail map : " + dbDemandDetailMap);
 
 		for (DemandDetail demandDetail : olddemandDetails) {
 			if (dbDemandDetailMap.get(demandDetail.getId()) == null)
@@ -573,6 +586,8 @@ public class DemandValidatorV1 {
 			errorMap.put(DEMAND_NOT_FOUND_KEY,
 					DEMAND_NOT_FOUND_MSG.replace(DEMAND_NOT_FOUND_REPLACETEXT, unFoundDemandIds.toString()));
 
+		log.info(" the missing ids : " + unFoundDemandDetailIds);
+		
 		if (!CollectionUtils.isEmpty(unFoundDemandDetailIds))
 			errorMap.put(DEMAND_DETAIL_NOT_FOUND_KEY, DEMAND_DETAIL_NOT_FOUND_MSG
 					.replace(DEMAND_DETAIL_NOT_FOUND_REPLACETEXT, unFoundDemandDetailIds.toString()));
