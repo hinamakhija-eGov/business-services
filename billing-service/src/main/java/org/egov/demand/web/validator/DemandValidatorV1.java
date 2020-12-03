@@ -552,13 +552,7 @@ public class DemandValidatorV1 {
 		List<Demand> demandsFromDb = demandRepository.getDemands(demandCriteria);
 		
 		Map<String, Demand> demandMap= demandsFromDb.stream().collect(Collectors.toMap(Demand::getId, Function.identity()));
-		
-		try {
-			System.err.println(" The result from update req DB : " + mapper.writeValueAsString(demandsFromDb));
-		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 		
 		Map<String, DemandDetail> dbDemandDetailMap = new HashMap<>();
 
@@ -575,7 +569,7 @@ public class DemandValidatorV1 {
 			}
 		}
 		
-		log.info(" The Db demanddetail map : " + dbDemandDetailMap);
+	//	log.info(" The Db demanddetail map : " + dbDemandDetailMap);
 
 		for (DemandDetail demandDetail : olddemandDetails) {
 			if (dbDemandDetailMap.get(demandDetail.getId()) == null)
@@ -586,7 +580,7 @@ public class DemandValidatorV1 {
 			errorMap.put(DEMAND_NOT_FOUND_KEY,
 					DEMAND_NOT_FOUND_MSG.replace(DEMAND_NOT_FOUND_REPLACETEXT, unFoundDemandIds.toString()));
 
-		log.info(" the missing ids : " + unFoundDemandDetailIds);
+	//	log.info(" the missing ids : " + unFoundDemandDetailIds);
 		
 		if (!CollectionUtils.isEmpty(unFoundDemandDetailIds))
 			errorMap.put(DEMAND_DETAIL_NOT_FOUND_KEY, DEMAND_DETAIL_NOT_FOUND_MSG
