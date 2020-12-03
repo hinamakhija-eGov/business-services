@@ -293,28 +293,13 @@ public class DemandService {
 		if (!CollectionUtils.isEmpty(demands) && !CollectionUtils.isEmpty(payers))
 			demands = demandEnrichmentUtil.enrichPayer(demands, payers);
 
-		List<Demand> filteredDemands = filterMultipleActiveDemands(demands);
 
-		return filteredDemands;
+		return demands;
 	}
 
 
 
-	private List<Demand> filterMultipleActiveDemands(List<Demand> demands){
 
-		Comparator<Demand> comparator = Comparator.comparing(h -> h.getAuditDetails().getCreatedTime());
-		demands.sort(comparator);
-
-
-		Map<Long,Demand> fromPeriodToDemand = new LinkedHashMap<>();
-
-		demands.forEach(demand -> {
-			fromPeriodToDemand.put(demand.getTaxPeriodFrom(),demand);
-		});
-
-		return new LinkedList<>(fromPeriodToDemand.values());
-
-	}
 
 
 	public void save(DemandRequest demandRequest) {

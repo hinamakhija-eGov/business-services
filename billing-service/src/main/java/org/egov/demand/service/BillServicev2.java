@@ -50,15 +50,8 @@ import static org.egov.demand.util.Constants.URL_NOT_CONFIGURED_REPLACE_TEXT;
 import static org.egov.demand.util.Constants.URL_PARAMS_FOR_SERVICE_BASED_DEMAND_APIS;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -276,7 +269,10 @@ public class BillServicev2 {
 				.build();
 
 		/* Fetching demands for the given bill search criteria */
-		List<Demand> demands = demandService.getDemands(demandCriteria, requestInfo);
+		List<Demand> demandsWithMultipleActive = demandService.getDemands(demandCriteria, requestInfo);
+
+		List<Demand> demands = filterMultipleActiveDemands(demandsWithMultipleActive);
+
 
 		List<BillV2> bills;
 
@@ -288,6 +284,22 @@ public class BillServicev2 {
 		BillRequestV2 billRequest = BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
 		//kafkaTemplate.send(notifTopicName, null, billRequest);
 		return create(billRequest);
+	}
+
+	private List<Demand> filterMultipleActiveDemands(List<Demand> demands){
+
+		Comparator<Demand> comparator = Comparator.comparing(h -> h.getAuditDetails().getCreatedTime());
+		demands.sort(comparator);
+
+
+		Map<Long,Demand> fromPeriodToDemand = new LinkedHashMap<>();
+
+		demands.forEach(demand -> {
+			fromPeriodToDemand.put(demand.getTaxPeriodFrom(),demand);
+		});
+
+		return new LinkedList<>(fromPeriodToDemand.values());
+
 	}
 
 	/**
