@@ -334,8 +334,24 @@ public class BillServicev2 {
 		/*
 		 * Grouping the demands by their consumer code and generating a bill for each consumer code
 		 */
-		Map<String, List<Demand>> consumerCodeAndDemandsMap = demands.stream().collect(Collectors.groupingBy(Demand::getConsumerCode));
-		
+		Map<String, List<Demand>> consumerCodeAndDemandsMap = demands.stream().filter(demand -> {
+
+			BigDecimal totoalTax = demand.getDemandDetails().stream().map(DemandDetail::getTaxAmount)
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
+			BigDecimal totalCollection = demand.getDemandDetails().stream().map(DemandDetail::getCollectionAmount)
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
+			if (totoalTax.compareTo(totalCollection) > 0
+					|| totoalTax.compareTo(totalCollection) == 0 && totalCollection.compareTo(BigDecimal.ZERO) == 0)
+				return true;
+			else
+				return false;
+
+		}).collect(Collectors.groupingBy(Demand::getConsumerCode));
+
+		if (CollectionUtils.isEmpty(consumerCodeAndDemandsMap))
+			throw new CustomException("EG_BS_BILL_ZERO_TAX", "No payable demand found for the this consumercode and criteria");
+			
+
 		for (Entry<String, List<Demand>> consumerCodeAndDemands : consumerCodeAndDemandsMap.entrySet()) {
 			
 			BigDecimal billAmount = BigDecimal.ZERO;
