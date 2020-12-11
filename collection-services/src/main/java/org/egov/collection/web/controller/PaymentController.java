@@ -40,10 +40,13 @@
 
 package org.egov.collection.web.controller;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.validation.Valid;
 
@@ -116,6 +119,7 @@ public class PaymentController {
                 }
             }
             paymentSearchCriteria.setStatus(defaultStatus);
+            paymentSearchCriteria.setBusinessServices(Stream.of(moduleName).collect(Collectors.toSet()));
         }
         List<Payment> payments = paymentService.getPayments(requestInfo, paymentSearchCriteria);
 
