@@ -11,7 +11,7 @@ The objective of HRMS is to provide a service that manages all the employees enr
 - egov-localization
 - egov-idgen
 - egov-mdms
-- egov-filestore
+- filestore
 
 ### Swagger API Contract
 - Please refer to the [Swagger API contarct](https://editor.swagger.io/?url=https://raw.githubusercontent.com/egovernments/egov-services/master/docs/rainmaker/egov-hrms/v1-0-0.yml#!/) for HRMS service to understand the structure of APIs and to have visualization of all internal APIs.
