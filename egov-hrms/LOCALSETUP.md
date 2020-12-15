@@ -22,7 +22,7 @@ function kgpt(){kubectl get pods -n egov --selector=app=$1 --no-headers=true | h
 kubectl port-forward -n egov $(kgpt egov-idgen) 8087:8080 &
 kubectl port-forward -n egov $(kgpt egov-mdms-service) 8088:8080 &
 kubectl port-forward -n egov $(kgpt egov-user) 8089:8080 &
-kubectl port-forward -n egov $(kgpt egov-filestore) 8090:8080 &
+kubectl port-forward -n egov $(kgpt filestore) 8090:8080 &
 kubectl port-forward -n egov $(kgpt egov-localization) 8091:8080 &
 ``` 
 
