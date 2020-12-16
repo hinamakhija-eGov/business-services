@@ -119,8 +119,13 @@ public class PaymentController {
                 }
             }
             paymentSearchCriteria.setStatus(defaultStatus);
-            paymentSearchCriteria.setBusinessServices(Stream.of(moduleName).collect(Collectors.toSet()));
         }
+        
+		if (CollectionUtils.isEmpty(paymentSearchCriteria.getBusinessServices())) {
+			paymentSearchCriteria.setBusinessServices(Stream.of(moduleName).collect(Collectors.toSet()));
+		} else {
+			paymentSearchCriteria.getBusinessServices().add(moduleName);
+		}
         List<Payment> payments = paymentService.getPayments(requestInfo, paymentSearchCriteria);
 
         return getSuccessResponse(payments, requestInfo);
