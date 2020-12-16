@@ -8,7 +8,7 @@ The objective of HRMS is to provide a service that manages all the employees enr
 
 ### Service Dependencies
 - egov-user
-- egov-localization
+- localization
 - egov-idgen
 - egov-mdms
 - filestore

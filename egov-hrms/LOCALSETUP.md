@@ -23,7 +23,7 @@ kubectl port-forward -n egov $(kgpt egov-idgen) 8087:8080 &
 kubectl port-forward -n egov $(kgpt egov-mdms-service) 8088:8080 &
 kubectl port-forward -n egov $(kgpt egov-user) 8089:8080 &
 kubectl port-forward -n egov $(kgpt filestore) 8090:8080 &
-kubectl port-forward -n egov $(kgpt egov-localization) 8091:8080 &
+kubectl port-forward -n egov $(kgpt localization) 8091:8080 &
 ``` 
 
 Update below listed properties in `application.properties` before running the project:
