@@ -10,10 +10,14 @@ import org.egov.demand.config.ApplicationProperties;
 import org.egov.demand.helper.CollectionReceiptRequest;
 import org.egov.demand.model.BillDetail.StatusEnum;
 import org.egov.demand.model.BillV2;
+import org.egov.demand.model.PaymentBackUpdateAudit;
 import org.egov.demand.repository.BillRepository;
+import org.egov.demand.repository.DemandRepository;
 import org.egov.demand.service.DemandService;
 import org.egov.demand.service.ReceiptService;
 import org.egov.demand.service.ReceiptServiceV2;
+import org.egov.demand.util.Constants;
+import org.egov.demand.util.Util;
 import org.egov.demand.web.contract.BillRequest;
 import org.egov.demand.web.contract.BillRequestV2;
 import org.egov.demand.web.contract.DemandRequest;
@@ -42,6 +46,9 @@ public class BillingServiceConsumer {
 
 	@Autowired
 	private DemandService demandService;
+	
+	@Autowired
+	private DemandRepository demandRepository;
 
 	@Autowired
 	private ObjectMapper objectMapper;
@@ -54,6 +61,9 @@ public class BillingServiceConsumer {
 	
 	@Autowired
 	private ReceiptServiceV2 receiptServiceV2;
+	
+	@Autowired
+	private Util util;
 
 
 	@KafkaListener(topics = { "${kafka.topics.receipt.update.collecteReceipt}", "${kafka.topics.save.bill}",
@@ -74,7 +84,7 @@ public class BillingServiceConsumer {
 		 * update demand topic
 		 */
 		else if (applicationProperties.getUpdateDemandTopic().equals(topic))
-			demandService.update(objectMapper.convertValue(consumerRecord, DemandRequest.class));
+			demandService.update(objectMapper.convertValue(consumerRecord, DemandRequest.class), null);
 		
 		/*
 		 * save bill
@@ -141,12 +151,16 @@ public class BillingServiceConsumer {
 			throw new CustomException("Parsing of data failed in back update", e.getMessage());
 		}
 		
+		String paymentId = objectMapper.convertValue(context.read("$.Payment.id"), String.class);
 		List<BigDecimal> amtPaidList = Arrays.asList(objectMapper.convertValue(context.read("$.Payment.paymentDetails.*.totalAmountPaid"), BigDecimal[].class));
 		List<BillV2> bills = Arrays.asList(objectMapper.convertValue(context.read("$.Payment.paymentDetails.*.bill"), BillV2[].class));
 		
+		validatePaymentForDuplicateUpdates(isReceiptCancelled, paymentId);
+
 		for (int i = 0; i < bills.size(); i++) {
 			
 			BillV2 bill = bills.get(i);
+
 			BigDecimal amtPaid = null != amtPaidList.get(i) ? amtPaidList.get(i) : BigDecimal.ZERO; 
 
 			if (isReceiptCancelled) {
@@ -159,8 +173,33 @@ public class BillingServiceConsumer {
 				bill.setStatus(org.egov.demand.model.BillV2.BillStatus.PAID);
 		}
 	}
-		
+		// payment value is set in zeroth index of bills
+		bills.get(0).setAdditionalDetails(util.setValuesAndGetAdditionalDetails(bills.get(0).getAdditionalDetails(),
+				Constants.PAYMENT_ID_KEY, paymentId));
 		RequestInfo requestInfo = objectMapper.convertValue(context.read("$.RequestInfo"), RequestInfo.class);
 		return BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
+	}
+
+	/**
+	 * validation to prevent multiple back updates for same payment
+	 * 
+	 * @param isReceiptCancelled
+	 * @param paymentId
+	 */
+	private void validatePaymentForDuplicateUpdates(boolean isReceiptCancelled, String paymentId) {
+
+		PaymentBackUpdateAudit backUpdateAuditCriteria = PaymentBackUpdateAudit.builder()
+				.isReceiptCancellation(isReceiptCancelled)
+				.paymentId(paymentId)
+				.isBackUpdateSucces(true)
+				.build();
+
+		PaymentBackUpdateAudit paymentBackUpdateAudit = demandRepository
+				.searchPaymentBackUpdateAudit(backUpdateAuditCriteria);
+		
+		if (null != paymentBackUpdateAudit && paymentBackUpdateAudit.getPaymentId().equalsIgnoreCase(paymentId))
+			throw new CustomException("EGBS_PAYMENT_BACKUPDATE_ERROR",
+					"Duplicate Payment object received for back update with payment-id : " + paymentId
+							+ ", payment already updated to demands");
 	}
 }

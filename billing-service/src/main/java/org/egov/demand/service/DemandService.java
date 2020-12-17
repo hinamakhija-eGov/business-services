@@ -63,6 +63,7 @@ import org.egov.demand.model.Demand;
 import org.egov.demand.model.DemandApportionRequest;
 import org.egov.demand.model.DemandCriteria;
 import org.egov.demand.model.DemandDetail;
+import org.egov.demand.model.PaymentBackUpdateAudit;
 import org.egov.demand.repository.BillRepositoryV2;
 import org.egov.demand.repository.DemandRepository;
 import org.egov.demand.repository.ServiceRequestRepository;
@@ -157,7 +158,7 @@ public class DemandService {
 		save(new DemandRequest(requestInfo,demandsToBeCreated));
 
 		if(!CollectionUtils.isEmpty(demandToBeUpdated))
-			update(new DemandRequest(requestInfo,demandToBeUpdated));
+			update(new DemandRequest(requestInfo,demandToBeUpdated), null);
 		
 		billRepoV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()), BillStatus.EXPIRED);
 		
@@ -202,13 +203,28 @@ public class DemandService {
 	 * @param demandRequest demand request object to be updated
 	 * @return
 	 */
-	public DemandResponse updateAsync(DemandRequest demandRequest) {
+	public DemandResponse updateAsync(DemandRequest demandRequest, PaymentBackUpdateAudit paymentBackUpdateAudit) {
 
 		log.debug("the demand service : " + demandRequest);
+		CustomException execptionDuringUpdateValidation = null;
 
 		DocumentContext mdmsData = getMDMSData(demandRequest);
 
-		demandValidatorV1.validateForUpdate(demandRequest, mdmsData);
+		try {
+			demandValidatorV1.validateForUpdate(demandRequest, mdmsData);
+		} catch (CustomException e) {
+			execptionDuringUpdateValidation = e;
+		}
+
+		/*
+		 *  Updating payment-back-update object for failure and throwing error.
+		 *  
+		 *  else throw error
+		 */
+		if (null != paymentBackUpdateAudit)
+			updatePaymentBackUpdate(execptionDuringUpdateValidation, paymentBackUpdateAudit);
+		else if (null != execptionDuringUpdateValidation)
+			throw execptionDuringUpdateValidation;
 
 		RequestInfo requestInfo = demandRequest.getRequestInfo();
 		List<Demand> demands = demandRequest.getDemands();
@@ -246,7 +262,7 @@ public class DemandService {
 
 		generateAndSetIdsForNewDemands(newDemands, auditDetail);
 
-		update(demandRequest);
+		update(demandRequest, paymentBackUpdateAudit);
 		billRepoV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()),
 				BillStatus.EXPIRED);
 		// producer.push(applicationProperties.getDemandIndexTopic(), demandRequest);
@@ -326,8 +342,8 @@ public class DemandService {
 		demandRepository.save(demandRequest);
 	}
 
-	public void update(DemandRequest demandRequest) {
-		demandRepository.update(demandRequest);
+	public void update(DemandRequest demandRequest, PaymentBackUpdateAudit paymentBackUpdateAudit) {
+		demandRepository.update(demandRequest, paymentBackUpdateAudit);
 	}
 
 
@@ -426,6 +442,27 @@ public class DemandService {
 
 		return new ArrayList<>(demandsWithAdvance);
 	}
+	
+	/**
+	 * Update payment-back-update object based on whether error occurred in validation or not
+	 * 
+	 * 
+	 * @param execptionDuringUpdateValidation
+	 * @param paymentBackUpdateAudit
+	 * @throws Exception 
+	 */
+	private void updatePaymentBackUpdate(CustomException exception, PaymentBackUpdateAudit paymentBackUpdateAudit) {
+
+		if(null != exception) {
+			
+			paymentBackUpdateAudit.setIsBackUpdateSucces(false);
+			paymentBackUpdateAudit.setErrorMessage(exception.getMessage());
+			demandRepository.insertBackUpdateForPayment(paymentBackUpdateAudit);
+			throw exception;
+		}
+		paymentBackUpdateAudit.setIsBackUpdateSucces(true);
+	}
+
 
 	/**
 	 * Fetches the required master data from MDMS service
