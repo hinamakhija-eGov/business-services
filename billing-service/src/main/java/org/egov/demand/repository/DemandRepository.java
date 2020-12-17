@@ -59,7 +59,7 @@ import org.egov.demand.repository.rowmapper.DemandRowMapper;
 import org.egov.demand.util.Util;
 import org.egov.demand.web.contract.DemandRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
@@ -387,8 +387,8 @@ public class DemandRepository {
 		try {
 			paymentBackUpdateAudit = jdbcTemplate.queryForObject(
 					DemandQueryBuilder.PAYMENT_BACKUPDATE_AUDIT_SEARCH_QUERY, preparedStatementValues, 	PaymentBackUpdateAudit.class);
-		} catch (EmptyResultDataAccessException e) {
-			log.info("No data found for incoming receipt ib backupdate log");
+		} catch (DataAccessException e) {
+			log.info("No data found for incoming receipt in backupdate log");
 		}
 
 		return paymentBackUpdateAudit;

@@ -180,6 +180,11 @@ public class BillingServiceConsumer {
 		List<BigDecimal> amtPaidList = Arrays.asList(objectMapper.convertValue(context.read("$.Payment.paymentDetails.*.totalAmountPaid"), BigDecimal[].class));
 		List<BillV2> bills = Arrays.asList(objectMapper.convertValue(context.read("$.Payment.paymentDetails.*.bill"), BillV2[].class));
 		
+		/* payment value is set in zeroth index of bills
+		 * 
+		 * additionaldetail info from bill is not needed, so setting new value
+		 */
+		bills.get(0).setAdditionalDetails(util.setValuesAndGetAdditionalDetails(null, Constants.PAYMENT_ID_KEY, paymentId));
 		validatePaymentForDuplicateUpdates(isReceiptCancelled, paymentId);
 
 		for (int i = 0; i < bills.size(); i++) {
@@ -198,11 +203,7 @@ public class BillingServiceConsumer {
 				bill.setStatus(org.egov.demand.model.BillV2.BillStatus.PAID);
 		}
 	}
-		/* payment value is set in zeroth index of bills
-		 * 
-		 * additionaldetail info from bill is not needed, so setting new value
-		 */
-		bills.get(0).setAdditionalDetails(util.setValuesAndGetAdditionalDetails(null, Constants.PAYMENT_ID_KEY, paymentId));
+
 		RequestInfo requestInfo = objectMapper.convertValue(context.read("$.RequestInfo"), RequestInfo.class);
 		return BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
 	}
