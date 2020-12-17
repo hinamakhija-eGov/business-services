@@ -106,7 +106,7 @@ public class EmployeeService {
 	 * Service method for create employee. Does following:
 	 * 1. Sets ids to all the objects using idgen service.
 	 * 2. Enriches the employee object with required parameters
-	 * 3. Creates user in the egov-user service.
+	 * 3. Creates user in the user service.
 	 * 4. Sends notification upon successful creation
 	 * 
 	 * @param employeeRequest
@@ -210,7 +210,7 @@ public class EmployeeService {
 	
 	
 	/**
-	 * Creates user by making call to egov-user.
+	 * Creates user by making call to user.
 	 * 
 	 * @param employee
 	 * @param requestInfo

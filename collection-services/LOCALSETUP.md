@@ -21,7 +21,7 @@ To run the service locally, you need to port forward below services.
 ```bash
 function kgpt(){kubectl get pods -n egov --selector=app=$1 --no-headers=true | head -n1 | awk '{print $1}'}
 
-kubectl port-forward -n egov $(kgpt egov-user) 8081:8080 &
+kubectl port-forward -n egov $(kgpt user) 8081:8080 &
 kubectl port-forward -n egov $(kgpt egf-master) 8083:8080 &
 kubectl port-forward -n egov $(kgpt egov-common-masters) 8084:8080 &
 kubectl port-forward -n egov $(kgpt egf-instrument) 8085:8080 &

@@ -1,13 +1,13 @@
 # Egov-HRMS Service
 ### HRMS Service
-The objective of HRMS is to provide a service that manages all the employees enrolled onto the system. HRMS provides extensive APIs to create, update and search the employees with attributes like assignments, service history, jurisdiction etc. HRMS can be treated a sub-set of the egov-user service, Every employee created through HRMS will also be created as a user in egov-user. 
+The objective of HRMS is to provide a service that manages all the employees enrolled onto the system. HRMS provides extensive APIs to create, update and search the employees with attributes like assignments, service history, jurisdiction etc. HRMS can be treated a sub-set of the user service, Every employee created through HRMS will also be created as a user in user. 
 
 ### DB UML Diagram
 
 - NA
 
 ### Service Dependencies
-- egov-user
+- user
 - localization
 - egov-idgen
 - egov-mdms
@@ -75,7 +75,7 @@ The objective of HRMS is to provide a service that manages all the employees enr
 | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------|
 | `egov.hrms.employee.app.link`             | This is the link to the mseva app, which differs based on the environment.                                                                                | https://mseva.lgpunjab.gov.in/employee/user/login |
 | `egov.hrms.default.pagination.limit`      | This is the pagination limit on search results of employee search, it can be set to any numeric value without decimals.                                   | 200                                               |
-| `egov.hrms.default.pwd.length`            | This is the length of password to be generated at the time of employee creation. However, please ensure this is in sync with the egov-user pwd policy.    | 10                                                |
+| `egov.hrms.default.pwd.length`            | This is the length of password to be generated at the time of employee creation. However, please ensure this is in sync with the user pwd policy.    | 10                                                |
 | `open.search.enabled.roles`               | This is a list of Role codes that are allowed to perform an open-search in hrms.                                                                          | SUPERUSER,ADMIN                                   |
 | `egov.idgen.ack.name`                     | Key to be configured in Idgen alongwith the ID format to generate employee code.                                                                          | hrms.employeecode                                 |
 |  `egov.idgen.ack.format`                  | Format to be configured in ID gen to generate employee code.                                                                                              | EMP-[city]-[SEQ_EG_HRMS_EMP_CODE]                 |
