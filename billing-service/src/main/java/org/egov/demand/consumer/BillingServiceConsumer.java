@@ -140,14 +140,14 @@ public class BillingServiceConsumer {
 
 	private void updateDemandsFromPayment(Map<String, Object> consumerRecord, Boolean isReceiptCancellation) {
 		
-		BillRequestV2 billReq = null;
+		BillRequestV2 billReq = BillRequestV2.builder().build();
 		
 		try {
 
-			billReq = getBillsFromPayment(consumerRecord, isReceiptCancellation);
+			setBillRequestFromPayment(consumerRecord, billReq, isReceiptCancellation);
 			receiptServiceV2.updateDemandFromReceipt(billReq, isReceiptCancellation);
 			
-		} catch (JsonProcessingException e) {
+		} catch (JsonProcessingException | IllegalArgumentException e) {
 
 			/*
 			 * Adding random uuid in primary when jsonmapping exception occurs
@@ -170,7 +170,7 @@ public class BillingServiceConsumer {
 	 * @param consumerRecord
 	 * @throws JsonProcessingException 
 	 */
-	private BillRequestV2 getBillsFromPayment(Map<String, Object> consumerRecord, boolean isReceiptCancelled) throws JsonProcessingException {
+	private void setBillRequestFromPayment(Map<String, Object> consumerRecord, BillRequestV2 billReq, boolean isReceiptCancelled) throws JsonProcessingException {
 		
 		DocumentContext context = null;
 		
@@ -179,6 +179,10 @@ public class BillingServiceConsumer {
 		String paymentId = objectMapper.convertValue(context.read("$.Payment.id"), String.class);
 		List<BigDecimal> amtPaidList = Arrays.asList(objectMapper.convertValue(context.read("$.Payment.paymentDetails.*.totalAmountPaid"), BigDecimal[].class));
 		List<BillV2> bills = Arrays.asList(objectMapper.convertValue(context.read("$.Payment.paymentDetails.*.bill"), BillV2[].class));
+		
+		RequestInfo requestInfo = objectMapper.convertValue(context.read("$.RequestInfo"), RequestInfo.class);
+		billReq.setBills(bills);
+		billReq.setRequestInfo(requestInfo);
 		
 		/* payment value is set in zeroth index of bills
 		 * 
@@ -201,11 +205,8 @@ public class BillingServiceConsumer {
 
 			} else {
 				bill.setStatus(org.egov.demand.model.BillV2.BillStatus.PAID);
+			}
 		}
-	}
-
-		RequestInfo requestInfo = objectMapper.convertValue(context.read("$.RequestInfo"), RequestInfo.class);
-		return BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
 	}
 
 	/**
@@ -222,10 +223,10 @@ public class BillingServiceConsumer {
 				.isBackUpdateSucces(true)
 				.build();
 
-		PaymentBackUpdateAudit paymentBackUpdateAudit = demandRepository
+		String paymentIdFromDb = demandRepository
 				.searchPaymentBackUpdateAudit(backUpdateAuditCriteria);
 		
-		if (null != paymentBackUpdateAudit && paymentBackUpdateAudit.getPaymentId().equalsIgnoreCase(paymentId))
+		if (null != paymentIdFromDb && paymentIdFromDb.equalsIgnoreCase(paymentId))
 			throw new CustomException("EGBS_PAYMENT_BACKUPDATE_ERROR",
 					"Duplicate Payment object received for back update with payment-id : " + paymentId
 							+ ", payment already updated to demands");

@@ -60,7 +60,7 @@ public class DemandQueryBuilder {
 	public static final String PAYMENT_BACKUPDATE_AUDIT_INSERT_QUERY = "INSERT INTO egbs_payment_backupdate_audit (paymentid, isbackupdatesuccess, isreceiptcancellation, errorMessage)"
 			+ " VALUES (?,?,?,?);";
 	
-	public static final String PAYMENT_BACKUPDATE_AUDIT_SEARCH_QUERY = "SELECT * FROM egbs_payment_backupdate_audit where paymentid=? AND isbackupdatesuccess=? AND isreceiptcancellation=?;";
+	public static final String PAYMENT_BACKUPDATE_AUDIT_SEARCH_QUERY = "SELECT paymentid FROM egbs_payment_backupdate_audit where paymentid=? AND isbackupdatesuccess=? AND isreceiptcancellation=?;";
 
 	public static final String BASE_DEMAND_QUERY = "SELECT dmd.id AS did,dmd.consumercode AS dconsumercode,"
 			+ "dmd.consumertype AS dconsumertype,dmd.businessservice AS dbusinessservice,dmd.payer,dmd.billexpirytime AS dbillexpirytime,"

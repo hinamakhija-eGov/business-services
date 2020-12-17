@@ -375,9 +375,9 @@ public class DemandRepository {
 		});
 	}
 
-	public PaymentBackUpdateAudit searchPaymentBackUpdateAudit(PaymentBackUpdateAudit backUpdateAudit) {
+	public String searchPaymentBackUpdateAudit(PaymentBackUpdateAudit backUpdateAudit) {
 
-		PaymentBackUpdateAudit paymentBackUpdateAudit = null;
+		String paymentId = null;
 		Object[] preparedStatementValues = new Object[] {
 
 				backUpdateAudit.getPaymentId(),
@@ -385,12 +385,12 @@ public class DemandRepository {
 				backUpdateAudit.getIsReceiptCancellation() };
 
 		try {
-			paymentBackUpdateAudit = jdbcTemplate.queryForObject(
-					DemandQueryBuilder.PAYMENT_BACKUPDATE_AUDIT_SEARCH_QUERY, preparedStatementValues, 	PaymentBackUpdateAudit.class);
+			paymentId = jdbcTemplate.queryForObject(
+					DemandQueryBuilder.PAYMENT_BACKUPDATE_AUDIT_SEARCH_QUERY, preparedStatementValues, 	String.class);
 		} catch (DataAccessException e) {
 			log.info("No data found for incoming receipt in backupdate log");
 		}
 
-		return paymentBackUpdateAudit;
+		return paymentId;
 	}
 }
