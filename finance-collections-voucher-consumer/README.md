@@ -11,7 +11,7 @@ NA
 - egov-mdms-service
 - collection-service
 - egf-instrument
-- egov-user
+- user
 - egf-master
 - Finance co existence service
 
