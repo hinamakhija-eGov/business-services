@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.demand.config.ApplicationProperties;
@@ -122,8 +123,8 @@ public class BillingServiceConsumer {
 		 */
 		else if (applicationProperties.getUpdateDemandFromReceiptV2().equals(topic)) {
 
-			BillRequestV2 billReq = getBillsFromPayment(consumerRecord, false);
-			receiptServiceV2.updateDemandFromReceipt(billReq, false);
+			Boolean isReceiptCancellation = false;
+			updateDemandsFromPayment(consumerRecord, isReceiptCancellation);
 		}
 
 		/*
@@ -131,26 +132,50 @@ public class BillingServiceConsumer {
 		 */
 		else if (applicationProperties.getReceiptCancellationTopicV2().equals(topic)) {
 
-			BillRequestV2 billReq = getBillsFromPayment(consumerRecord, true);
-			receiptServiceV2.updateDemandFromReceipt(billReq, true);
+			Boolean isReceiptCancellation = true;
+			updateDemandsFromPayment(consumerRecord, isReceiptCancellation);
+		}
+	}
+
+
+	private void updateDemandsFromPayment(Map<String, Object> consumerRecord, Boolean isReceiptCancellation) {
+		
+		BillRequestV2 billReq = null;
+		
+		try {
+
+			billReq = getBillsFromPayment(consumerRecord, isReceiptCancellation);
+			receiptServiceV2.updateDemandFromReceipt(billReq, isReceiptCancellation);
+			
+		} catch (JsonProcessingException e) {
+
+			/*
+			 * Adding random uuid in primary when jsonmapping exception occurs
+			 */
+			updatePaymentBackUpdateForFailure(consumerRecord.toString(), UUID.randomUUID().toString() + " : " + e.getClass().getName(), isReceiptCancellation);
+			log.info("EGBS_PAYMENT_SERIALIZE_ERROR",e.getClass().getName() + " : " + e.getMessage());
+			
+		} catch (Exception e ) {
+
+			String paymentId = util.getValueFromAdditionalDetailsForKey(
+					billReq.getBills().get(0).getAdditionalDetails(), Constants.PAYMENT_ID_KEY);
+			updatePaymentBackUpdateForFailure(e.getMessage(), paymentId, isReceiptCancellation);
+			log.info("EGBS_PAYMENT_BACKUPDATE_ERROR",e.getClass().getName() + " : " + e.getMessage());
+			
 		}
 	}
 
 
 	/**
 	 * @param consumerRecord
+	 * @throws JsonProcessingException 
 	 */
-	private BillRequestV2 getBillsFromPayment(Map<String, Object> consumerRecord, boolean isReceiptCancelled) {
+	private BillRequestV2 getBillsFromPayment(Map<String, Object> consumerRecord, boolean isReceiptCancelled) throws JsonProcessingException {
 		
 		DocumentContext context = null;
 		
-		try {
-			context = JsonPath.parse(objectMapper.writeValueAsString(consumerRecord));
-		} catch (JsonProcessingException e) {
-			log.error("Parsing of data failed in back update for data : {}" + consumerRecord);
-			throw new CustomException("Parsing of data failed in back update", e.getMessage());
-		}
-		
+		context = JsonPath.parse(objectMapper.writeValueAsString(consumerRecord));
+
 		String paymentId = objectMapper.convertValue(context.read("$.Payment.id"), String.class);
 		List<BigDecimal> amtPaidList = Arrays.asList(objectMapper.convertValue(context.read("$.Payment.paymentDetails.*.totalAmountPaid"), BigDecimal[].class));
 		List<BillV2> bills = Arrays.asList(objectMapper.convertValue(context.read("$.Payment.paymentDetails.*.bill"), BillV2[].class));
@@ -173,9 +198,11 @@ public class BillingServiceConsumer {
 				bill.setStatus(org.egov.demand.model.BillV2.BillStatus.PAID);
 		}
 	}
-		// payment value is set in zeroth index of bills
-		bills.get(0).setAdditionalDetails(util.setValuesAndGetAdditionalDetails(bills.get(0).getAdditionalDetails(),
-				Constants.PAYMENT_ID_KEY, paymentId));
+		/* payment value is set in zeroth index of bills
+		 * 
+		 * additionaldetail info from bill is not needed, so setting new value
+		 */
+		bills.get(0).setAdditionalDetails(util.setValuesAndGetAdditionalDetails(null, Constants.PAYMENT_ID_KEY, paymentId));
 		RequestInfo requestInfo = objectMapper.convertValue(context.read("$.RequestInfo"), RequestInfo.class);
 		return BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
 	}
@@ -201,5 +228,25 @@ public class BillingServiceConsumer {
 			throw new CustomException("EGBS_PAYMENT_BACKUPDATE_ERROR",
 					"Duplicate Payment object received for back update with payment-id : " + paymentId
 							+ ", payment already updated to demands");
+	}
+	
+	/**
+	 * Update payment-back-update object based on whether error occurred in validation or not
+	 * 
+	 * 
+	 * @param execptionDuringUpdateValidation
+	 * @param paymentBackUpdateAudit
+	 * @throws Exception 
+	 */
+	private void updatePaymentBackUpdateForFailure (String errorMsg, String paymentId, Boolean isReceiptCancellation) {
+
+		PaymentBackUpdateAudit paymentBackUpdateAudit = PaymentBackUpdateAudit.builder()
+				.isReceiptCancellation(isReceiptCancellation)
+				.isBackUpdateSucces(false)
+				.errorMessage(errorMsg)
+				.paymentId(paymentId)
+				.build();
+
+		demandRepository.insertBackUpdateForPayment(paymentBackUpdateAudit);
 	}
 }

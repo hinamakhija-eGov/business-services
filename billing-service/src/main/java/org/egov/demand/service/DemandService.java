@@ -206,25 +206,9 @@ public class DemandService {
 	public DemandResponse updateAsync(DemandRequest demandRequest, PaymentBackUpdateAudit paymentBackUpdateAudit) {
 
 		log.debug("the demand service : " + demandRequest);
-		CustomException execptionDuringUpdateValidation = null;
-
 		DocumentContext mdmsData = getMDMSData(demandRequest);
 
-		try {
-			demandValidatorV1.validateForUpdate(demandRequest, mdmsData);
-		} catch (CustomException e) {
-			execptionDuringUpdateValidation = e;
-		}
-
-		/*
-		 *  Updating payment-back-update object for failure and throwing error.
-		 *  
-		 *  else throw error
-		 */
-		if (null != paymentBackUpdateAudit)
-			updatePaymentBackUpdate(execptionDuringUpdateValidation, paymentBackUpdateAudit);
-		else if (null != execptionDuringUpdateValidation)
-			throw execptionDuringUpdateValidation;
+		demandValidatorV1.validateForUpdate(demandRequest, mdmsData);
 
 		RequestInfo requestInfo = demandRequest.getRequestInfo();
 		List<Demand> demands = demandRequest.getDemands();
@@ -443,27 +427,6 @@ public class DemandService {
 		return new ArrayList<>(demandsWithAdvance);
 	}
 	
-	/**
-	 * Update payment-back-update object based on whether error occurred in validation or not
-	 * 
-	 * 
-	 * @param execptionDuringUpdateValidation
-	 * @param paymentBackUpdateAudit
-	 * @throws Exception 
-	 */
-	private void updatePaymentBackUpdate(CustomException exception, PaymentBackUpdateAudit paymentBackUpdateAudit) {
-
-		if(null != exception) {
-			
-			paymentBackUpdateAudit.setIsBackUpdateSucces(false);
-			paymentBackUpdateAudit.setErrorMessage(exception.getMessage());
-			demandRepository.insertBackUpdateForPayment(paymentBackUpdateAudit);
-			throw exception;
-		}
-		paymentBackUpdateAudit.setIsBackUpdateSucces(true);
-	}
-
-
 	/**
 	 * Fetches the required master data from MDMS service
 	 * @param demandRequest The request for which master data has to be fetched

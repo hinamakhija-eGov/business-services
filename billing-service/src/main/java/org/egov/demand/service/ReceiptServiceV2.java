@@ -104,6 +104,7 @@ public class ReceiptServiceV2 {
 
 		PaymentBackUpdateAudit paymentBackUpdateAudit = PaymentBackUpdateAudit.builder()
 				.isReceiptCancellation(isReceiptCancellation)
+				.isBackUpdateSucces(true)
 				.paymentId(paymentId)
 				.build();
 		
