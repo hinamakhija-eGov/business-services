@@ -340,8 +340,7 @@ public class BillServicev2 {
 					.reduce(BigDecimal.ZERO, BigDecimal::add);
 			BigDecimal totalCollection = demand.getDemandDetails().stream().map(DemandDetail::getCollectionAmount)
 					.reduce(BigDecimal.ZERO, BigDecimal::add);
-			if (totoalTax.compareTo(totalCollection) > 0
-					|| totoalTax.compareTo(totalCollection) == 0 && totalCollection.compareTo(BigDecimal.ZERO) == 0)
+			if (totoalTax.compareTo(totalCollection) > 0)
 				return true;
 			else
 				return false;
