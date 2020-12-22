@@ -2,12 +2,14 @@ package org.egov.demand.util;
 
 import static org.egov.demand.util.Constants.INVALID_TENANT_ID_MDMS_KEY;
 import static org.egov.demand.util.Constants.INVALID_TENANT_ID_MDMS_MSG;
+import static org.egov.demand.util.Constants.ADVANCE_BUSINESSSERVICE_JSONPATH_CODE;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.Map;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.demand.config.ApplicationProperties;
@@ -18,16 +20,19 @@ import org.egov.mdms.model.MdmsCriteria;
 import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.mdms.model.ModuleDetail;
 import org.egov.tracer.model.CustomException;
+
 import org.postgresql.util.PGobject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -157,5 +162,64 @@ public class Util {
         	throw new CustomException(Constants.EG_BS_JSON_EXCEPTION_KEY, Constants.EG_BS_JSON_EXCEPTION_MSG);
         }
     }
+    
+    public String getApportionURL(){
+		StringBuilder builder = new StringBuilder(appProps.getApportionHost());
+		builder.append(appProps.getApportionEndpoint());
+		return builder.toString();
+	}
+    
+    
+    /**
+	 * Fetches the isAdvanceAllowed flag for the given businessService
+	 * @param businessService
+	 * @param mdmsData
+	 * @return
+	 */
+	public Boolean getIsAdvanceAllowed(String businessService, DocumentContext mdmsData){
+		String jsonpath = ADVANCE_BUSINESSSERVICE_JSONPATH_CODE;
+		jsonpath = jsonpath.replace("{}",businessService);
+
+		List<Boolean> isAdvanceAllowed = mdmsData.read(jsonpath);
+
+		if(CollectionUtils.isEmpty(isAdvanceAllowed))
+			throw new CustomException("BUSINESSSERVICE_ERROR","Failed to fetch isAdvanceAllowed for businessService: "+businessService);
+
+		return isAdvanceAllowed.get(0);
+	}
+    
+    
+    public String getValueFromAdditionalDetailsForKey (Object additionalDetails, String key) {
+
+		/* Previous record set to ACTIVE */
+		@SuppressWarnings("unchecked")
+		Map<String, Object> additionalDetailMap = mapper.convertValue(additionalDetails, Map.class);
+		if(null == additionalDetails) 
+			return "";
+
+		return (String) additionalDetailMap.get(key);
+	}
+
+	/**
+	 * Setting the receiptnumber from payment to bill
+	 * @param request
+	 * @param uuid
+	 * @return
+	 */
+	public ObjectNode setValuesAndGetAdditionalDetails(JsonNode additionalDetails, String key, String value) {
+
+		ObjectNode objectNodeDetail;
+
+		if (null == additionalDetails || (null != additionalDetails && additionalDetails.isNull())) {
+			objectNodeDetail = mapper.createObjectNode();
+
+		} else {
+
+			objectNodeDetail = (ObjectNode) additionalDetails;
+		}
+		objectNodeDetail.put(key, value);
+
+		return objectNodeDetail;
+	}
 	
 }

@@ -4,16 +4,21 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.demand.config.ApplicationProperties;
 import org.egov.demand.helper.CollectionReceiptRequest;
 import org.egov.demand.model.BillDetail.StatusEnum;
 import org.egov.demand.model.BillV2;
+import org.egov.demand.model.PaymentBackUpdateAudit;
 import org.egov.demand.repository.BillRepository;
+import org.egov.demand.repository.DemandRepository;
 import org.egov.demand.service.DemandService;
 import org.egov.demand.service.ReceiptService;
 import org.egov.demand.service.ReceiptServiceV2;
+import org.egov.demand.util.Constants;
+import org.egov.demand.util.Util;
 import org.egov.demand.web.contract.BillRequest;
 import org.egov.demand.web.contract.BillRequestV2;
 import org.egov.demand.web.contract.DemandRequest;
@@ -44,6 +49,9 @@ public class BillingServiceConsumer {
 	private DemandService demandService;
 
 	@Autowired
+	private DemandRepository demandRepository;
+	
+	@Autowired
 	private ObjectMapper objectMapper;
 
 	@Autowired
@@ -54,6 +62,9 @@ public class BillingServiceConsumer {
 	
 	@Autowired
 	private ReceiptServiceV2 receiptServiceV2;
+	
+	@Autowired
+	private Util util;
 
 
 	@KafkaListener(topics = { "${kafka.topics.receipt.update.collecteReceipt}", "${kafka.topics.save.bill}",
@@ -70,12 +81,11 @@ public class BillingServiceConsumer {
 		if (applicationProperties.getCreateDemandTopic().equals(topic))
 			demandService.save(objectMapper.convertValue(consumerRecord, DemandRequest.class));
 		
-		/*
+		/* 		String paymentId = objectMapper.convertValue(context.read("$.Payment.id"), String.class);
 		 * update demand topic
 		 */
 		else if (applicationProperties.getUpdateDemandTopic().equals(topic))
-			demandService.update(objectMapper.convertValue(consumerRecord, DemandRequest.class));
-		
+ 			demandService.update(objectMapper.convertValue(consumerRecord, DemandRequest.class), null);		
 		/*
 		 * save bill
 		 */
@@ -112,8 +122,8 @@ public class BillingServiceConsumer {
 		 */
 		else if (applicationProperties.getUpdateDemandFromReceiptV2().equals(topic)) {
 
-			BillRequestV2 billReq = getBillsFromPayment(consumerRecord, false);
-			receiptServiceV2.updateDemandFromReceipt(billReq, false);
+			Boolean isReceiptCancellation = false;
+			updateDemandsFromPayment(consumerRecord, isReceiptCancellation);
 		}
 
 		/*
@@ -121,46 +131,121 @@ public class BillingServiceConsumer {
 		 */
 		else if (applicationProperties.getReceiptCancellationTopicV2().equals(topic)) {
 
-			BillRequestV2 billReq = getBillsFromPayment(consumerRecord, true);
-			receiptServiceV2.updateDemandFromReceipt(billReq, true);
+			Boolean isReceiptCancellation = true;
+			updateDemandsFromPayment(consumerRecord, isReceiptCancellation);
 		}
 	}
 
 
-	/**
-	 * @param consumerRecord
-	 */
-	private BillRequestV2 getBillsFromPayment(Map<String, Object> consumerRecord, boolean isReceiptCancelled) {
+	private void updateDemandsFromPayment(Map<String, Object> consumerRecord, Boolean isReceiptCancellation) {
 		
-		DocumentContext context = null;
+		BillRequestV2 billReq = BillRequestV2.builder().build();
 		
 		try {
-			context = JsonPath.parse(objectMapper.writeValueAsString(consumerRecord));
-		} catch (JsonProcessingException e) {
-			log.error("Parsing of data failed in back update for data : {}" + consumerRecord);
-			throw new CustomException("Parsing of data failed in back update", e.getMessage());
+
+			setBillRequestFromPayment(consumerRecord, billReq, isReceiptCancellation);
+			receiptServiceV2.updateDemandFromReceipt(billReq, isReceiptCancellation);
+			
+		} catch (JsonProcessingException | IllegalArgumentException e) {
+
+			/*
+			 * Adding random uuid in primary when jsonmapping exception occurs
+			 */
+			updatePaymentBackUpdateForFailure(consumerRecord.toString(), UUID.randomUUID().toString() + " : " + e.getClass().getName(), isReceiptCancellation);
+			log.info("EGBS_PAYMENT_SERIALIZE_ERROR",e.getClass().getName() + " : " + e.getMessage());
+			
+		} catch (Exception e ) {
+
+			String paymentId = util.getValueFromAdditionalDetailsForKey(
+					billReq.getBills().get(0).getAdditionalDetails(), Constants.PAYMENT_ID_KEY);
+			updatePaymentBackUpdateForFailure(e.getMessage(), paymentId, isReceiptCancellation);
+			log.info("EGBS_PAYMENT_BACKUPDATE_ERROR",e.getClass().getName() + " : " + e.getMessage());
+			
 		}
-		
+	}
+
+	/**
+	 * @param consumerRecord
+	 * @throws JsonProcessingException 
+	 */
+	private void setBillRequestFromPayment(Map<String, Object> consumerRecord, BillRequestV2 billReq, boolean isReceiptCancelled) throws JsonProcessingException {
+
+		DocumentContext context = null;
+
+		context = JsonPath.parse(objectMapper.writeValueAsString(consumerRecord));
+
+
+ 		String paymentId = objectMapper.convertValue(context.read("$.Payment.id"), String.class);
 		List<BigDecimal> amtPaidList = Arrays.asList(objectMapper.convertValue(context.read("$.Payment.paymentDetails.*.totalAmountPaid"), BigDecimal[].class));
 		List<BillV2> bills = Arrays.asList(objectMapper.convertValue(context.read("$.Payment.paymentDetails.*.bill"), BillV2[].class));
 		
+		RequestInfo requestInfo = objectMapper.convertValue(context.read("$.RequestInfo"), RequestInfo.class);
+		billReq.setBills(bills);
+		billReq.setRequestInfo(requestInfo);
+		
+		/* payment value is set in zeroth index of bills
+		 * 
+		 * additionaldetail info from bill is not needed, so setting new value
+		 */
+		bills.get(0).setAdditionalDetails(util.setValuesAndGetAdditionalDetails(null, Constants.PAYMENT_ID_KEY, paymentId));
+		validatePaymentForDuplicateUpdates(isReceiptCancelled, paymentId);
+		
+ 		
 		for (int i = 0; i < bills.size(); i++) {
 			
 			BillV2 bill = bills.get(i);
 			BigDecimal amtPaid = null != amtPaidList.get(i) ? amtPaidList.get(i) : BigDecimal.ZERO; 
-
 			if (isReceiptCancelled) {
-				bill.setStatus(org.egov.demand.model.BillV2.StatusEnum.CANCELLED);
-
+				bill.setStatus(org.egov.demand.model.BillV2.BillStatus.CANCELLED);
 			} else if (bill.getTotalAmount().compareTo(amtPaid) > 0) {
-				bill.setStatus(org.egov.demand.model.BillV2.StatusEnum.PARTIALLY_PAID);
+				bill.setStatus(org.egov.demand.model.BillV2.BillStatus.PARTIALLY_PAID);
 
 			} else {
-				bill.setStatus(org.egov.demand.model.BillV2.StatusEnum.PAID);
+				bill.setStatus(org.egov.demand.model.BillV2.BillStatus.PAID);
+			}
 		}
+	}	
+	
+	/**
+	 * validation to prevent multiple back updates for same payment
+	 * 
+	 * @param isReceiptCancelled
+	 * @param paymentId
+	 */
+	private void validatePaymentForDuplicateUpdates(boolean isReceiptCancelled, String paymentId) {
+
+		PaymentBackUpdateAudit backUpdateAuditCriteria = PaymentBackUpdateAudit.builder()
+				.isReceiptCancellation(isReceiptCancelled)
+				.paymentId(paymentId)
+				.isBackUpdateSucces(true)
+				.build();
+
+		PaymentBackUpdateAudit paymentBackUpdateAudit = demandRepository
+				.searchPaymentBackUpdateAudit(backUpdateAuditCriteria);
+
+		if (null != paymentBackUpdateAudit && paymentBackUpdateAudit.getPaymentId().equalsIgnoreCase(paymentId))
+			throw new CustomException("EGBS_PAYMENT_BACKUPDATE_ERROR",
+					"Duplicate Payment object received for back update with payment-id : " + paymentId
+							+ ", payment already updated to demands");
 	}
-		
-		RequestInfo requestInfo = objectMapper.convertValue(context.read("$.RequestInfo"), RequestInfo.class);
-		return BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
+	
+	/**
+	 * Update payment-back-update object based on whether error occurred in validation or not
+	 * 
+	 * 
+	 * @param execptionDuringUpdateValidation
+	 * @param paymentBackUpdateAudit
+	 * @throws Exception 
+	 */
+	private void updatePaymentBackUpdateForFailure (String errorMsg, String paymentId, Boolean isReceiptCancellation) {
+
+		PaymentBackUpdateAudit paymentBackUpdateAudit = PaymentBackUpdateAudit.builder()
+				.isReceiptCancellation(isReceiptCancellation)
+				.isBackUpdateSucces(false)
+				.errorMessage(errorMsg)
+				.paymentId(paymentId)
+				.build();
+
+		demandRepository.insertBackUpdateForPayment(paymentBackUpdateAudit);
 	}
 }
