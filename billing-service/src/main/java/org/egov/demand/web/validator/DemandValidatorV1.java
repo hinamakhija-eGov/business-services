@@ -3,7 +3,7 @@ package org.egov.demand.web.validator;
 import static org.egov.demand.util.Constants.BUSINESSSERVICE_NOT_FOUND_KEY;
 import static org.egov.demand.util.Constants.BUSINESSSERVICE_NOT_FOUND_MSG;
 import static org.egov.demand.util.Constants.BUSINESSSERVICE_NOT_FOUND_REPLACETEXT;
-import static org.egov.demand.util.Constants.BUSINESSSERVICE_PATH_CODE;
+import static org.egov.demand.util.Constants.BUSINESSSERVICE_JSONPATH_CODE;
 import static org.egov.demand.util.Constants.CONSUMER_CODE_DUPLICATE_CONSUMERCODE_TEXT;
 import static org.egov.demand.util.Constants.CONSUMER_CODE_DUPLICATE_KEY;
 import static org.egov.demand.util.Constants.CONSUMER_CODE_DUPLICATE_MSG;
@@ -114,7 +114,7 @@ public class DemandValidatorV1 {
 		/*
 		 * Extracting the respective masters from DocumentContext 
 		 */
-		List<String> businessServiceCodes = mdmsData.read(BUSINESSSERVICE_PATH_CODE);
+		List<String> businessServiceCodes = mdmsData.read(BUSINESSSERVICE_JSONPATH_CODE);
 		List<TaxHeadMaster> taxHeads = Arrays.asList(mapper.convertValue(mdmsData.read(TAXHEADMASTER_PATH_CODE), TaxHeadMaster[].class));
 		
 		/*
