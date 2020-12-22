@@ -50,6 +50,7 @@ import org.egov.demand.model.BillV2.StatusEnum;
 import org.egov.demand.model.Demand;
 import org.egov.demand.model.DemandCriteria;
 import org.egov.demand.model.DemandDetail;
+import org.egov.demand.model.PaymentBackUpdateAudit;
 import org.egov.demand.repository.BillRepositoryV2;
 import org.egov.demand.repository.DemandRepository;
 import org.egov.demand.repository.ServiceRequestRepository;
@@ -63,6 +64,7 @@ import org.egov.demand.web.contract.UserSearchRequest;
 import org.egov.demand.web.contract.factory.ResponseFactory;
 import org.egov.demand.web.validator.DemandValidatorV1;
 import org.egov.mdms.model.MdmsCriteriaReq;
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -133,6 +135,7 @@ public class DemandService {
 		AuditDetails auditDetail = util.getAuditDetail(requestInfo);
 
 		generateAndSetIdsForNewDemands(demands, auditDetail);
+
 		save(demandRequest);
 		
 		billRepoV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()), StatusEnum.EXPIRED);
@@ -178,10 +181,9 @@ public class DemandService {
 	 * @param demandRequest demand request object to be updated
 	 * @return
 	 */
-	public DemandResponse updateAsync(DemandRequest demandRequest) {
+	public DemandResponse updateAsync(DemandRequest demandRequest, PaymentBackUpdateAudit paymentBackUpdateAudit) {
 
 		log.debug("the demand service : " + demandRequest);
-		
 		DocumentContext mdmsData = getMDMSData(demandRequest);
 
 		demandValidatorV1.validateForUpdate(demandRequest, mdmsData);
@@ -222,7 +224,7 @@ public class DemandService {
 
 		generateAndSetIdsForNewDemands(newDemands, auditDetail);
 
-		update(demandRequest);
+		update(demandRequest, paymentBackUpdateAudit);
 		billRepoV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()),
 				StatusEnum.EXPIRED);
 		// producer.push(applicationProperties.getDemandIndexTopic(), demandRequest);
@@ -297,17 +299,12 @@ public class DemandService {
 		return demands;
 	}
 
-
-
-
-
-
 	public void save(DemandRequest demandRequest) {
 		demandRepository.save(demandRequest);
 	}
 
-	public void update(DemandRequest demandRequest) {
-		demandRepository.update(demandRequest);
+	public void update(DemandRequest demandRequest, PaymentBackUpdateAudit paymentBackUpdateAudit) {
+		demandRepository.update(demandRequest, paymentBackUpdateAudit);
 	}
 	
 	/**

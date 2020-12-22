@@ -18,7 +18,10 @@ import org.egov.demand.model.BillV2;
 import org.egov.demand.model.Demand;
 import org.egov.demand.model.DemandCriteria;
 import org.egov.demand.model.DemandDetail;
+import org.egov.demand.model.PaymentBackUpdateAudit;
 import org.egov.demand.repository.BillRepositoryV2;
+import org.egov.demand.util.Constants;
+import org.egov.demand.util.Util;
 import org.egov.demand.web.contract.BillRequestV2;
 import org.egov.demand.web.contract.DemandRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +40,8 @@ public class ReceiptServiceV2 {
 	@Autowired
 	private BillRepositoryV2 billRepository;
 	
+	@Autowired
+	private Util util;
 
 	public void updateDemandFromReceipt(BillRequestV2 billReq, Boolean isReceiptCancellation) {
 
@@ -82,11 +87,24 @@ public class ReceiptServiceV2 {
 			mapOfBillIdAndStatus.put(bill.getId(), bill.getStatus().toString());
 			for (BillDetailV2 billDetail : bill.getBillDetails())
 				updateDemandFromBillDetail(billDetail, demandIdMap.get(billDetail.getDemandId()), isReceiptCancellation);
-
 		}
 
-		demandService.updateAsync(DemandRequest.builder().demands(demandsToBeUpdated).requestInfo(billRequest.getRequestInfo()).build());
-		billRepository.updateBillStatusInBatch(mapOfBillIdAndStatus);
+		String paymentId = util.getValueFromAdditionalDetailsForKey(bills.get(0).getAdditionalDetails(),
+				Constants.PAYMENT_ID_KEY);
+
+		PaymentBackUpdateAudit paymentBackUpdateAudit = PaymentBackUpdateAudit.builder()
+				.isReceiptCancellation(isReceiptCancellation)
+				.isBackUpdateSucces(true)
+				.paymentId(paymentId)
+				.build();
+		
+		DemandRequest demandRequest = DemandRequest.builder()
+				.requestInfo(billRequest.getRequestInfo())
+				.demands(demandsToBeUpdated)
+				.build();
+		
+		demandService.updateAsync(demandRequest, paymentBackUpdateAudit);
+
 	}
 
 	/**
@@ -194,25 +212,30 @@ public class ReceiptServiceV2 {
 	/**
 	 * Method to handle receipt cancellation in case of  multiple Demand detail present for a single billAccountDetail
 	 * 
+	 * The incoming list of demand details are sorted in Ascending to aid adjusting negative values first
+	 * 
 	 * @param demandDetails        List of details to be updated
 	 * 
 	 * @param amtPaid Adjusted amount from bill Acc detail
 	 */
 	private void updateDetailsForCancellation(List<DemandDetail> demandDetails, BigDecimal amtPaid) {
+		
+		if (amtPaid.compareTo(BigDecimal.ZERO) == 0)
+			return;
 
 		for (DemandDetail detail : demandDetails) {
 
-			if (amtPaid.compareTo(BigDecimal.ZERO) == 0)
-				return;
-
+			if(detail.getTaxAmount().compareTo(BigDecimal.ZERO) == 0)
+				continue;
 			/*
 			 * amount to be set in collectionAmount field of demandDetail after adjustments
 			 */
 			BigDecimal resultantCollectionAmt;
 
 			BigDecimal currentDetailCollectionAmt = detail.getCollectionAmount();
+			Boolean isTaxPositive = detail.getTaxAmount().compareTo(BigDecimal.ZERO) > 0;
 
-			if (currentDetailCollectionAmt.compareTo(amtPaid) >= 0) {
+			if (isTaxPositive && currentDetailCollectionAmt.compareTo(amtPaid) >= 0) {
 
 				resultantCollectionAmt = currentDetailCollectionAmt.subtract(amtPaid);
 				amtPaid = BigDecimal.ZERO;
@@ -230,6 +253,8 @@ public class ReceiptServiceV2 {
 	 * Method to handle payment in case of multiple Demand details present for a
 	 * single billAccountDetail
 	 * 
+	 * The incoming list of demand details are sorted in Ascending to aid adjusting negative values first
+	 * 
 	 * @param demandDetails    List of details to be updated
 	 * 
 	 * @param amountPaid       Adjusted amount from bill Acc detail
@@ -237,9 +262,6 @@ public class ReceiptServiceV2 {
 	private void updateDetailsForPayment(List<DemandDetail> demandDetails, BigDecimal amountPaid) {
 
 		for (DemandDetail detail : demandDetails) {
-			
-			if (amountPaid.compareTo(BigDecimal.ZERO) == 0)
-				return;
 
 			if(detail.getTaxAmount().compareTo(detail.getCollectionAmount()) == 0 || detail.getTaxAmount().compareTo(BigDecimal.ZERO) == 0)
 				continue;
@@ -252,13 +274,15 @@ public class ReceiptServiceV2 {
 			BigDecimal currentDetailCollection = detail.getCollectionAmount();
 
 			BigDecimal currentDetailTaxCollectionDifference = currentDetailTax.subtract(currentDetailCollection);
-
+			Boolean isTaxPositive = detail.getTaxAmount().compareTo(BigDecimal.ZERO) > 0;
 			/*
-			 * if current demandDetail difference is lesser than incoming amount of
+			 * if current demandDetail  i sPositive AND difference is lesser than incoming amount of
 			 * 
 			 * BillAccountDetail, then add the whole value to result
+			 * 
+			 * In case of negative value the exact tax will be adjusted.
 			 */
-			if (currentDetailTaxCollectionDifference.compareTo(amountPaid) >= 0) {
+			if (isTaxPositive && currentDetailTaxCollectionDifference.compareTo(amountPaid) >= 0) {
 
 				resultantCollectionAmt = currentDetailCollection.add(amountPaid);
 				amountPaid = BigDecimal.ZERO;

@@ -22,6 +22,7 @@ import static org.egov.demand.util.Constants.INVALID_BUSINESS_FOR_TAXPERIOD_MSG;
 import static org.egov.demand.util.Constants.INVALID_BUSINESS_FOR_TAXPERIOD_REPLACE_TEXT;
 import static org.egov.demand.util.Constants.INVALID_DEMAND_DETAIL_COLLECTION_TEXT;
 import static org.egov.demand.util.Constants.INVALID_DEMAND_DETAIL_ERROR_MSG;
+import static org.egov.demand.util.Constants.INVALID_NEGATIVE_DEMAND_DETAIL_ERROR_MSG;
 import static org.egov.demand.util.Constants.INVALID_DEMAND_DETAIL_KEY;
 import static org.egov.demand.util.Constants.INVALID_DEMAND_DETAIL_MSG;
 import static org.egov.demand.util.Constants.INVALID_DEMAND_DETAIL_REPLACETEXT;
@@ -187,7 +188,7 @@ public class DemandValidatorV1 {
 		 * 
 		 * if called from update no need to call detail validation 
 		 */
-		validateDemandDetails(detailsForValidation, errorMap);
+		validateDemandDetailsForAmount(detailsForValidation, errorMap);
 		
 		if (isCreate) {
 			/* validating consumer codes for create demands*/
@@ -424,7 +425,7 @@ public class DemandValidatorV1 {
 	 * @param demandDetails
 	 * @param errorMap
 	 */
-	private void validateDemandDetails(List<DemandDetail> demandDetails, Map<String, String> errorMap) {
+	public void validateDemandDetailsForAmount(List<DemandDetail> demandDetails, Map<String, String> errorMap) {
 
 		List<String> errors = new ArrayList<>();
 
@@ -432,13 +433,19 @@ public class DemandValidatorV1 {
 
 			BigDecimal tax = demandDetail.getTaxAmount();
 			BigDecimal collection = demandDetail.getCollectionAmount();
-			if (tax.compareTo(BigDecimal.ZERO) >= 0
-					&& (tax.compareTo(collection) < 0 || collection.compareTo(BigDecimal.ZERO) < 0)) {
-				
+			
+			Boolean isTaxGtZeroAndCollectionGtTaxOrCollectionLtZero = tax.compareTo(BigDecimal.ZERO) >= 0
+					&& (tax.compareTo(collection) < 0 || collection.compareTo(BigDecimal.ZERO) < 0);
+			
+			Boolean isTaxLtZeroAndCollectionNeToZeroAndCollectionGtTax = tax.compareTo(BigDecimal.ZERO) < 0
+					&& collection.compareTo(tax) != 0 && collection.compareTo(BigDecimal.ZERO) != 0;
+			
+			if (isTaxGtZeroAndCollectionGtTaxOrCollectionLtZero) {
 				errors.add(INVALID_DEMAND_DETAIL_ERROR_MSG
 						.replace(INVALID_DEMAND_DETAIL_COLLECTION_TEXT, collection.toString())
 						.replace(INVALID_DEMAND_DETAIL_TAX_TEXT, tax.toString()));
-			} else if (tax.compareTo(BigDecimal.ZERO) < 0 && collection.compareTo(BigDecimal.ZERO) != 0 && collection.compareTo(tax) != 0) {
+			}
+			else if (isTaxLtZeroAndCollectionNeToZeroAndCollectionGtTax) {
 
 					errors.add(INVALID_NEGATIVE_DEMAND_DETAIL_ERROR_MSG
 							.replace(INVALID_DEMAND_DETAIL_COLLECTION_TEXT, collection.toString())
@@ -505,7 +512,7 @@ public class DemandValidatorV1 {
 		 * Validating all the demand details for tax and collection amount
 		 */
 		olddemandDetails.addAll(newDemandDetails);
-		validateDemandDetails(olddemandDetails, errorMap);
+		validateDemandDetailsForAmount(olddemandDetails, errorMap);
 
 		if(!errorMap.isEmpty())
 			throw new CustomException(errorMap);

@@ -6,6 +6,7 @@ import static org.egov.demand.util.Constants.INVALID_TENANT_ID_MDMS_MSG;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -22,10 +23,12 @@ import org.postgresql.util.PGobject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 
@@ -157,5 +160,38 @@ public class Util {
         	throw new CustomException(Constants.EG_BS_JSON_EXCEPTION_KEY, Constants.EG_BS_JSON_EXCEPTION_MSG);
         }
     }
+	
+	public String getValueFromAdditionalDetailsForKey (Object additionalDetails, String key) {
+		
+		@SuppressWarnings("unchecked")
+		Map<String, Object> additionalDetailMap = mapper.convertValue(additionalDetails, Map.class);
+		if(null == additionalDetails) 
+			return "";
+		
+		return (String) additionalDetailMap.get(key);
+	}
+	
+	/**
+	 * Setting the receiptnumber from payment to bill
+	 * @param request
+	 * @param uuid
+	 * @return
+	 */
+	public ObjectNode setValuesAndGetAdditionalDetails(JsonNode additionalDetails, String key, String value) {
+
+		ObjectNode objectNodeDetail;
+
+		if (null == additionalDetails || (null != additionalDetails && additionalDetails.isNull())) {
+			objectNodeDetail = mapper.createObjectNode();
+
+		} else {
+
+			objectNodeDetail = (ObjectNode) additionalDetails;
+		}
+		objectNodeDetail.put(key, value);
+		
+		return objectNodeDetail;
+	}
+
 	
 }
