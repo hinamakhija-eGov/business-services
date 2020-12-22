@@ -10,7 +10,7 @@ public class Constants {
 
 	public static final String MODULE_NAME = "BillingService";
 	
-	public static final String MDMS_CODE_FILTER = "$.*.code";
+	public static final String MDMS_CODE_FILTER = "$.*";
 	public static final String TAXPERIOD_CODE_FILTER = null;
 	
 	public static final String URL_PARAMS_FOR_SERVICE_BASED_DEMAND_APIS = "?tenantId={tenantId}&consumerCodes={consumerCodes}";
