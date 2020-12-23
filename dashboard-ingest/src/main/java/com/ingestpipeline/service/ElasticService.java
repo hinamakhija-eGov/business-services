@@ -183,13 +183,13 @@ public class ElasticService implements IESService {
 	public Boolean push(Map requestBody) throws Exception {
 
 		Object id = requestBody.get(Constants.IDENTIFIER);
-		Object trxid = ((Map)requestBody.get(Constants.DATA_OBJECT)).get(Constants.TRANSACTION_ID);
+		Object trxid = ((Map)requestBody.get(Constants.DATA_OBJECT)).get(Constants.ID);
 		LOGGER.info("request body on ### trxid "  +trxid);
 		//Object dataObjectId = ((Map)requestBody.get(Constants.DATA_OBJECT)).get("id");
 
 
 
-		String docId = id!=null ? id.toString(): trxid.toString();
+		String docId = trxid!=null ? trxid.toString() : id.toString() ;
 		StringBuilder url = new StringBuilder().append(indexerServiceHost).append(collectionIndexName).append(SLASH_SEPERATOR).append(DOC_PATH).append(SLASH_SEPERATOR).append(docId);
 		LOGGER.info("url ## " +url);
 

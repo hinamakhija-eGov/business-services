@@ -51,7 +51,9 @@ public class EnrichmentConsumer implements KafkaConsumer {
 			push(incomingData, null);
 		} else {
 			for(Object key : incomingData.keySet()){
-				push((Map)incomingData.get(key), key.toString());
+				Map data=(Map)incomingData.get(key);
+				String trxid = (String)((Map)data.get(Constants.DATA_OBJECT)).get(Constants.ID);
+				push((Map)incomingData.get(key), trxid);
 			}
 		}
 	}
