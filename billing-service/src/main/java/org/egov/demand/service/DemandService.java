@@ -69,6 +69,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -225,8 +226,12 @@ public class DemandService {
 		generateAndSetIdsForNewDemands(newDemands, auditDetail);
 
 		update(demandRequest, paymentBackUpdateAudit);
-		billRepoV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()),
-				StatusEnum.EXPIRED);
+		if (ObjectUtils.isEmpty(paymentBackUpdateAudit))
+			billRepoV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()),
+					StatusEnum.EXPIRED);
+		else
+			billRepoV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()),
+					StatusEnum.PAID);
 		// producer.push(applicationProperties.getDemandIndexTopic(), demandRequest);
 		return new DemandResponse(responseInfoFactory.getResponseInfo(requestInfo, HttpStatus.CREATED), demands);
 	}
