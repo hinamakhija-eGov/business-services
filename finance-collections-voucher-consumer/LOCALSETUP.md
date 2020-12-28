@@ -20,7 +20,7 @@ To run the finance-collections-voucher-consumer service locally, you need to por
 
 ```bash
 function kgpt(){kubectl get pods -n egov --selector=app=$1 --no-headers=true | head -n1 | awk '{print $1}'}
-kubectl port-forward -n egov $(kgpt egov-mdms-service) 8081:8080
+kubectl port-forward -n egov $(kgpt mdms) 8081:8080
 kubectl port-forward -n egov $(kgpt user) 8082:8080
 kubectl port-forward -n egov $(kgpt egov-instrument) 8083:8080
 kubectl port-forward -n egov $(kgpt collection-service) 8084:8080
@@ -33,7 +33,7 @@ Update below listed properties in `application.properties` before running the pr
 # {user service hostname}
 egov.services.egov.user.host = http://127.0.0.1:8082
 
-# {egov-mdms-service service hostname}
+# {mdms service hostname}
 egov.services.mdms.hostname = http://127.0.0.1:8081
 
 # {egf-instrument service hostname}
