@@ -8,7 +8,7 @@ NA
 
 ### Service Dependencies
 
-- egov-mdms-service
+- mdms
 - collection-service
 - egf-instrument
 - user
