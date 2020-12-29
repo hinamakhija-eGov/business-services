@@ -173,15 +173,7 @@ public class PropertiesManager {
     public String getErpURLBytenantId(String tenantId) throws VoucherCustomException {
     	try {
     		tenantId = tenantId.split(Pattern.quote("."))[1];
-    		if(finCoeErpEnvName != null && finCoeErpEnvName.equalsIgnoreCase("local")){
-    			return "http://jalandhar.lgpunjab.com:8080/";
-    		}
-    		if(finCoeErpEnvName != null && !finCoeErpEnvName.isEmpty()){
-    			return httpProtocol+"://"+tenantId+"-"+finCoeErpEnvName+"."+finCoeErpDomainName+"/";
-    		}else{
-    			//considered as the production url
-    			return httpProtocol+"://"+tenantId+"."+finCoeErpDomainName+"/";
-    		}
+    		return httpProtocol+"://"+tenantId+"-fin-"+finCoeErpEnvName+"."+finCoeErpDomainName+"/";
 		} catch (Exception e) {
 			throw new VoucherCustomException(ProcessStatus.FAILED,"ERROR occured while generating ERP url to interact with the finance coexistence. Please check the configuration in properties file.");
 		}
