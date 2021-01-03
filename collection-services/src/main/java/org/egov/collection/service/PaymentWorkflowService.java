@@ -279,7 +279,7 @@ public class PaymentWorkflowService {
                 .append("&tenantId=")
                 .append(validatedPayments.get(0).getTenantId().split("\\.")[0]);
 
-        log.info("GENERATED LINK TO PDF-SERVICE " + uri);
+        log.info("GENERATED LINK TO PDFGEN " + uri);
         Object result = null;
         Map<String, Object> pdfRequest = new HashMap<>();
         pdfRequest.put("RequestInfo", request);
