@@ -282,6 +282,7 @@ public class BillServicev2 {
 				.tenantId(billCriteria.getTenantId())
 				.email(billCriteria.getEmail())
 				.consumerCode(consumerCodes)
+				.isPaymentCompleted(false)
 				.receiptRequired(false)
 				.demandId(demandIds)
 				.build();
