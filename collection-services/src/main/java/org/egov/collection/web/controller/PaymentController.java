@@ -40,13 +40,8 @@
 
 package org.egov.collection.web.controller;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.validation.Valid;
 
@@ -54,7 +49,6 @@ import org.egov.collection.model.Payment;
 import org.egov.collection.model.PaymentRequest;
 import org.egov.collection.model.PaymentResponse;
 import org.egov.collection.model.PaymentSearchCriteria;
-import org.egov.collection.model.enums.PaymentStatusEnum;
 import org.egov.collection.service.MigrationService;
 import org.egov.collection.service.PaymentService;
 import org.egov.collection.service.PaymentWorkflowService;
@@ -64,10 +58,9 @@ import org.egov.collection.web.contract.factory.ResponseInfoFactory;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.response.ResponseInfo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.CollectionUtils;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -92,42 +85,14 @@ public class PaymentController {
     @Autowired
     private MigrationService migrationService;
 
-    @Value("#{'${search.ignore.status}'.split(',')}")
-    private List<String> searchIgnoreStatus;
-
-    @RequestMapping(value = "/{moduleName}/_search", method = RequestMethod.POST)
+    @RequestMapping(path = {"/_search","/{moduleName}/_search"}, method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<PaymentResponse> search(@ModelAttribute PaymentSearchCriteria paymentSearchCriteria,
                                              @RequestBody @Valid final RequestInfoWrapper requestInfoWrapper,
-                                             @PathVariable String moduleName) {
+                                             @PathVariable @Nullable String moduleName) {
 
         final RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
-
-		/*
-		 * Only Applicable if there is no receipt number search
-		 * Only Apllicable when search ignore status has been defined in application properties
-		 * Only Applicable when status has not been already provided for the search
-		 */
-        if ((CollectionUtils.isEmpty(paymentSearchCriteria.getReceiptNumbers()))
-                && !searchIgnoreStatus.isEmpty()
-                && (CollectionUtils.isEmpty(paymentSearchCriteria.getStatus()))) {
-            // Do not return ignored status for receipts by default
-            Set<String> defaultStatus = new HashSet<>();
-            for (PaymentStatusEnum paymentStatus : PaymentStatusEnum.values()) {
-                if (!searchIgnoreStatus.contains(paymentStatus.toString())) {
-                    defaultStatus.add(paymentStatus.toString());
-                }
-            }
-            paymentSearchCriteria.setStatus(defaultStatus);
-        }
-        
-		if (CollectionUtils.isEmpty(paymentSearchCriteria.getBusinessServices())) {
-			paymentSearchCriteria.setBusinessServices(Stream.of(moduleName).collect(Collectors.toSet()));
-		} else {
-			paymentSearchCriteria.getBusinessServices().add(moduleName);
-		}
-        List<Payment> payments = paymentService.getPayments(requestInfo, paymentSearchCriteria);
-
+        List<Payment> payments = paymentService.getPayments(requestInfo, paymentSearchCriteria, moduleName);
         return getSuccessResponse(payments, requestInfo);
     }
 

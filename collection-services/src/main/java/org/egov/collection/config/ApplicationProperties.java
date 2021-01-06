@@ -39,6 +39,8 @@
  */
 package org.egov.collection.config;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -194,7 +196,13 @@ public class ApplicationProperties {
 
     @Value("${kafka.topics.payment.cancel.name}")
     private String cancelPaymentTopicName;
-
+    
+    @Value("#{'${search.ignore.status}'.split(',')}")
+    private List<String> searchIgnoreStatus;
+    
+    @Value("${is.payment.search.uri.modulename.mandatory}")
+    private Boolean isModuleNameMandatoryInSearchUriForEmployee;
+    
 
     @Value("${kafka.topics.payment.cancel.key}")
     private String cancelPaymentTopicKey;
