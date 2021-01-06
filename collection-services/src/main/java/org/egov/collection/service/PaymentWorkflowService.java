@@ -294,7 +294,8 @@ public class PaymentWorkflowService {
             idToFileStore.put(KEY_FILESTOREID, StringUtils.join(fileStoreIds,','));
             idTofileStoreIdMaps.add(idToFileStore);
 
-            System.out.println("\bidTofileStoreIdMaps--->"+idTofileStoreIdMaps.toString()+"\n");
+            System.out.println("\nresult--->"+result.toString()+"\n");
+            System.out.println("\nidTofileStoreIdMaps--->"+idTofileStoreIdMaps.toString()+"\n");
 
         }catch(Exception e){
             log.error("Error while fetching filestoreid corresponding to new receipt" + e);
