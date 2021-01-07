@@ -440,7 +440,7 @@ public class PaymentValidator {
     	
 		Boolean isRequesterCitzen = requestInfo.getUserInfo().getRoles().stream().map(Role::getCode).collect(Collectors.toSet())
 				.contains(CollectionServiceConstants.CITIZEN_ROLE);
-		if (!isRequesterCitzen && applicationProperties.getIsModuleNameMandatoryInSearchUriForEmployee())
+		if (!isRequesterCitzen && applicationProperties.getIsModuleNameMandatoryInSearchUriForEmployee() && null == moduleName)
 			throw new CustomException("EGCL_URI_EXCEPTION", "Path variable module name is mandatory for employees");
 			
 		/*
