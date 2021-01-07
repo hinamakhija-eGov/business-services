@@ -6,12 +6,13 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>2.2.6.RELEASE</version>
+    <relativePath></relativePath>
   </parent>
   <groupId>org.egov</groupId>
-  <artifactId>egf-instrument</artifactId>
-  <version>1.1.1-SNAPSHOT</version>
-  <name>egf-instrument</name>
-  <description>egf instrument service for egov services</description>
+  <artifactId>finance-master</artifactId>
+  <version>1.1.0-SNAPSHOT</version>
+  <name>finance-master</name>
+  <description>finance master project for egov services</description>
   <properties>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <java.version>1.8</java.version>
@@ -36,6 +37,11 @@
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.modelmapper</groupId>
+      <artifactId>modelmapper</artifactId>
+      <version>0.7.5</version>
+    </dependency>
+    <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <scope>runtime</scope>
@@ -46,14 +52,17 @@
       <optional>true</optional>
     </dependency>
     <dependency>
+      <groupId>io.springfox</groupId>
+      <artifactId>springfox-swagger2</artifactId>
+      <version>2.4.0</version>
+    </dependency>
+    <dependency>
       <groupId>org.elasticsearch.client</groupId>
       <artifactId>transport</artifactId>
-      <!-- <version>6.4.2</version> -->
     </dependency>
     <dependency>
       <groupId>org.elasticsearch</groupId>
       <artifactId>elasticsearch</artifactId>
-      <!-- <version>6.4.2</version> -->
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
@@ -71,6 +80,11 @@
       <version>2.5</version>
     </dependency>
     <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.egov.services</groupId>
       <artifactId>tracer</artifactId>
       <version>2.0.0-SNAPSHOT</version>
@@ -80,23 +94,6 @@
       <artifactId>services-common</artifactId>
       <version>0.11.1</version>
     </dependency>
-    <dependency>
-      <groupId>org.egov</groupId>
-      <artifactId>finance-master</artifactId>
-      <version>0.0.1</version>
-      <classifier>common</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.egov</groupId>
-      <artifactId>finance-master</artifactId>
-      <version>0.0.1</version>
-      <classifier>client</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
   <repositories>
     <repository>
@@ -105,6 +102,18 @@
       <url>https://nexus-repo.egovernments.org/nexus/content/repositories/releases/</url>
     </repository>
   </repositories>
+  <distributionManagement>
+    <repository>
+      <id>repo.egovernments.org</id>
+      <name>eGov ERP Releases Repository</name>
+      <url>https://nexus-repo.egovernments.org/nexus/content/repositories/releases/</url>
+    </repository>
+    <snapshotRepository>
+      <id>repo.egovernments.org</id>
+      <name>eGov ERP Snapshots Repository</name>
+      <url>https://nexus-repo.egovernments.org/nexus/content/repositories/snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
   <build>
     <plugins>
       <plugin>
@@ -123,71 +132,54 @@
           </excludes>
         </configuration>
       </plugin>
-      
-      <plugin>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.7.9</version>
+<!--      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
         <executions>
           <execution>
-            <id>default-prepare-agent</id>
+            <id>client-jar</id>
+            <phase>package</phase>
             <goals>
-              <goal>prepare-agent</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>default-report</id>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>report</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>default-check</id>
-            <goals>
-              <goal>check</goal>
+              <goal>jar</goal>
             </goals>
             <configuration>
-              <rules>
-                <rule>
-                  <element>CLASS</element>
-                  <excludes>
-                    <exclude>org.egov.EgfInstrumentApplication</exclude>
-                    <exclude>org.egov.egf.instrument.persistence.queue.*</exclude>
-                    <exclude>org.egov.egf.instrument.web.advice.CustomControllerAdvice</exclude>
-                    <exclude>org.egov.egf.instrument.web.contract.*</exclude>
-                    <exclude>org.egov.egf.instrument.persistence.entity.*</exclude>
-                    <exclude>org.egov.egf.instrument.domain.model.*</exclude>
-                    <exclude>org.egov.egf.instrument.web.requests.*</exclude>
-                    <exclude>org.egov.egf.instrument.domain.repository.InstrumentTypeESRepository</exclude>
-                    <exclude>org.egov.egf.instrument.domain.repository.InstrumentAccountCodeESRepository</exclude>
-                    <exclude>org.egov.egf.instrument.domain.repository.InstrumentESRepository</exclude>
-                    <exclude>org.egov.egf.instrument.domain.repository.SurrenderReasonESRepository</exclude>
-                    <exclude>org.egov.egf.instrument.domain.repository.ElasticSearchQueryFactory</exclude>
-                    <exclude>org.egov.egf.instrument.domain.repository.ElasticSearchUtils</exclude>
-                    <exclude>org.egov.egf.instrument.persistence.repository.InstrumentJdbcRepository</exclude>
-                    <exclude>org.egov.egf.instrument.web.mapper.InstrumentTypeMapper:</exclude>
-                  </excludes>
-                  <limits>
-                    <limit>
-                      <counter>LINE</counter>
-                      <value>COVEREDRATIO</value>
-                      <minimum>0.05</minimum>
-                    </limit>
-                  </limits>
-                </rule>
-                <rule>
-                  <element>BUNDLE</element>
-                  <limits>
-                    <limit>
-                      <counter>COMPLEXITY</counter>
-                      <value>COVEREDRATIO</value>
-                      <minimum>0.05</minimum>
-                    </limit>
-                  </limits>
-                </rule>
-              </rules>
+              <classifier>client</classifier>
+              <includes>
+                <include>**/master/web/contract/**</include>
+                <include>**/master/web/repository/**</include>
+                <include>**/master/web/requests/**</include>
+              </includes>
             </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>common-jar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <classifier>common</classifier>
+              <includes>
+                <include>**/common/**</include>
+              </includes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin> -->
+      <plugin>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>2.8.2</version>
+        <executions>
+          <execution>
+            <id>default-deploy</id>
+            <phase>deploy</phase>
+            <goals>
+              <goal>deploy</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>

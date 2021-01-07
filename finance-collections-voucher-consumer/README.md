@@ -12,7 +12,7 @@ NA
 - collection-service
 - egf-instrument
 - user
-- egf-master
+- finance-master
 - Finance co existence service
 
 ### Swagger API Contract

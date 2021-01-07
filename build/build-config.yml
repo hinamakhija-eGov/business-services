@@ -41,13 +41,13 @@ config:
       - work-dir: "egf-instrument/src/main/resources/db"
         image-name: "egf-instrument-db"
 
-  - name: "builds/business-services/egf-master"
+  - name: "builds/business-services/finance-master"
     build:
-      - work-dir: "egf-master"
-        image-name: "egf-master"
+      - work-dir: "finance-master"
+        image-name: "finance-master"
         dockerfile: "build/maven/Dockerfile"
-      - work-dir: "egf-master/src/main/resources/db"
-        image-name: "egf-master-db"
+      - work-dir: "finance-master/src/main/resources/db"
+        image-name: "finance-master-db"
 
   - name: "builds/business-services/egov-apportion-service"
     build:
