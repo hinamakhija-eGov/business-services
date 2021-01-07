@@ -9,7 +9,7 @@ NA
 ### Service Dependencies
 
  - User-service
- - egf-master
+ - finance-master
  - common-master
  - instrument-service
  - billing-service

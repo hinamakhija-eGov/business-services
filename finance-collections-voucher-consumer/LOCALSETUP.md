@@ -24,7 +24,7 @@ kubectl port-forward -n egov $(kgpt mdms) 8081:8080
 kubectl port-forward -n egov $(kgpt user) 8082:8080
 kubectl port-forward -n egov $(kgpt egov-instrument) 8083:8080
 kubectl port-forward -n egov $(kgpt collection-service) 8084:8080
-kubectl port-forward -n egov $(kgpt egf-master) 8085:8080
+kubectl port-forward -n egov $(kgpt finance-master) 8085:8080
 ``` 
 
 Update below listed properties in `application.properties` before running the project:
@@ -42,6 +42,6 @@ egov.services.egfinstrument.hostname = http://127.0.0.1:8083
 # {collection-service service hostname}
 egov.services.collections.hostname = http://127.0.0.1:8084
 
-# {egf-master service hostname}
+# {finance-master service hostname}
 egov.services.egfmaster.hostname = http://127.0.0.1:8085
 ```

@@ -8,7 +8,7 @@ NA
 
 ### Service Dependencies
 
-- egf-master
+- finance-master
 
 ### Swagger API Contract
 
