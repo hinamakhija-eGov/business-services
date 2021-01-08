@@ -160,10 +160,10 @@ public class DemandQueryBuilder {
 		String[] tenantIdChunks = tenantId.split("\\.");
 		
 		if(tenantIdChunks.length == 1){
-			demandQuery.append(" b.tenantid LIKE ? ");
+			demandQuery.append(" dmd.tenantid LIKE ? ");
 			preparedStatementValues.add(demandCriteria.getTenantId() + '%');
 		}else{
-			demandQuery.append(" b.tenantid = ? ");
+			demandQuery.append(" dmd.tenantid = ? ");
 			preparedStatementValues.add(demandCriteria.getTenantId());
 		}
 		
