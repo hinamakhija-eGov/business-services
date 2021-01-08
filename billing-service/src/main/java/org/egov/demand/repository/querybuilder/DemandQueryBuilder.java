@@ -156,8 +156,17 @@ public class DemandQueryBuilder {
 
 		StringBuilder demandQuery = new StringBuilder(BASE_DEMAND_QUERY);
 
-		demandQuery.append("dmd.tenantid=?");
-		preparedStatementValues.add(demandCriteria.getTenantId());
+		String tenantId = demandCriteria.getTenantId();
+		String[] tenantIdChunks = tenantId.split("\\.");
+		
+		if(tenantIdChunks.length == 1){
+			demandQuery.append(" b.tenantid LIKE ? ");
+			preparedStatementValues.add(demandCriteria.getTenantId() + '%');
+		}else{
+			demandQuery.append(" b.tenantid = ? ");
+			preparedStatementValues.add(demandCriteria.getTenantId());
+		}
+		
 
 		if (demandCriteria.getStatus() != null) {
 
