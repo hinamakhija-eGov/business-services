@@ -44,7 +44,6 @@ import org.egov.collection.service.PaymentWorkflowService;
 import org.egov.collection.web.contract.Bill;
 import org.egov.collection.web.contract.BillDetail;
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.common.contract.request.Role;
 import org.egov.tracer.model.CustomException;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
@@ -438,11 +437,12 @@ public class PaymentValidator {
         if (!errorMap.isEmpty())
             throw new CustomException(errorMap);
     	
-		Boolean isRequesterCitzen = requestInfo.getUserInfo().getRoles().stream().map(Role::getCode).collect(Collectors.toSet())
-				.contains(CollectionServiceConstants.CITIZEN_ROLE);
-		if (!isRequesterCitzen && applicationProperties.getIsModuleNameMandatoryInSearchUriForEmployee() && null == moduleName)
+		Boolean isRequesterEmployee = requestInfo.getUserInfo().getType()
+				.equalsIgnoreCase(CollectionServiceConstants.EMPLOYEE_TYPE);
+		if (isRequesterEmployee && applicationProperties.getIsModuleNameMandatoryInSearchUriForEmployee()
+				&& null == moduleName)
 			throw new CustomException("EGCL_URI_EXCEPTION", "Path variable module name is mandatory for employees");
-			
+
 		/*
 		 * Only Applicable if there is no receipt number search
 		 * Only Applicable when search ignore status has been defined in application properties
