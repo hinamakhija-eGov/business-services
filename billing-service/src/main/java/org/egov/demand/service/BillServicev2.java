@@ -167,6 +167,7 @@ public class BillServicev2 {
 			return generateBill(billCriteria, requestInfo);
 		
 		Map<String, BillV2> consumerCodeAndBillMap = bills.stream().collect(Collectors.toMap(BillV2::getConsumerCode, Function.identity()));
+		billCriteria.getConsumerCode().addAll(consumerCodeAndBillMap.keySet());
 		/*
 		 * Collecting the businessService code and the list of consumer codes for those service codes 
 		 * whose demands needs to be updated.
