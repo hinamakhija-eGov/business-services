@@ -136,6 +136,8 @@ public class Constants {
 	public static final String RECEIPTNUMBER_KEY = "receiptNumber";
 	public static final String PAYMENT_ID_KEY = "paymentId";
 
+	public static final String EMPLOYEE_TYPE_CODE = "EMPLOYEE";
+
 
 
 	private Constants() {}

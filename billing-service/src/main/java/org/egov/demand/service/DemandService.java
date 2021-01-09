@@ -269,7 +269,7 @@ public class DemandService {
 	 */
 	public List<Demand> getDemands(DemandCriteria demandCriteria, RequestInfo requestInfo) {
 
-		demandValidatorV1.validateDemandCriteria(demandCriteria);
+		demandValidatorV1.validateDemandCriteria(demandCriteria, requestInfo);
 
 		UserSearchRequest userSearchRequest = null;
 		List<User> payers = null;

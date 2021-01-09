@@ -152,11 +152,11 @@ public class BillServicev2 {
 	 * @return
 	 */
 	public BillResponseV2 fetchBill(GenerateBillCriteria billCriteria, RequestInfoWrapper requestInfoWrapper) {
-		
-		billValidator.validateBillGenRequest(billCriteria);
+
+		RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
+		billValidator.validateBillGenRequest(billCriteria, requestInfo);
 		if (CollectionUtils.isEmpty(billCriteria.getConsumerCode()))
 			billCriteria.setConsumerCode(new HashSet<>());
-		RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
 		BillResponseV2 res = searchBill(billCriteria.toBillSearchCriteria(), requestInfo);
 		List<BillV2> bills = res.getBill();
 

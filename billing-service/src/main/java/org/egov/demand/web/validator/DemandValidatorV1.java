@@ -62,6 +62,7 @@ import org.egov.demand.model.TaxPeriod;
 import org.egov.demand.repository.DemandRepository;
 import org.egov.demand.repository.ServiceRequestRepository;
 import org.egov.demand.service.UserService;
+import org.egov.demand.util.Util;
 import org.egov.demand.web.contract.DemandRequest;
 import org.egov.demand.web.contract.User;
 import org.egov.demand.web.contract.UserResponse;
@@ -95,6 +96,9 @@ public class DemandValidatorV1 {
 	
 	@Autowired
 	private ApplicationProperties applicationProperties;
+	
+	@Autowired
+	private Util util;
 	
 	/**
 	 * Method to validate new demand request
@@ -564,8 +568,9 @@ public class DemandValidatorV1 {
 	 * 
 	 * @param demandCriteria
 	 */
-	public void validateDemandCriteria(DemandCriteria demandCriteria) {
+	public void validateDemandCriteria(DemandCriteria demandCriteria, RequestInfo requestInfo) {
 
+		util.validateTenantIdForUserType(demandCriteria.getTenantId(), requestInfo);
 		Map<String, String> errorMap = new HashMap<>();
 
 		if (demandCriteria.getDemandId() == null && demandCriteria.getConsumerCode() == null
