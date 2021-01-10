@@ -238,7 +238,7 @@ public class BillRepository {
 				reqBills.add(reqBill);
 			}
 			inputBillrequest.setBills(reqBills);
-			List<Bill> responseBills = restTemplate.postForObject("http://pt-calculator-v2:8080"+url, billRequest, BillResponse.class).getBill();
+			List<Bill> responseBills = restTemplate.postForObject("http://propertytax-calculator:8080"+url, billRequest, BillResponse.class).getBill();
 			for (Bill bill : responseBills) {
 				for (BillDetail detail : bill.getBillDetails())
 					responseBillDetailsMap.put(detail.getId(), detail);
