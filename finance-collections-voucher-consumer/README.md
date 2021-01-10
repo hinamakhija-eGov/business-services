@@ -10,7 +10,7 @@ NA
 
 - mdms
 - collection-service
-- egf-instrument
+- finance-instrument
 - user
 - finance-master
 - Finance co existence service

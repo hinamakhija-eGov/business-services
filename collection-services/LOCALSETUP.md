@@ -24,7 +24,7 @@ function kgpt(){kubectl get pods -n egov --selector=app=$1 --no-headers=true | h
 kubectl port-forward -n egov $(kgpt user) 8081:8080 &
 kubectl port-forward -n egov $(kgpt finance-master) 8083:8080 &
 kubectl port-forward -n egov $(kgpt egov-common-masters) 8084:8080 &
-kubectl port-forward -n egov $(kgpt egf-instrument) 8085:8080 &
+kubectl port-forward -n egov $(kgpt finance-instrument) 8085:8080 &
 kubectl port-forward -n egov $(kgpt billing-service) 8086:8080 &
 kubectl port-forward -n egov $(kgpt idgen) 8087:8080 &
 kubectl port-forward -n egov $(kgpt mdms) 8088:8080 &
