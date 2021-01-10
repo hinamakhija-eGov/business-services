@@ -33,13 +33,13 @@ config:
       - work-dir: "collection-services/src/main/resources/db"
         image-name: "collection-services-db"
 
-  - name: "builds/business-services/egf-instrument"
+  - name: "builds/business-services/finance-instrument"
     build:
-      - work-dir: "egf-instrument"
-        image-name: "egf-instrument"
+      - work-dir: "finance-instrument"
+        image-name: "finance-instrument"
         dockerfile: "build/maven/Dockerfile"
-      - work-dir: "egf-instrument/src/main/resources/db"
-        image-name: "egf-instrument-db"
+      - work-dir: "finance-instrument/src/main/resources/db"
+        image-name: "finance-instrument-db"
 
   - name: "builds/business-services/finance-master"
     build:
