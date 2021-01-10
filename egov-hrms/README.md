@@ -10,7 +10,7 @@ The objective of HRMS is to provide a service that manages all the employees enr
 - user
 - localization
 - idgen
-- egov-mdms
+- mdms
 - filestore
 
 ### Swagger API Contract
