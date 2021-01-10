@@ -18,7 +18,7 @@ To setup the egov-apportion-service service in your local system, clone the [Bus
 To run the egov-apportion-service in local system, you need to port forward below services.
 
 ```bash
- kubectl port-forward -n egov {egov-mdms} 8088:8080
+ kubectl port-forward -n egov {mdms} 8088:8080
 ```
 
 Update below listed properties in `application.properties` before running the project:

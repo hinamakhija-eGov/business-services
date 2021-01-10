@@ -22,7 +22,7 @@ The apportion request and respose are stored for audit using persister
 
 
 ### Service Dependencies
-- egov-mdms
+- mdms
 - persister
 
 

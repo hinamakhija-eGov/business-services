@@ -18,7 +18,7 @@ To setup the dss-analytics service in your local system, clone the [Business Ser
 To run the dss-analytics in local system, you need to port forward below services.
 
 ```bash
- kubectl port-forward -n egov {egov-mdms} 8088:8080
+ kubectl port-forward -n egov {mdms} 8088:8080
 ```
 
 
