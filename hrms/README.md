@@ -1,4 +1,4 @@
-# Egov-HRMS Service
+# HRMS Service
 ### HRMS Service
 The objective of HRMS is to provide a service that manages all the employees enrolled onto the system. HRMS provides extensive APIs to create, update and search the employees with attributes like assignments, service history, jurisdiction etc. HRMS can be treated a sub-set of the user service, Every employee created through HRMS will also be created as a user in user. 
 
@@ -14,7 +14,7 @@ The objective of HRMS is to provide a service that manages all the employees enr
 - filestore
 
 ### Swagger API Contract
-- Please refer to the [Swagger API contarct](https://editor.swagger.io/?url=https://raw.githubusercontent.com/egovernments/egov-services/master/docs/rainmaker/egov-hrms/v1-0-0.yml#!/) for HRMS service to understand the structure of APIs and to have visualization of all internal APIs.
+- Please refer to the [Swagger API contarct](https://editor.swagger.io/?url=https://raw.githubusercontent.com/egovernments/egov-services/master/docs/rainmaker/hrms/v1-0-0.yml#!/) for HRMS service to understand the structure of APIs and to have visualization of all internal APIs.
 
 
 ## Service Details
@@ -81,7 +81,7 @@ The objective of HRMS is to provide a service that manages all the employees enr
 |  `egov.idgen.ack.format`                  | Format to be configured in ID gen to generate employee code.                                                                                              | EMP-[city]-[SEQ_EG_HRMS_EMP_CODE]                 |
 ### API Details
 
-`BasePath` /egov-hrms/employees/[API endpoint]
+`BasePath` /hrms/employees/[API endpoint]
 
 ##### Method
 **a) Create Employee `POST /_create` :** API (Bulk API) to create an employee with the following details: Assignments, Jurisdictions, Service History, Educational Details, Departmental Tests

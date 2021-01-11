@@ -57,13 +57,13 @@ config:
       - work-dir: "egov-apportion-service/src/main/resources/db"
         image-name: "egov-apportion-service-db"
         
-  - name: "builds/business-services/egov-hrms"
+  - name: "builds/business-services/hrms"
     build:
-      - work-dir: "egov-hrms"
-        image-name: "egov-hrms"
+      - work-dir: "hrms"
+        image-name: "hrms"
         dockerfile: "build/maven/Dockerfile"
-      - work-dir: "egov-hrms/src/main/resources/db"
-        image-name: "egov-hrms-db"
+      - work-dir: "hrms/src/main/resources/db"
+        image-name: "hrms-db"
 
   - name: "builds/business-services/finance-collections-voucher-consumer"
     build:
