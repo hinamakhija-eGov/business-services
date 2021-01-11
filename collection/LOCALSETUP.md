@@ -28,7 +28,7 @@ kubectl port-forward -n egov $(kgpt finance-instrument) 8085:8080 &
 kubectl port-forward -n egov $(kgpt billing-service) 8086:8080 &
 kubectl port-forward -n egov $(kgpt idgen) 8087:8080 &
 kubectl port-forward -n egov $(kgpt mdms) 8088:8080 &
-kubectl port-forward -n egov $(kgpt egov-apportion-service) 8089:8080 &
+kubectl port-forward -n egov $(kgpt apportion-service) 8089:8080 &
 ``` 
 
 Update below listed properties in `application.properties` before running the project:
