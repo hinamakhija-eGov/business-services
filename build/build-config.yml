@@ -17,13 +17,13 @@
 # -
 # -
 config:
-  - name: "builds/business-services/billing-service"
+  - name: "builds/business-services/billing"
     build:
-      - work-dir: "billing-service"
-        image-name: "billing-service"
+      - work-dir: "billing"
+        image-name: "billing"
         dockerfile: "build/maven/Dockerfile"
-      - work-dir: "billing-service/src/main/resources/db"
-        image-name: "billing-service-db"
+      - work-dir: "billing/src/main/resources/db"
+        image-name: "billing-db"
 
   - name: "builds/business-services/collection"
     build:

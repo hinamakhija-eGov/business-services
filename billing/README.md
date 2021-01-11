@@ -1,4 +1,4 @@
-# Billing-Service service
+# Billing service
 
  Generates bills for revenue services.
 

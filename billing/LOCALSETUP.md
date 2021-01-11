@@ -1,6 +1,6 @@
 # Local Setup
 
-To setup the billing-service in your local system, clone the git repo(https://github.com/egovernments/business-services).
+To setup the billing in your local system, clone the git repo(https://github.com/egovernments/business-services).
 
 ## Dependencies
 

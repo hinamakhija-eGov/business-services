@@ -12,7 +12,7 @@ NA
  - finance-master
  - common-master
  - instrument-service
- - billing-service
+ - billing
  - IdGen
  - Mdms
  - Apportion-service
