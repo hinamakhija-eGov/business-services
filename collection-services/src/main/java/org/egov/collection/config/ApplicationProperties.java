@@ -246,5 +246,11 @@ public class ApplicationProperties {
     @Value("${egov.localization.search.endpoint}")
     private String localizationEndpoint;
 
+    @Value("${collection.search.max.limit}")
+    private Integer defaultLimit;
+
+    @Value("${collection.search.default.limit}")
+    private Integer maxSearchLimit;
+
 
 }

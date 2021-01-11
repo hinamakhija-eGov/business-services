@@ -154,9 +154,13 @@ public class PaymentController {
 
     @RequestMapping(value = "/_plainsearch", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<PaymentResponse> plainsearch(@RequestBody @Valid final RequestInfoWrapper requestInfoWrapper, @ModelAttribute PaymentSearchCriteria paymentSearchCriteria){
-        RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
-        List<Payment> payments = paymentService.getPaymentsPlainSearch(paymentSearchCriteria);
+    public ResponseEntity<PaymentResponse> plainSearch(@ModelAttribute PaymentSearchCriteria paymentSearchCriteria,
+                                                       @RequestBody @Valid final RequestInfoWrapper requestInfoWrapper) {
+
+        final RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
+
+        List<Payment> payments = paymentService.plainSearch(paymentSearchCriteria);
+
         return getSuccessResponse(payments, requestInfo);
     }
 
