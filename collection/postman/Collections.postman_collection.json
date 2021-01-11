@@ -8,9 +8,9 @@
 	},
 	"item": [
 		{
-			"name": "http://egov-micro-dev.egovernments.org/collection-services/receipt/_create",
+			"name": "http://egov-micro-dev.egovernments.org/collection/receipt/_create",
 			"request": {
-				"url": "http://egov-micro-dev.egovernments.org/collection-services/receipts/_create",
+				"url": "http://egov-micro-dev.egovernments.org/collection/receipts/_create",
 				"method": "POST",
 				"header": [
 					{
@@ -28,10 +28,10 @@
 			"response": []
 		},
 		{
-			"name": "http://egov-micro-dev.egovernments.org/collection-services/receipts/_search?tenantId=default",
+			"name": "http://egov-micro-dev.egovernments.org/collection/receipts/_search?tenantId=default",
 			"request": {
 				"url": {
-					"raw": "http://egov-micro-dev.egovernments.org/collection-services/receipts/_search?tenantId=default",
+					"raw": "http://egov-micro-dev.egovernments.org/collection/receipts/_search?tenantId=default",
 					"protocol": "http",
 					"host": [
 						"egov-micro-dev",
@@ -39,7 +39,7 @@
 						"org"
 					],
 					"path": [
-						"collection-services",
+						"collection",
 						"receipts",
 						"_search"
 					],
@@ -70,9 +70,9 @@
 			"response": []
 		},
 		{
-			"name": "http://egov-micro-dev.egovernments.org/collection-services/receipt/_update",
+			"name": "http://egov-micro-dev.egovernments.org/collection/receipt/_update",
 			"request": {
-				"url": "http://egov-micro-dev.egovernments.org/collection-services/receipts/_update",
+				"url": "http://egov-micro-dev.egovernments.org/collection/receipts/_update",
 				"method": "POST",
 				"header": [
 					{

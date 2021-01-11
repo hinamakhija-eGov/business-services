@@ -262,7 +262,7 @@ public class CollectionServiceConstants {
 
     public static final String KEY_PDF_FILESTOREID = "filestoreids";
 
-    public static final String COLLECTION_LOCALIZATION_MODULE = "collection-services";
+    public static final String COLLECTION_LOCALIZATION_MODULE = "collection";
 
     public static final String BUSINESSSERVICE_LOCALIZATION_MODULE = "rainmaker-uc";
 

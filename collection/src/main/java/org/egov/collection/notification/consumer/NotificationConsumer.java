@@ -87,7 +87,7 @@ public class NotificationConsumer {
 	@Autowired
 	private RestTemplate restTemplate;
 
-	private static final String COLLECTION_LOCALIZATION_MODULE = "collection-services";
+	private static final String COLLECTION_LOCALIZATION_MODULE = "collection";
 	public static final String PAYMENT_MSG_LOCALIZATION_CODE = "coll.notif.payment.receipt.link";
 	private static final String BUSINESSSERVICE_LOCALIZATION_MODULE = "rainmaker-uc";
 	public static final String BUSINESSSERVICELOCALIZATION_CODE_PREFIX = "BILLINGSERVICE_BUSINESSSERVICE_";
