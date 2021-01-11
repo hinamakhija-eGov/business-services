@@ -1,6 +1,6 @@
 # Local Setup
 
-To setup the egov-apportion-service service in your local system, clone the [Business Service repository](https://github.com/egovernments/business-services).
+To setup the apportion-service service in your local system, clone the [Business Service repository](https://github.com/egovernments/business-services).
 
 ## Dependencies
 
@@ -15,7 +15,7 @@ To setup the egov-apportion-service service in your local system, clone the [Bus
 
 ## Running Locally
 
-To run the egov-apportion-service in local system, you need to port forward below services.
+To run the apportion-service in local system, you need to port forward below services.
 
 ```bash
  kubectl port-forward -n egov {mdms} 8088:8080

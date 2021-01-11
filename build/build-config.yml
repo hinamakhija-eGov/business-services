@@ -49,13 +49,13 @@ config:
       - work-dir: "finance-master/src/main/resources/db"
         image-name: "finance-master-db"
 
-  - name: "builds/business-services/egov-apportion-service"
+  - name: "builds/business-services/apportion-service"
     build:
-      - work-dir: "egov-apportion-service"
-        image-name: "egov-apportion-service"
+      - work-dir: "apportion-service"
+        image-name: "apportion-service"
         dockerfile: "build/maven/Dockerfile"
-      - work-dir: "egov-apportion-service/src/main/resources/db"
-        image-name: "egov-apportion-service-db"
+      - work-dir: "apportion-service/src/main/resources/db"
+        image-name: "apportion-service-db"
         
   - name: "builds/business-services/hrms"
     build:
