@@ -8,10 +8,10 @@
     <version>2.2.6.RELEASE</version>
     <relativePath></relativePath>
   </parent>
-  <groupId>collection-services</groupId>
-  <artifactId>collection-services</artifactId>
+  <groupId>collection</groupId>
+  <artifactId>collection</artifactId>
   <version>1.1.2-SNAPSHOT</version>
-  <name>collection-services</name>
+  <name>collection</name>
   <description>Spring Boot Project for Collection Services</description>
   <properties>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>

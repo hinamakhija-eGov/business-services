@@ -25,13 +25,13 @@ config:
       - work-dir: "billing-service/src/main/resources/db"
         image-name: "billing-service-db"
 
-  - name: "builds/business-services/collection-services"
+  - name: "builds/business-services/collection"
     build:
-      - work-dir: "collection-services"
-        image-name: "collection-services"
+      - work-dir: "collection"
+        image-name: "collection"
         dockerfile: "build/maven/Dockerfile"
-      - work-dir: "collection-services/src/main/resources/db"
-        image-name: "collection-services-db"
+      - work-dir: "collection/src/main/resources/db"
+        image-name: "collection-db"
 
   - name: "builds/business-services/finance-instrument"
     build:
