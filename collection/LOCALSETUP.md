@@ -1,6 +1,6 @@
 # Local Setup
 
-To setup the billing-service in your local system, clone the git repo(https://github.com/egovernments/business-services).
+To setup the billing in your local system, clone the git repo(https://github.com/egovernments/business-services).
 
 ## Dependencies
 
@@ -25,7 +25,7 @@ kubectl port-forward -n egov $(kgpt user) 8081:8080 &
 kubectl port-forward -n egov $(kgpt finance-master) 8083:8080 &
 kubectl port-forward -n egov $(kgpt egov-common-masters) 8084:8080 &
 kubectl port-forward -n egov $(kgpt finance-instrument) 8085:8080 &
-kubectl port-forward -n egov $(kgpt billing-service) 8086:8080 &
+kubectl port-forward -n egov $(kgpt billing) 8086:8080 &
 kubectl port-forward -n egov $(kgpt idgen) 8087:8080 &
 kubectl port-forward -n egov $(kgpt mdms) 8088:8080 &
 kubectl port-forward -n egov $(kgpt apportion-service) 8089:8080 &

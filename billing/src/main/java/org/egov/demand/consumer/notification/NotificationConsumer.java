@@ -53,7 +53,7 @@ public class NotificationConsumer {
 	@Autowired
 	private RestTemplate restTemplate;
 	
-    private static final String BILLING_LOCALIZATION_MODULE = "billing-services";
+    private static final String BILLING_LOCALIZATION_MODULE = "billing";
 	public static final String PAYMENT_MSG_LOCALIZATION_CODE = "BILLINGSERVICE_BUSINESSSERVICE_BILL_GEN_NOTIF_MSG";
 	public static final String BUSINESSSERVICELOCALIZATION_CODE_PREFIX = "BILLINGSERVICE_BUSINESSSERVICE_";
 	
