@@ -149,6 +149,7 @@ public class EmployeeService {
             if( !CollectionUtils.isEmpty(criteria.getRoles()) )
                 userSearchCriteria.put(HRMSConstants.HRMS_USER_SEARCH_CRITERA_ROLECODES,criteria.getRoles());
             UserResponse userResponse = userService.getUser(requestInfo, userSearchCriteria);
+            System.out.println("\n1userResponse--->"+userResponse.toString()+"\n");
 			userChecked =true;
             if(!CollectionUtils.isEmpty(userResponse.getUser())) {
                  mapOfUsers.putAll(userResponse.getUser().stream()
@@ -170,6 +171,7 @@ public class EmployeeService {
 					userSearchCriteria.put(HRMSConstants.HRMS_USER_SEARCH_CRITERA_TENANTID,criteria.getTenantId());
 					userSearchCriteria.put(HRMSConstants.HRMS_USER_SEARCH_CRITERA_NAME,name);
 					UserResponse userResponse = userService.getUser(requestInfo, userSearchCriteria);
+					System.out.println("\n2 userResponse--->"+userResponse.toString()+"\n");
 					userChecked =true;
 					if(!CollectionUtils.isEmpty(userResponse.getUser())) {
 						mapOfUsers.putAll(userResponse.getUser().stream()
@@ -195,7 +197,9 @@ public class EmployeeService {
             UserSearchCriteria.put(HRMSConstants.HRMS_USER_SEARCH_CRITERA_UUID,uuids);
             if(mapOfUsers.isEmpty()){
             UserResponse userResponse = userService.getUser(requestInfo, UserSearchCriteria);
-			if(!CollectionUtils.isEmpty(userResponse.getUser())) {
+            System.out.println("\n3 userResponse--->"+userResponse.toString()+"\n");
+
+				if(!CollectionUtils.isEmpty(userResponse.getUser())) {
 				mapOfUsers = userResponse.getUser().stream()
 						.collect(Collectors.toMap(User :: getUuid, Function.identity()));
             }

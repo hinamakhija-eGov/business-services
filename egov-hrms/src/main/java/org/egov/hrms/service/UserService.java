@@ -114,6 +114,7 @@ public class UserService {
 		userSearchReq.put(HRMSConstants.HRMS_USER_SERACH_CRITERIA_USERTYPE_CODE,HRMSConstants.HRMS_USER_SERACH_CRITERIA_USERTYPE);
 		for( String key: UserSearchCriteria.keySet())
 			userSearchReq.put(key, UserSearchCriteria.get(key));
+		System.out.println("\nuserSearchReq--->"+userSearchReq.toString()+"\n");
 		uri.append(propertiesManager.getUserHost()).append(propertiesManager.getUserSearchEndpoint());
 		UserResponse userResponse = new UserResponse();
 		try {
@@ -140,6 +141,7 @@ public class UserService {
 		else if(uri.toString().contains(userCreateEndpoint))
 			dobFormat = "dd/MM/yyyy";
 		try{
+			System.out.println("\nuri--->"+uri.toString()+"\n");
 			LinkedHashMap responseMap = (LinkedHashMap) restCallRepository.fetchResult(uri, userRequest);
 			parseResponse(responseMap,dobFormat);
 			UserResponse userDetailResponse = objectMapper.convertValue(responseMap,UserResponse.class);
