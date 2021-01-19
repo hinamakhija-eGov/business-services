@@ -571,6 +571,9 @@ public class DemandValidatorV1 {
 			if (dbDemand == null)
 				unFoundDemandIds.add(demand.getId());
 			else {
+				/* payment completed field information cannot be changed from outside
+				 */
+				demand.setIsPaymentCompleted(dbDemand.getIsPaymentCompleted());
 				dbDemandDetailMap.putAll(dbDemand.getDemandDetails().stream()
 						.collect(Collectors.toMap(DemandDetail::getId, Function.identity())));
 			}

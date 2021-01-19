@@ -67,7 +67,8 @@ public class DemandQueryBuilder {
 			+ "dmd.taxperiodfrom AS dtaxperiodfrom,dmd.taxperiodto AS dtaxperiodto,"
 			+ "dmd.minimumamountpayable AS dminimumamountpayable,dmd.createdby AS dcreatedby,"
 			+ "dmd.lastmodifiedby AS dlastmodifiedby,dmd.createdtime AS dcreatedtime,"
-			+ "dmd.lastmodifiedtime AS dlastmodifiedtime,dmd.tenantid AS dtenantid,dmd.status,dmd.additionaldetails as demandadditionaldetails,"
+			+ "dmd.lastmodifiedtime AS dlastmodifiedtime,dmd.tenantid AS dtenantid,dmd.status,"
+			+ "dmd.additionaldetails as demandadditionaldetails,dmd.ispaymentcompleted as ispaymentcompleted,"
 
 			+ "dmdl.id AS dlid,dmdl.demandid AS dldemandid,dmdl.taxheadcode AS dltaxheadcode,"
 			+ "dmdl.taxamount AS dltaxamount,dmdl.collectionamount AS dlcollectionamount,"
@@ -101,15 +102,15 @@ public class DemandQueryBuilder {
 
 	public static final String DEMAND_UPDATE_QUERY = "UPDATE egbs_demand_v1 SET " + "payer=?,taxPeriodFrom=?,"
 			+ "taxPeriodTo=?,minimumAmountPayable=?,lastModifiedby=?," + "lastModifiedtime=?,tenantid=?,"
-			+ " status=?,additionaldetails=?,billexpirytime=? WHERE id=? AND tenantid=?;";
-
+			+ " status=?,additionaldetails=?,billexpirytime=?,ispaymentcompleted=? WHERE id=? AND tenantid=?;";
+	
 	public static final String DEMAND_DETAIL_UPDATE_QUERY = "UPDATE egbs_demanddetail_v1 SET taxamount=?,collectionamount=?,"
 			+ "lastModifiedby=?,lastModifiedtime=?, additionaldetails=? WHERE id=? AND demandid=? AND tenantid=?;";
 
 	public static final String DEMAND_AUDIT_INSERT_QUERY = "INSERT INTO egbs_demand_v1_audit "
 			+ "(demandid,consumerCode,consumerType,businessService,payer,taxPeriodFrom,taxPeriodTo,"
-			+ "minimumAmountPayable,createdby,createdtime,tenantid, status, additionaldetails,id,billexpirytime) "
-			+ "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
+			+ "minimumAmountPayable,createdby,createdtime,tenantid, status, additionaldetails,id,billexpirytime, ispaymentcompleted) "
+			+ "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
 
 	public static final String DEMAND_DETAIL_AUDIT_INSERT_QUERY = "INSERT INTO egbs_demanddetail_v1_audit "
 			+ "(demanddetailid,demandid,taxHeadCode,taxamount,collectionamount,"
@@ -177,6 +178,12 @@ public class DemandQueryBuilder {
 			addAndClause(demandQuery);
 			demandQuery.append("dmd.businessservice=?");
 			preparedStatementValues.add(demandCriteria.getBusinessService());
+		}
+		
+		if(demandCriteria.getIsPaymentCompleted() != null){
+			addAndClause(demandQuery);
+			demandQuery.append("dmd.ispaymentcompleted = ?");
+			preparedStatementValues.add(demandCriteria.getIsPaymentCompleted());
 		}
 		
 		if (demandCriteria.getPeriodFrom() != null) {

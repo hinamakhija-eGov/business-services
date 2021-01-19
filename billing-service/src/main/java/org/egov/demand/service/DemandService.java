@@ -221,6 +221,7 @@ public class DemandService {
 					detail.setTenantId(demand.getTenantId());
 				}
 			}
+			util.updateDemandPaymentStatus(demand, null != paymentBackUpdateAudit);
 		}
 
 		generateAndSetIdsForNewDemands(newDemands, auditDetail);
