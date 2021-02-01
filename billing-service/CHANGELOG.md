@@ -1,6 +1,12 @@
 
 All notable changes to this module will be documented in this file.
 
+## 1.3.0 - 2021-01-31
+
+- Amenment APIs created and enabled
+
+## 1.3.0
+
 ## 1.2.1 - 2021-01-08
 
 - state level search/fetch enable for bills for citizen only
