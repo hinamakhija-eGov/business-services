@@ -236,6 +236,11 @@ public class AmendmentValidator {
 	 */
 	public Amendment validateAndEnrichAmendmentForUpdate(@Valid AmendmentUpdateRequest amendmentUpdateRequest) {
 		
+		if (!props.getIsAmendmentworkflowEnabed()) {
+			throw new CustomException("EG_BS_AMENDMENT_UPDATE_WF_ERROR",
+					"Amendment update is not allowed when workflow is disabled");
+		}
+		
 		Map<String,String> errorMap = new HashMap<>();
 		AmendmentUpdate amendmentUpdate = amendmentUpdateRequest.getAmendmentUpdate();
 		
@@ -251,18 +256,14 @@ public class AmendmentValidator {
 		 */
 		ProcessInstance workflow = amendmentUpdate.getWorkflow();
 		
-		if (props.getIsAmendmentworkflowEnabed()) {
-			if (workflow.getAction() == null || workflow.getBusinessId() == null
-					|| workflow.getBusinessService() == null || workflow.getModuleName() == null) {
+		if (workflow.getAction() == null || workflow.getBusinessId() == null 
+				|| workflow.getBusinessService() == null || workflow.getModuleName() == null) {
 
-				errorMap.put("EG_BS_AMENDMENT_UPDATE_WF_ERROR",
-						"Mandatory workflow fileds missing in the update request, Please add all the following fields module, businessservice, businessid and action");
-			}
-		} else if (null == amendmentUpdate
-				|| null != amendmentUpdate && amendmentUpdate.getStatus().equals(AmendmentStatus.INACTIVE)) {
-			throw new CustomException("EG_BS_AMENDMENT_UPDATE_WORKFLOW_ERROR",
-					"Amendment Update can ne used only to cancell the amendment if workflow is disbaled");
-		}	
+			errorMap.put("EG_BS_AMENDMENT_UPDATE_WF_ERROR",
+					"Mandatory workflow fileds missing in the update request, Please add all the following fields module, businessservice, businessid and action");
+		} else {
+			workflow.setBusinessId(amendmentUpdate.getAmendmentId());
+		}
 
 		if (!CollectionUtils.isEmpty(errorMap))
 			throw new CustomException(errorMap);
