@@ -45,6 +45,7 @@ public class AmendmentUpdate {
 	private JsonNode additionalDetails;
 
 	@JsonProperty("workflow")
+	@NotNull
 	private ProcessInstance workflow;
 	
 	private AmendmentStatus status;
