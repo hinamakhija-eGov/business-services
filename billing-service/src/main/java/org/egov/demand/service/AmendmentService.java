@@ -19,7 +19,9 @@ import org.egov.demand.config.ApplicationProperties;
 import org.egov.demand.model.AuditDetails;
 import org.egov.demand.model.Demand;
 import org.egov.demand.model.DemandCriteria;
+import org.egov.demand.model.BillV2.BillStatus;
 import org.egov.demand.repository.AmendmentRepository;
+import org.egov.demand.repository.BillRepositoryV2;
 import org.egov.demand.util.Util;
 import org.egov.demand.web.contract.DemandRequest;
 import org.egov.demand.web.validator.AmendmentValidator;
@@ -38,6 +40,9 @@ public class AmendmentService {
 	
 	@Autowired
 	private DemandService demandService;
+	
+	@Autowired
+	private BillRepositoryV2 billRepositoryV2;
 	
 	@Autowired
 	private AmendmentValidator amendmentValidator;
@@ -152,8 +157,14 @@ public class AmendmentService {
 				Collections.sort(demands, Comparator.comparing(Demand::getTaxPeriodFrom)
 						.thenComparing(Demand::getTaxPeriodTo).reversed());
 			Demand demand = demands.get(0);
+			amendment.getDemandDetails().forEach(detail -> {
+			
+				detail.setAuditDetails(auditDetails);
+				detail.setDemandId(demand.getId());
+				detail.setTenantId(demand.getTenantId());
+			});
 			demand.getDemandDetails().addAll(amendment.getDemandDetails());
-			demandService.updateAsync(new DemandRequest(requestInfo, Arrays.asList(demand)), null);
+			demandService.update(new DemandRequest(requestInfo, Arrays.asList(demand)), null);
 			
 			AmendmentUpdate amendmentUpdate = AmendmentUpdate.builder()
 					.additionalDetails(amendment.getAdditionalDetails())
@@ -165,6 +176,8 @@ public class AmendmentService {
 					.build();
 			
 			amendmentRepository.updateAmendment(Arrays.asList(amendmentUpdate));
+			billRepositoryV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()),
+					BillStatus.EXPIRED);
 		}
 	}
 
