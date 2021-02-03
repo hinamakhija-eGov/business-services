@@ -133,7 +133,24 @@ public class Constants {
 	public static final String ADVANCE_TAXHEAD_JSONPATH_CODE = "$.MdmsRes.BillingService.TaxHeadMaster[?(@.category=='ADVANCE_COLLECTION' && @.service==\"{}\")].code";
 	public static final String ADVANCE_BUSINESSSERVICE_JSONPATH_CODE = "$.MdmsRes.BillingService.BusinessService[?(@.code==\"{}\")].isAdvanceAllowed";
 
+	public static final String RECEIPTNUMBER_KEY = "receiptNumber";
+	public static final String PAYMENT_ID_KEY = "paymentId";
 
+	public static final String EMPLOYEE_TYPE_CODE = "EMPLOYEE";
+	
+	
+	/*
+	 * Amendment Constants
+	 */
+	
+	public static final String NOTETYPE_REPLACE_STRING = "NOTETYPE";
+
+	public static final String CONSUMERCODE_REPLACE_STRING = "CONSUMERCODE";
+	
+	public static final String CREDIT_NOTE_VALUE = "CN";
+	
+	public static final String DEBIT_NOTE_VALUE = "DN";
+	
 
 	private Constants() {}
 }

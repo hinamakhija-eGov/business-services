@@ -29,6 +29,7 @@ public class HRMSConstants {
 	
 	public static final String HRMS_EMP_CREATE_LOCLZN_CODE = "hrms.employee.create.notification";
 	public static final String HRMS_LOCALIZATION_MODULE_CODE = "hrms";
+	public static final String HRMS_EMP_REACTIVATE_LOCLZN_CODE = "hrms.employee.reactivation.notification";
 	public static final String HRMS_LOCALIZATION_ENG_LOCALE_CODE = "en_IN";
 	public static final String HRMS_TENANTBOUNDARY_HIERARCHY_JSONPATH = "$.TenantBoundary[*].hierarchyType.code";
 	public static final String HRMS_TENANTBOUNDARY_BOUNDARY_TYPE_JSONPATH  ="$.TenantBoundary[?(@.hierarchyType.name==\"%s\")]..label";

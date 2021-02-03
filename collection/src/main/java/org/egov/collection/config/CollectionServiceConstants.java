@@ -288,4 +288,8 @@ public class CollectionServiceConstants {
 
     public static final String WF_MT_STATUS_DISHONOURED_CODE = "UC_NOTIF_WF_MT_DISHONOURED";
 
+    public static final String CITIZEN_ROLE = "CITIZEN";
+
+    public static final String EMPLOYEE_TYPE = "EMPLOYEE";
+
 }

@@ -40,21 +40,23 @@
 package org.egov.demand.service;
 
 import static org.egov.demand.util.Constants.ADVANCE_TAXHEAD_JSONPATH_CODE;
-import static org.egov.demand.util.Constants.MDMS_CODE_FILTER;
-import static org.egov.demand.util.Constants.MDMS_MASTER_NAMES;
-import static org.egov.demand.util.Constants.MODULE_NAME;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
+import org.egov.demand.amendment.model.Amendment;
+import org.egov.demand.amendment.model.AmendmentCriteria;
+import org.egov.demand.amendment.model.AmendmentUpdate;
+import org.egov.demand.amendment.model.enums.AmendmentStatus;
 import org.egov.demand.config.ApplicationProperties;
 import org.egov.demand.model.ApportionDemandResponse;
 import org.egov.demand.model.AuditDetails;
@@ -63,6 +65,8 @@ import org.egov.demand.model.Demand;
 import org.egov.demand.model.DemandApportionRequest;
 import org.egov.demand.model.DemandCriteria;
 import org.egov.demand.model.DemandDetail;
+import org.egov.demand.model.PaymentBackUpdateAudit;
+import org.egov.demand.repository.AmendmentRepository;
 import org.egov.demand.repository.BillRepositoryV2;
 import org.egov.demand.repository.DemandRepository;
 import org.egov.demand.repository.ServiceRequestRepository;
@@ -75,12 +79,12 @@ import org.egov.demand.web.contract.UserResponse;
 import org.egov.demand.web.contract.UserSearchRequest;
 import org.egov.demand.web.contract.factory.ResponseFactory;
 import org.egov.demand.web.validator.DemandValidatorV1;
-import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -108,6 +112,9 @@ public class DemandService {
 	private ServiceRequestRepository serviceRequestRepository;
 	
 	@Autowired
+	private AmendmentRepository amendmentRepository;
+	
+	@Autowired
 	private BillRepositoryV2 billRepoV2;
 	
 	@Autowired
@@ -122,14 +129,15 @@ public class DemandService {
 	/**
 	 * Method to create new demand 
 	 * 
-	 * generates ids and saves to the repositroy
+	 * generates ids and saves to the repository
 	 * 
 	 * @param demandRequest
 	 * @return
 	 */
 	public DemandResponse create(DemandRequest demandRequest) {
 
-		DocumentContext mdmsData = getMDMSData(demandRequest);
+		DocumentContext mdmsData = util.getMDMSData(demandRequest.getRequestInfo(),
+				demandRequest.getDemands().get(0).getTenantId());
 
 		demandValidatorV1.validatedemandForCreate(demandRequest, true, mdmsData);
 
@@ -138,7 +146,8 @@ public class DemandService {
 		RequestInfo requestInfo = demandRequest.getRequestInfo();
 		List<Demand> demands = demandRequest.getDemands();
 		AuditDetails auditDetail = util.getAuditDetail(requestInfo);
-
+		
+		List<AmendmentUpdate> amendmentUpdates = consumeAmendmentIfExists(demands);
 		generateAndSetIdsForNewDemands(demands, auditDetail);
 
 		List<Demand> demandsToBeCreated = new ArrayList<>();
@@ -155,9 +164,11 @@ public class DemandService {
 		}
 
 		save(new DemandRequest(requestInfo,demandsToBeCreated));
+		if (!CollectionUtils.isEmpty(amendmentUpdates))
+			amendmentRepository.updateAmendment(amendmentUpdates);
 
 		if(!CollectionUtils.isEmpty(demandToBeUpdated))
-			update(new DemandRequest(requestInfo,demandToBeUpdated));
+			update(new DemandRequest(requestInfo,demandToBeUpdated), null);
 		
 		billRepoV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()), BillStatus.EXPIRED);
 		
@@ -202,11 +213,11 @@ public class DemandService {
 	 * @param demandRequest demand request object to be updated
 	 * @return
 	 */
-	public DemandResponse updateAsync(DemandRequest demandRequest) {
+	public DemandResponse updateAsync(DemandRequest demandRequest, PaymentBackUpdateAudit paymentBackUpdateAudit) {
 
 		log.debug("the demand service : " + demandRequest);
-
-		DocumentContext mdmsData = getMDMSData(demandRequest);
+		DocumentContext mdmsData = util.getMDMSData(demandRequest.getRequestInfo(),
+				demandRequest.getDemands().get(0).getTenantId());
 
 		demandValidatorV1.validateForUpdate(demandRequest, mdmsData);
 
@@ -242,13 +253,18 @@ public class DemandService {
 					detail.setTenantId(demand.getTenantId());
 				}
 			}
+			util.updateDemandPaymentStatus(demand, null != paymentBackUpdateAudit);
 		}
 
 		generateAndSetIdsForNewDemands(newDemands, auditDetail);
 
-		update(demandRequest);
-		billRepoV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()),
-				BillStatus.EXPIRED);
+		update(demandRequest, paymentBackUpdateAudit);
+		if (ObjectUtils.isEmpty(paymentBackUpdateAudit))
+			billRepoV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()),
+					BillStatus.EXPIRED);
+		else
+			billRepoV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()),
+					BillStatus.PAID);
 		// producer.push(applicationProperties.getDemandIndexTopic(), demandRequest);
 		return new DemandResponse(responseInfoFactory.getResponseInfo(requestInfo, HttpStatus.CREATED), demands);
 	}
@@ -263,7 +279,7 @@ public class DemandService {
 	 */
 	public List<Demand> getDemands(DemandCriteria demandCriteria, RequestInfo requestInfo) {
 
-		demandValidatorV1.validateDemandCriteria(demandCriteria);
+		demandValidatorV1.validateDemandCriteria(demandCriteria, requestInfo);
 
 		UserSearchRequest userSearchRequest = null;
 		List<User> payers = null;
@@ -326,8 +342,8 @@ public class DemandService {
 		demandRepository.save(demandRequest);
 	}
 
-	public void update(DemandRequest demandRequest) {
-		demandRepository.update(demandRequest);
+	public void update(DemandRequest demandRequest, PaymentBackUpdateAudit paymentBackUpdateAudit) {
+		demandRepository.update(demandRequest, paymentBackUpdateAudit);
 	}
 
 
@@ -426,25 +442,57 @@ public class DemandService {
 
 		return new ArrayList<>(demandsWithAdvance);
 	}
-
+	
 	/**
-	 * Fetches the required master data from MDMS service
-	 * @param demandRequest The request for which master data has to be fetched
-	 * @return
+	 * Method to add demand details from amendment if exists in DB
+	 * @param demandRequest
 	 */
-	private DocumentContext getMDMSData(DemandRequest demandRequest){
-		String tenantId = demandRequest.getDemands().get(0).getTenantId();
-		RequestInfo requestInfo = demandRequest.getRequestInfo();
+	private List<AmendmentUpdate> consumeAmendmentIfExists(List<Demand> demands) {
+
+		List<AmendmentUpdate> updateListForConsumedAmendments = new ArrayList<>();
+		Set<String> consumerCodes = demands.stream().map(Demand::getConsumerCode).collect(Collectors.toSet());
 
 		/*
-		 * Preparing the mdms request with billing service master and calling the mdms search API
+		 * Search amendments for all consumer-codes and keep in map of list based on consumer-codes
 		 */
-		MdmsCriteriaReq mdmsReq = util.prepareMdMsRequest(tenantId, MODULE_NAME, MDMS_MASTER_NAMES, MDMS_CODE_FILTER,
-				requestInfo);
-		DocumentContext mdmsData = util.getAttributeValues(mdmsReq);
+		AmendmentCriteria amendmentCriteria = AmendmentCriteria.builder()
+				.tenantId(demands.get(0).getTenantId())
+				.status(AmendmentStatus.ACTIVE)
+				.consumerCode(consumerCodes)
+				.build();
+		List<Amendment> amendmentsFromSearch = amendmentRepository.getAmendments(amendmentCriteria);
+		Map<String, List<Amendment>> mapOfConsumerCodeAndAmendmentsList = amendmentsFromSearch.stream()
+				.collect(Collectors.groupingBy(Amendment::getConsumerCode)); 
+		
+		/*
+		 * Add demand-details in to demand from all amendments existing for that consumer-code
+		 * 
+		 * Add the amendment to update list for consumed
+		 */
+		for (Demand demand : demands) {
+		
+			
+			List<Amendment> amendments = mapOfConsumerCodeAndAmendmentsList.get(demand.getConsumerCode());
+			if (CollectionUtils.isEmpty(amendments))
+				continue;
+			
+			for (Amendment amendment : amendments) {
+				
+				demand.getDemandDetails().addAll(amendment.getDemandDetails());
+				
+				AmendmentUpdate amendmentUpdate = AmendmentUpdate.builder()
+						.additionalDetails(amendment.getAdditionalDetails())
+						.amendedDemandId(demand.getId())
+						.amendmentId(amendment.getAmendmentId())
+						.auditDetails(demand.getAuditDetails())
+						.status(AmendmentStatus.CONSUMED)
+						.tenantId(demand.getTenantId())
+						.build();
+				updateListForConsumedAmendments.add(amendmentUpdate);
+			}
+		}
 
-		return mdmsData;
+		return updateListForConsumedAmendments;
 	}
-
-
+	
 }
