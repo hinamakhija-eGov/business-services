@@ -1,6 +1,26 @@
 
 All notable changes to this module will be documented in this file.
 
+## 1.3.0 - 2021-01-31
+
+- Amenment APIs created and enabled
+
+## 1.3.0
+
+## 1.2.1 - 2021-01-08
+
+- state level search/fetch enable for bills for citizen only
+- zero demands bill genereation restricted to only once
+
+## 1.2.1
+
+## 1.2.0 - 2020-12-xx
+
+- back update error log created to record failures of payment to demand update.
+- table eg_bs_payment_backupdate_audit created to log the above mentioned information and to validate for duplicate receipt enteries for payment update.
+
+## 1.2.0
+
 ## 1.1.1 - 2020-08-18
 
 - user create enabled

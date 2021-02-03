@@ -10,7 +10,7 @@
   </parent>
   <groupId>collection</groupId>
   <artifactId>collection</artifactId>
-  <version>1.1.1-SNAPSHOT</version>
+  <version>1.1.2-SNAPSHOT</version>
   <name>collection</name>
   <description>Spring Boot Project for Collection Services</description>
   <properties>

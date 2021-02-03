@@ -2,12 +2,7 @@ package org.egov.collection.service;
 
 import static java.util.Objects.isNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.egov.collection.config.ApplicationProperties;
@@ -66,13 +61,9 @@ public class PaymentService {
      * @param paymentSearchCriteria Criteria against which search has to be performed
      * @return List of matching receipts
      */
-    public List<Payment> getPayments(RequestInfo requestInfo, PaymentSearchCriteria paymentSearchCriteria) {
+    public List<Payment> getPayments(RequestInfo requestInfo, PaymentSearchCriteria paymentSearchCriteria, String moduleName) {
     	
-        Map<String, String> errorMap = new HashMap<>();
-        paymentValidator.validateUserInfo(requestInfo, errorMap);
-        if (!errorMap.isEmpty())
-            throw new CustomException(errorMap);
-
+        paymentValidator.validateAndUpdateSearchRequestFromConfig(paymentSearchCriteria, requestInfo, moduleName);
         if (applicationProperties.isPaymentsSearchPaginationEnabled()) {
             paymentSearchCriteria.setOffset(isNull(paymentSearchCriteria.getOffset()) ? 0 : paymentSearchCriteria.getOffset());
             paymentSearchCriteria.setLimit(isNull(paymentSearchCriteria.getLimit()) ? applicationProperties.getReceiptsSearchDefaultLimit() :
@@ -91,20 +82,8 @@ public class PaymentService {
         return payments;
     }
 
-    public List<Payment> getPaymentsPlainSearch(PaymentSearchCriteria criteria){
-        if(criteria.getLimit() == null){
-            criteria.setLimit(applicationProperties.getReceiptsSearchDefaultLimit());
-        }
-        if(criteria.getLimit() != null && criteria.getLimit() > applicationProperties.getReceiptsSearchMaxLimit()){
-            criteria.setLimit(applicationProperties.getReceiptsSearchMaxLimit());
-        }
-        if(criteria.getOffset() == null){
-            criteria.setOffset(0);
-        }
-        List<Payment> payments = paymentRepository.getPaymentsForBulkSearch(criteria);
-        return payments;
-    }
-    
+
+
     
     /**
      * Handles creation of a receipt, including multi-service, involves the following steps, - Enrich receipt from billing service
@@ -207,6 +186,24 @@ public class PaymentService {
         return paymentRequest.getPayment();
     }
 
+    public List<Payment> plainSearch(PaymentSearchCriteria paymentSearchCriteria) {
+        PaymentSearchCriteria searchCriteria = new PaymentSearchCriteria();
+
+        if (applicationProperties.isPaymentsSearchPaginationEnabled()) {
+            searchCriteria.setOffset(isNull(paymentSearchCriteria.getOffset()) ? 0 : paymentSearchCriteria.getOffset());
+            searchCriteria.setLimit(isNull(paymentSearchCriteria.getLimit()) ? applicationProperties.getReceiptsSearchDefaultLimit() : paymentSearchCriteria.getLimit());
+        } else {
+            searchCriteria.setOffset(0);
+            searchCriteria.setLimit(applicationProperties.getReceiptsSearchDefaultLimit());
+        }
+
+        List<String> ids = paymentRepository.fetchPaymentIds(searchCriteria);
+        if (ids.isEmpty())
+            return Collections.emptyList();
+
+        PaymentSearchCriteria criteria = PaymentSearchCriteria.builder().ids(new HashSet<String>(ids)).build();
+        return paymentRepository.fetchPaymentsForPlainSearch(criteria);
+    }
 
 
 }
