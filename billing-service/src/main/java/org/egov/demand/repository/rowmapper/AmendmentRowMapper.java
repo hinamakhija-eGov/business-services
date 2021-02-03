@@ -112,7 +112,6 @@ public class AmendmentRowMapper implements ResultSetExtractor<List<Amendment>> {
 		DemandDetail amendmentDetail = DemandDetail.builder()
 				.taxHeadMasterCode(rs.getString("taxheadcode"))
 				.taxAmount(rs.getBigDecimal("taxAmount"))
-				.id(detailId)
 				.build();
 
 		taxDetails.add(amendmentDetail);
