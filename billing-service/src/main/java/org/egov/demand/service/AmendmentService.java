@@ -52,6 +52,7 @@ public class AmendmentService {
 	 */
 	public List<Amendment> search(AmendmentCriteria amendmentCriteria, RequestInfo requestInfo) {
 
+		amendmentValidator.validateAmendmentCriteriaForSearch(amendmentCriteria);
 		if (amendmentCriteria.getMobileNumber() != null) {
 
 			DemandCriteria demandCriteria = DemandCriteria.builder()
@@ -65,7 +66,6 @@ public class AmendmentService {
 						.addAll(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toSet()));
 			}
 		}
-		amendmentValidator.validateAmendmentCriteriaForSearch(amendmentCriteria);
 		return amendmentRepository.getAmendments(amendmentCriteria);
 	}
 	
