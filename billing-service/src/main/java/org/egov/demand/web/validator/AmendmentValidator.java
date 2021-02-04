@@ -1,6 +1,6 @@
 package org.egov.demand.web.validator;
 
-import static org.egov.demand.util.Constants.BUSINESSSERVICE_PATH_CODE;
+import static org.egov.demand.util.Constants.BUSINESSSERVICE_MODULE_PATH;
 import static org.egov.demand.util.Constants.TAXHEADMASTER_PATH_CODE;
 
 import java.math.BigDecimal;
@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,6 +26,7 @@ import org.egov.demand.amendment.model.AmendmentUpdateRequest;
 import org.egov.demand.amendment.model.ProcessInstance;
 import org.egov.demand.amendment.model.enums.AmendmentStatus;
 import org.egov.demand.config.ApplicationProperties;
+import org.egov.demand.model.BusinessServiceDetail;
 import org.egov.demand.model.Demand;
 import org.egov.demand.model.DemandCriteria;
 import org.egov.demand.model.DemandDetail;
@@ -73,7 +75,37 @@ public class AmendmentValidator {
 
 		Amendment amendment = amendmentRequest.getAmendment();
 		
+		/*
+		 * Extracting the respective masters from DocumentContext 
+		 * 
+		 * Validating the master data fields - business-service and tax-heads
+		 */
+		DocumentContext mdmsData = util.getMDMSData(amendmentRequest.getRequestInfo(), amendmentRequest.getAmendment().getTenantId());
+		List<BusinessServiceDetail> businessServices = Arrays.asList(mapper.convertValue(mdmsData.read(BUSINESSSERVICE_MODULE_PATH), BusinessServiceDetail[].class));
+		Map<String, BusinessServiceDetail> businessMasterMap = businessServices.stream()
+				.collect(Collectors.toMap(BusinessServiceDetail::getCode, Function.identity()));
 		
+		List<TaxHeadMaster> taxHeads = Arrays.asList(mapper.convertValue(mdmsData.read(TAXHEADMASTER_PATH_CODE), TaxHeadMaster[].class));
+		Map<String, Set<String>> businessTaxCodeSet = taxHeads.stream().collect(Collectors.groupingBy(
+				TaxHeadMaster::getService, Collectors.mapping(TaxHeadMaster::getCode, Collectors.toSet())));
+		
+		Map<String,String> errorMap = new HashMap<>();
+
+		BusinessServiceDetail businessService = businessMasterMap.get(amendment.getBusinessService());
+		if (ObjectUtils.isEmpty(businessService)) {
+			errorMap.put("EG_BS_AMENDMENT_BUSINESS_ERROR",
+					"Business service not found for the given code : " + amendment.getBusinessService());
+		} else if (!businessService.getIsBillAmendmentEnabled()) {
+			errorMap.put("EG_BS_AMENDMENT_DISABLED_ERROR",
+					"Amendment is disabled for the given Business-service : " + amendment.getBusinessService());
+		}
+		
+		/*
+		 * if business-service is disabled then further validation is not needed
+		 */
+		if(!CollectionUtils.isEmpty(errorMap))
+			throw new CustomException(errorMap);
+
 		/*
 		 * verifying presence of workflow amendments with same consumer-code
 		 * 
@@ -103,24 +135,7 @@ public class AmendmentValidator {
 			throw new CustomException("EG_BS_AMENDMENT_CONSUMERCODE_ERROR",
 					"No demands found in the system for the given consumer code, An amendment cannot be created without demands in the system.");
 		
-		/*
-		 * Extracting the respective masters from DocumentContext 
-		 * 
-		 * Validating the master data fields - business-service and tax-heads
-		 */
-		DocumentContext mdmsData = util.getMDMSData(amendmentRequest.getRequestInfo(), amendmentRequest.getAmendment().getTenantId());
-		List<String> businessServiceCodes = mdmsData.read(BUSINESSSERVICE_PATH_CODE);
-		List<TaxHeadMaster> taxHeads = Arrays.asList(mapper.convertValue(mdmsData.read(TAXHEADMASTER_PATH_CODE), TaxHeadMaster[].class));
-		Map<String, Set<String>> businessTaxCodeSet = taxHeads.stream().collect(Collectors.groupingBy(
-				TaxHeadMaster::getService, Collectors.mapping(TaxHeadMaster::getCode, Collectors.toSet())));
 		
-		Map<String,String> errorMap = new HashMap<>();
-
-		if (!businessServiceCodes.contains(amendment.getBusinessService())) {
-			errorMap.put("EG_BS_AMENDMENT_BUSINESS_ERROR",
-					"Business service not found for the given code : " + amendment.getBusinessService());
-		}
-
 		Set<String> taxheadcodes = businessTaxCodeSet.get(amendment.getBusinessService());
 		List<BigDecimal> allPositiveAmounts = amendment.getDemandDetails().stream()
 				.filter(detail -> detail.getTaxAmount().compareTo(BigDecimal.ZERO) >= 0).map(DemandDetail::getTaxAmount)
