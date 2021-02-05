@@ -67,8 +67,12 @@ public class AmendmentService {
 			
 			List<Demand> demands = demandService.getDemands(demandCriteria, requestInfo);
 			if (!CollectionUtils.isEmpty(demands)) {
-				amendmentCriteria.getConsumerCode()
-						.addAll(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toSet()));
+				if (!CollectionUtils.isEmpty(amendmentCriteria.getConsumerCode()))
+					amendmentCriteria.getConsumerCode()
+							.retainAll(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toSet()));
+				else
+					amendmentCriteria.getConsumerCode()
+							.addAll(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toSet()));
 			}
 		}
 		return amendmentRepository.getAmendments(amendmentCriteria);
