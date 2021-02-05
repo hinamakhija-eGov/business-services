@@ -363,8 +363,9 @@ public class BillServicev2 {
 				billAmount = billAmount.add(billDetail.getAmount());
 			}
 			
-			
-			BillV2 bill = BillV2.builder()
+			if (billAmount.compareTo(BigDecimal.ZERO) >= 0) {
+
+				BillV2 bill = BillV2.builder()
 					.auditDetails(util.getAuditDetail(requestInfo))
 					.payerAddress(payer.getPermanentAddress())
 					.mobileNumber(payer.getMobileNumber())
@@ -382,6 +383,7 @@ public class BillServicev2 {
 			
 			bills.add(bill);
 		}
+	}
 		return bills;
 	}
 	
