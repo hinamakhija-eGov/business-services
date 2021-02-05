@@ -384,9 +384,9 @@ public class BillServicev2 {
 			bills.add(bill);
 		}
 	}
-		return bills;
-	}
-	
+	return bills;
+}
+
 	private List<String> getBillNumbers(RequestInfo requestInfo, String tenantId, String module, int count) {
 
 		String billNumberFormat = appProps.getBillNumberFormat();
@@ -581,7 +581,9 @@ public class BillServicev2 {
 	}
 	
 	public BillResponseV2 create(BillRequestV2 billRequest) {
-		billRepository.saveBill(billRequest);
+
+		if (!CollectionUtils.isEmpty(billRequest.getBills()))
+			billRepository.saveBill(billRequest);
 		return getBillResponse(billRequest.getBills());
 	}
 	
