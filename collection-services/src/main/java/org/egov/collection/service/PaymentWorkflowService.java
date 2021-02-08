@@ -137,8 +137,6 @@ public class PaymentWorkflowService {
         List<Payment> validatedPayments = paymentWorkflowValidator.validateForCancel(new ArrayList<>
                 (workflowRequestByPaymentId.values()), payments);
 
-        List<Payment> validatedPayments=payments;
-        
         for(Payment payment : validatedPayments) {
             payment.setInstrumentStatus(InstrumentStatusEnum.CANCELLED);
             payment.setPaymentStatus(PaymentStatusEnum.CANCELLED);
