@@ -1,5 +1,6 @@
 package org.egov.demand.service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -28,6 +29,8 @@ import org.egov.demand.web.validator.AmendmentValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 @Service
 public class AmendmentService {
@@ -58,7 +61,7 @@ public class AmendmentService {
 	public List<Amendment> search(AmendmentCriteria amendmentCriteria, RequestInfo requestInfo) {
 
 		amendmentValidator.validateAmendmentCriteriaForSearch(amendmentCriteria);
-		if (amendmentCriteria.getMobileNumber() != null) {
+		if (!StringUtils.isEmpty(amendmentCriteria.getMobileNumber())) {
 
 			DemandCriteria demandCriteria = DemandCriteria.builder()
 					.mobileNumber(amendmentCriteria.getMobileNumber())
@@ -74,10 +77,13 @@ public class AmendmentService {
 					amendmentCriteria.getConsumerCode()
 							.addAll(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toSet()));
 			}
+			if (CollectionUtils.isEmpty(amendmentCriteria.getConsumerCode())
+					&& ObjectUtils.isEmpty(amendmentCriteria.getAmendmentId()))
+				return new ArrayList<>();
 		}
 		return amendmentRepository.getAmendments(amendmentCriteria);
 	}
-	
+
 	/**
 	 * 
 	 * @param amendmentRequest
