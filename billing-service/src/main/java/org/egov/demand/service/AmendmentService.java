@@ -18,9 +18,9 @@ import org.egov.demand.amendment.model.State;
 import org.egov.demand.amendment.model.enums.AmendmentStatus;
 import org.egov.demand.config.ApplicationProperties;
 import org.egov.demand.model.AuditDetails;
+import org.egov.demand.model.BillV2.BillStatus;
 import org.egov.demand.model.Demand;
 import org.egov.demand.model.DemandCriteria;
-import org.egov.demand.model.BillV2.BillStatus;
 import org.egov.demand.repository.AmendmentRepository;
 import org.egov.demand.repository.BillRepositoryV2;
 import org.egov.demand.util.Util;
@@ -64,6 +64,7 @@ public class AmendmentService {
 		if (!StringUtils.isEmpty(amendmentCriteria.getMobileNumber())) {
 
 			DemandCriteria demandCriteria = DemandCriteria.builder()
+					.businessService(amendmentCriteria.getBusinessService())
 					.mobileNumber(amendmentCriteria.getMobileNumber())
 					.tenantId(amendmentCriteria.getTenantId())
 					.build();

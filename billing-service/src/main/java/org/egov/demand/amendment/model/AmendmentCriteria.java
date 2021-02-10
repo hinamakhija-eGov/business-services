@@ -68,6 +68,7 @@ public class AmendmentCriteria {
 	@Default
 	private Set<String> consumerCode = new HashSet<>();
 
+	@NotNull
 	private String businessService;
 
 	private AmendmentStatus status;
