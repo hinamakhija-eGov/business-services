@@ -130,8 +130,8 @@ public class InstrumentService {
 			InstrumentRequest request = new InstrumentRequest();
 			request.setInstruments(Collections.singletonList(instrumentContract));
 			request.setRequestInfo(receiptRequest.getRequestInfo());
-			LOGGER.info("request : {}", request);
-			LOGGER.info("InstrumentType : {}", instrumentContract.getInstrumentType());
+			LOGGER.info("request : {}, Instrument : {}", request, instrumentContract);
+			LOGGER.info("InstrumentType : {}", instrumentContract.getInstrumentType().getName());
 			return mapper.convertValue(serviceRequestRepository.fetchResult(url, request, receipt.getTenantId()), InstrumentResponse.class);
 		
 	}
