@@ -17,7 +17,7 @@
 # -
 # -
 config:
-  - name: "business-services/billing-service"
+  - name: "builds/business-services/billing-service"
     build:
       - work-dir: "billing-service"
         image-name: "billing-service"
