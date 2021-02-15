@@ -234,7 +234,6 @@ public class AmendmentValidator {
 					.businessService(props.getAmendmentWfName())
 					.action(props.getAmendmentWfOpenAction())
 					.businessId(amendment.getAmendmentId())
-					.documents(amendment.getDocuments())
 					.tenantId(amendment.getTenantId())
 					.build();
 			
