@@ -38,7 +38,7 @@ public class HRMSUtils {
 					val = param;
 				else
 					val = param.split("")[random.nextInt(param.length() - 1)];
-				if(val.equals(".") || val.equals("-"))
+				if(val.equals(".") || val.equals("-") || val.equals(" "))
 					password.append("x");
 				else
 					password.append(val);
