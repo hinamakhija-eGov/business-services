@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import org.egov.demand.amendment.model.enums.AmendmentReason;
 import org.egov.demand.amendment.model.enums.AmendmentStatus;
@@ -66,6 +67,7 @@ public class Amendment {
 	@JsonProperty("demandDetails")
 	@Valid
 	@NotNull
+	@Size(min=1, max=1)
 	private List<DemandDetail> demandDetails;
 
 	@NotNull
