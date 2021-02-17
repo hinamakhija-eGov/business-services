@@ -29,6 +29,7 @@ import org.egov.demand.config.ApplicationProperties;
 import org.egov.demand.model.BusinessServiceDetail;
 import org.egov.demand.model.Demand;
 import org.egov.demand.model.DemandCriteria;
+import org.egov.demand.model.DemandDetail;
 import org.egov.demand.model.TaxHeadMaster;
 import org.egov.demand.repository.AmendmentRepository;
 import org.egov.demand.repository.IdGenRepo;
@@ -136,19 +137,23 @@ public class AmendmentValidator {
 		
 		
 		Set<String> taxheadcodes = businessTaxCodeSet.get(amendment.getBusinessService());
+		List<BigDecimal> allPositiveAmounts = amendment.getDemandDetails().stream()
+				.filter(detail -> detail.getTaxAmount().compareTo(BigDecimal.ZERO) >= 0).map(DemandDetail::getTaxAmount)
+				.collect(Collectors.toList());
 		
+		if (allPositiveAmounts.size() != 0 && allPositiveAmounts.size() != amendment.getDemandDetails().size())
+			errorMap.put("EG_BS_AMENDMENT_TAXAMOUNT_ERROR", "All Tax amounts should either be positive or negative");
+	
 		if (!CollectionUtils.isEmpty(taxheadcodes)) {
 			
-			String amendmentTaxHeadCode = amendment.getDemandDetails().get(0).getTaxHeadMasterCode();
-			if (!taxheadcodes.contains(amendmentTaxHeadCode)) {
+			List<String> MissingTaxHeadCodes = amendment.getDemandDetails().stream()
+					.filter(detail -> !taxheadcodes.contains(detail.getTaxHeadMasterCode()))
+					.map(DemandDetail::getTaxHeadMasterCode).collect(Collectors.toList());
+
+			if (!MissingTaxHeadCodes.isEmpty()) {
 				errorMap.put("EG_BS_AMENDMENT_TAXHEAD_ERROR",
-						"Taxheads not found for the following codes : " + amendmentTaxHeadCode);
-			} else if (!amendmentTaxHeadCode.contains("AMENDMENT")) {
-				
-				errorMap.put("EG_BS_AMENDMENT_TAXHEAD_ERROR",
-						"Taxheads without key word Amendment in them are not allowed : " + amendmentTaxHeadCode);
+						"Taxheads not found for the following codes : " + MissingTaxHeadCodes);
 			}
-			
 		} else {
 			errorMap.put("EG_BS_AMENDMENT_TAXHEAD_ERROR",
 					"No taxheads found for the given business service : " + amendment.getBusinessService());
