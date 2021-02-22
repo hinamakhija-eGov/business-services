@@ -147,7 +147,7 @@ public class DemandService {
 		List<Demand> demands = demandRequest.getDemands();
 		AuditDetails auditDetail = util.getAuditDetail(requestInfo);
 		
-		List<AmendmentUpdate> amendmentUpdates = consumeAmendmentIfExists(demands);
+		List<AmendmentUpdate> amendmentUpdates = consumeAmendmentIfExists(demands, auditDetail);
 		generateAndSetIdsForNewDemands(demands, auditDetail);
 
 		List<Demand> demandsToBeCreated = new ArrayList<>();
@@ -447,7 +447,7 @@ public class DemandService {
 	 * Method to add demand details from amendment if exists in DB
 	 * @param demandRequest
 	 */
-	private List<AmendmentUpdate> consumeAmendmentIfExists(List<Demand> demands) {
+	private List<AmendmentUpdate> consumeAmendmentIfExists(List<Demand> demands, AuditDetails auditDetails) {
 
 		List<AmendmentUpdate> updateListForConsumedAmendments = new ArrayList<>();
 		Set<String> consumerCodes = demands.stream().map(Demand::getConsumerCode).collect(Collectors.toSet());
@@ -484,7 +484,7 @@ public class DemandService {
 						.additionalDetails(amendment.getAdditionalDetails())
 						.amendedDemandId(demand.getId())
 						.amendmentId(amendment.getAmendmentId())
-						.auditDetails(demand.getAuditDetails())
+						.auditDetails(auditDetails)
 						.status(AmendmentStatus.CONSUMED)
 						.tenantId(demand.getTenantId())
 						.build();
