@@ -53,7 +53,6 @@ public class AmazonS3ClientServiceImpl implements AmazonS3ClientService
             File file = new File(time+"-"+fileName);
             fos = new FileOutputStream(file);
             fos.write(multipartFile.getBytes());
-            fos.close();
 
             PutObjectRequest putObjectRequest = new PutObjectRequest(this.awsS3AudioBucket, fileName, file);
 
