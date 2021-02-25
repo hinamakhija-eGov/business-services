@@ -206,11 +206,11 @@ public abstract class JdbcRepository {
                 }
             } catch (IllegalArgumentException e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
+                LOG.error("Illegal Argument exception occurred: " + e.getMessage());
 
             } catch (SecurityException e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
+                LOG.error("Security exception occurred: " + e.getMessage());
             }
         }
 
@@ -282,10 +282,10 @@ public abstract class JdbcRepository {
                 paramValues.put(s, f.get(ob));
             } catch (IllegalArgumentException e1) {
                 // TODO Auto-generated catch block
-                e1.printStackTrace();
+                LOG.error("Illegal argument exception occurred: " + e1.getMessage());
             } catch (IllegalAccessException e1) {
                 // TODO Auto-generated catch block
-                e1.printStackTrace();
+                LOG.error("Illegal access exception occurred: " + e1.getMessage());
             }
         }
 
