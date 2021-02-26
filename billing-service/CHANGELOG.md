@@ -1,6 +1,10 @@
 
 All notable changes to this module will be documented in this file.
 
+## 1.3.1 - 2021-02-26
+
+- Updated domain name in application.properties
+
 ## 1.3.0 - 2021-01-31
 
 - Amenment APIs created and enabled
