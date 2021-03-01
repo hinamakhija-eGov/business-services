@@ -66,7 +66,6 @@ public class PayerRepository {
 				log.debug("the exception from user module inside first catch block ::"+userErrorResponse.getError().toString());
 				throw new RuntimeException(e);
 		} catch (Exception e) {
-			log.error("Following Exception Occurred While Calling User Service : " + e.getMessage());
 			throw new RuntimeException(e);
 		}
 	

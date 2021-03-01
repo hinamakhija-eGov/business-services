@@ -89,7 +89,6 @@ public class ServiceRequestRepository {
 				throw new VoucherCustomException(ProcessStatus.FAILED,e.getResponseBodyAsString());
 			}
 		}catch(Exception e) {
-			log.error("Exception while fetching from searcher: ",e);
 			throw new VoucherCustomException(ProcessStatus.FAILED,"Exception while fetching from searcher.");
 		}
 		return response;
@@ -111,7 +110,6 @@ public class ServiceRequestRepository {
 			}
 		} catch(HttpClientErrorException e) {
 			if(e.getStatusCode().equals(HttpStatus.UNAUTHORIZED)){
-				log.error("Unauthorized accessed : Even after retrying with SYSTEM auth token.");
 				throw new VoucherCustomException(ProcessStatus.FAILED,"Error occurred even after retrying uri "+uri.toString()+" with SYSTEM auth token.");
 			}
 		}catch (IllegalArgumentException | IllegalAccessException e) {
@@ -127,8 +125,7 @@ public class ServiceRequestRepository {
 		try {
 			response = restTemplate.getForObject(uri, Map.class);
 		}catch(Exception e) {
-			log.error("Exception while fetching from searcher: ",e);
-			throw new VoucherCustomException(ProcessStatus.FAILED,"IFSC code is invalid : url : "+uri);
+			throw new VoucherCustomException(ProcessStatus.FAILED,"IFSC code is invalid : url : " + uri);
 		}
 		return response;
 	}

@@ -289,7 +289,6 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 					LOGGER.info("Enhance Data Transformed");
 
 				} catch (Exception e) {
-					e.printStackTrace();
 					LOGGER.error("Pre-processing Enhance data - failed  :: {}" , e.getMessage());
 				}
 			} else {

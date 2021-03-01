@@ -82,10 +82,8 @@ public class IdGenRepository {
                     IdGenerationResponse.class);
             return idGenerationResponse.getIdResponses().get(0).getId();
         } catch (HttpClientErrorException e) {
-            log.error("ID Gen Service failure ", e);
             throw new ServiceCallException(e.getResponseBodyAsString());
         } catch (Exception e) {
-            log.error("ID Gen Service failure", e);
             throw new org.egov.tracer.model.CustomException("IDGEN_SERVICE_ERROR", "Failed to generate ID, unknown error occurred");
         }
     }

@@ -78,7 +78,6 @@ public class PaymentRepository {
             namedParameterJdbcTemplate.batchUpdate(INSERT_BILLACCOUNTDETAIL_SQL,  billAccountDetailSource.toArray(new MapSqlParameterSource[0]));
 
         }catch (Exception e){
-            log.error("Failed to persist payment to database", e);
             throw new CustomException("PAYMENT_CREATION_FAILED", e.getMessage());
         }
     }
@@ -176,7 +175,6 @@ public class PaymentRepository {
             namedParameterJdbcTemplate.batchUpdate(STATUS_UPDATE_BILL_SQL, billSource.toArray(new MapSqlParameterSource[0]));
         }
         catch(Exception e){
-            log.error("Failed to persist cancel Receipt to database", e);
             throw new CustomException("CANCEL_RECEIPT_FAILED", "Unable to cancel Receipt");
         }
     }
@@ -211,7 +209,6 @@ public class PaymentRepository {
             namedParameterJdbcTemplate.batchUpdate(COPY_BILL_SQL, billSource.toArray(new MapSqlParameterSource[0]));
             namedParameterJdbcTemplate.batchUpdate(COPY_BILLDETAIL_SQL, billDetailSource.toArray(new MapSqlParameterSource[0]));
         }catch (Exception e){
-            log.error("Failed to update receipt to database", e);
             throw new CustomException("RECEIPT_UPDATION_FAILED", "Unable to update receipt");
         }
     }

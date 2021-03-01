@@ -3,6 +3,7 @@ package org.egov.receipt.consumer.service;
 import java.io.IOException;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.egov.receipt.consumer.model.InstrumentContract;
 import org.egov.receipt.consumer.model.InstrumentRequest;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
+@Slf4j
 public class InstrumentUpdateConsumer {
 	@Autowired
     private ObjectMapper objectMapper;
@@ -41,7 +43,7 @@ public class InstrumentUpdateConsumer {
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("ERROR: ", e);
 		}
 	}
 }

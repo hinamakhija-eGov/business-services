@@ -80,8 +80,6 @@ public class IdGenService {
 		try {
 			response = mapper.convertValue(repository.fetchResult(uri, request), IdGenerationResponse.class);
 		}catch(Exception e) {
-			log.error("Exception while generating ids: ",e);
-			log.error("Request: "+request);
 			throw new CustomException(ErrorConstants.HRMS_GENERATE_ID_ERROR_CODE,ErrorConstants.HRMS_GENERATE_ID_ERROR_MSG);
 
 		}

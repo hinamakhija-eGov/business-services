@@ -45,7 +45,6 @@ public class BusinessDetailsRepository {
                     businessCodes, tenantId, e);
             throw new ServiceCallException(e.getResponseBodyAsString());
         } catch (Exception e) {
-            log.error("Unable to fetch business detail for {} and tenant id, " , businessCodes, tenantId, e);
             throw new CustomException("BUSINESS_DETAIL_SERVICE_ERROR", "Unable to fetch business detail from " +
                     "egov-common-masters, unknown error occurred");
         }

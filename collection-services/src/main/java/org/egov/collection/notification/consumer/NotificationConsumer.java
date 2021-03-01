@@ -239,7 +239,7 @@ public class NotificationConsumer {
 			Object response = restTemplate.postForObject(uri.toString(), request, Map.class);
 			masterData = JsonPath.read(response, BUSINESSSERVICE_CODES_JSONPATH);
 		}catch(Exception e) {
-			log.error("Exception while fetching business service codes: ",e);
+			log.error("Exception while fetching business service codes: ", e);
 		}
 		return masterData;
 	}

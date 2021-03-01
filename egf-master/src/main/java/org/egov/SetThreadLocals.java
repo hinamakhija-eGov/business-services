@@ -1,5 +1,6 @@
 package org.egov;
 
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.aspectj.lang.reflect.CodeSignature;
@@ -12,6 +13,7 @@ import java.util.Arrays;
 
 @Aspect
 @Component
+@Slf4j
 public class SetThreadLocals {
 
     /**
@@ -53,7 +55,7 @@ public class SetThreadLocals {
                     }
 
                 } catch (Exception e) {
-                    System.out.print(e.getMessage());
+                    log.error("ERROR: ", e);
                 }
             }
 
@@ -63,7 +65,6 @@ public class SetThreadLocals {
 
     @AfterReturning(value = "inWebLayer()")
     public void logMethodAcceptionEntityAnnotatedBeanAfter(JoinPoint jp) {
-        System.out.print("---After Method Execution---inWebLayer()");
         ApplicationThreadLocals.clearValues();
 
     }

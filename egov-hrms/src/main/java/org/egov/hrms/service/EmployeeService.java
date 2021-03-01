@@ -226,8 +226,6 @@ public class EmployeeService {
 			employee.getUser().setId(user.getId());
 			employee.getUser().setUuid(user.getUuid());
 		}catch(Exception e) {
-			log.error("Exception while creating user: ",e);
-			log.error("request: "+request);
 			throw new CustomException(ErrorConstants.HRMS_USER_CREATION_FAILED_CODE, ErrorConstants.HRMS_USER_CREATION_FAILED_MSG);
 		}
 
@@ -352,8 +350,6 @@ public class EmployeeService {
 		try {
 			userService.updateUser(request);
 		}catch(Exception e) {
-			log.error("Exception while updating user: ",e);
-			log.error("request: "+request);
 			throw new CustomException(ErrorConstants.HRMS_USER_UPDATION_FAILED_CODE, ErrorConstants.HRMS_USER_UPDATION_FAILED_MSG);
 		}
 

@@ -51,7 +51,7 @@ public class ServiceRequestRepository {
 			log.error("External Service threw an Exception: ",e.getResponseBodyAsString());
 			throw new ServiceCallException(e.getResponseBodyAsString());
 		}catch(Exception e) {
-			log.error("Exception while searching user data : ",e);
+			log.error("Exception while searching user data : ", e);
 		}
 
 		return response;

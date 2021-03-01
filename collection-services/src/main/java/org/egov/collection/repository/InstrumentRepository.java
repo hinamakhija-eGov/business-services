@@ -56,7 +56,6 @@ public class InstrumentRepository {
             log.error("Unable to create instrument, " + instrument, e);
             throw new ServiceCallException(e.getResponseBodyAsString());
         } catch (Exception e) {
-            log.error("Unable to create instrument, " + instrument, e);
             throw new CustomException("INSTRUMENT_CREATE_SERVICE_ERROR", "Unable to create instrument, unknown error " +
                     "occurred");
         }
@@ -83,7 +82,6 @@ public class InstrumentRepository {
             log.error("Unable to fetch instrument, {} in tenant {}", instrumentHeader, tenantId, e);
             throw new ServiceCallException(e.getResponseBodyAsString());
         } catch (Exception e) {
-            log.error("Unable to fetch instrument, {} in tenant {}", instrumentHeader, tenantId, e);
             throw new CustomException("INSTRUMENT_SERVICE_SEARCH_ERROR", "Unable to fetch instrument, unknown error " +
                     "occurred");
         }
@@ -106,10 +104,8 @@ public class InstrumentRepository {
             return isNull(instrumentResponse.getInstruments()) ? Collections.emptyList() : instrumentResponse.getInstruments();
 
         } catch (HttpClientErrorException e) {
-            log.error("Unable to fetch instrument, {} ", instrumentHeader, e);
             throw new ServiceCallException(e.getResponseBodyAsString());
         } catch (Exception e) {
-            log.error("Unable to fetch instrument, {} ", instrumentHeader, e);
             throw new CustomException("INSTRUMENT_SERVICE_SEARCH_ERROR", "Unable to fetch instrument, unknown error " +
                     "occurred");
         }

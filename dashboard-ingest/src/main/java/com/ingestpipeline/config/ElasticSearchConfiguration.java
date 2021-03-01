@@ -58,7 +58,7 @@ public class ElasticSearchConfiguration extends AbstractFactoryBean<RestHighLeve
 			restHighLevelClient = new RestHighLevelClient(
 					RestClient.builder(new HttpHost(esIndexerHostName, esIndexerHostPort, "http")));
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("Error: ", e);
 		}
 		return restHighLevelClient;
 	}

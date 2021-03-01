@@ -5,6 +5,7 @@ import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
 import org.egov.common.domain.model.Pagination;
 import org.egov.common.persistence.repository.ESRepository;
 import org.egov.egf.master.domain.model.Functionary;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
+@Slf4j
 public class FunctionaryESRepository extends ESRepository {
 
     public FunctionaryESRepository(TransportClient esClient) {
@@ -79,7 +81,7 @@ public class FunctionaryESRepository extends ESRepository {
             try {
                 functionary = mapper.readValue(hit.getSourceAsString(), Functionary.class);
             } catch (Exception e1) {
-                e1.printStackTrace();
+                log.error("ERROR: ", e1);
             }
 
             functionarys.add(functionary);

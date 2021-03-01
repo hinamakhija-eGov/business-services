@@ -57,7 +57,6 @@ public class ApportionerService {
 			}else
 				throw new CustomException("APPORTIONING_FAILED_CODE", "Apportioning of the bill Failed");
 		} catch (Exception e) {
-			log.error("Error while apportioning the bill: ", e);
 			throw new CustomException("APPORTIONING_FAILED_CODE", "Apportioning of the bill Failed");
 		}
 

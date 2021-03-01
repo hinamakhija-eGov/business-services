@@ -57,8 +57,8 @@ public class EmployeeRepository {
 		try {
 			employees = jdbcTemplate.query(query, preparedStmtList.toArray(),rowMapper);
 		}catch(Exception e) {
-			log.error("Exception while making the db call: ",e);
-			log.error("query; "+query);
+			log.error("Exception while making the db call: ", e);
+			log.error("query; " + query);
 		}
 		return employees;
 	}
@@ -71,8 +71,8 @@ public class EmployeeRepository {
 
 			employeesIds = jdbcTemplate.queryForList(query, preparedStmtList.toArray(),String.class);
 		}catch(Exception e) {
-			log.error("Exception while making the db call: ",e);
-			log.error("query; "+query);
+			log.error("Exception while making the db call: ", e);
+			log.error("query; " + query);
 		}
 		return employeesIds;
 
@@ -89,8 +89,8 @@ public class EmployeeRepository {
 		try {
 			id = jdbcTemplate.queryForObject(query, Long.class);
 		}catch(Exception e) {
-			log.error("Exception while making the db call: ",e);
-			log.error("query; "+query);
+			log.error("Exception while making the db call: ", e);
+			log.error("query; " + query);
 		}
 		return id;
 	}

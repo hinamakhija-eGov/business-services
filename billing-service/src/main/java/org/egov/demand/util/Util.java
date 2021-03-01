@@ -101,7 +101,6 @@ public class Util {
 		try {
 			return JsonPath.parse(serviceRequestRepository.fetchResult(uri.toString(), mdmsReq));
 		} catch (Exception e) {
-			log.error("Error while fetvhing MDMS data", e);
 			throw new CustomException(INVALID_TENANT_ID_MDMS_KEY, INVALID_TENANT_ID_MDMS_MSG);
 		}
 	}

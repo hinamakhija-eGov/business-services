@@ -60,7 +60,6 @@ public class RemittanceRepository {
                     remittanceReceiptSource.toArray(new MapSqlParameterSource[0]));
 
         } catch (Exception e) {
-            log.error("Failed to persist remittance to database", e);
             throw new CustomException("REMITTANCE_CREATION_FAILED", "Unable to create remittance");
         }
     }

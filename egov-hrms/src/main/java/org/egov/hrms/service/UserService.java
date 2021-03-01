@@ -88,7 +88,7 @@ public class UserService {
 		try {
 			userResponse = userCall(userRequest,uri);
 		}catch(Exception e) {
-			log.error("User created failed: ",e);
+			log.error("User created failed: ", e);
 		}
 
 		return userResponse;
@@ -101,7 +101,7 @@ public class UserService {
 		try {
 			userResponse = userCall(userRequest,uri);
 		}catch(Exception e) {
-			log.error("User created failed: ",e);
+			log.error("User created failed: ", e);
 		}
 
 		return userResponse;
@@ -119,7 +119,7 @@ public class UserService {
 		try {
 			userResponse = userCall(userSearchReq,uri);
 		}catch(Exception e) {
-			log.error("User search failed: ",e);
+			log.error("User search failed: ", e);
 		}
 
 		return userResponse;

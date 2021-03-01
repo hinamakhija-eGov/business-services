@@ -45,7 +45,6 @@ public class ProducerController {
             return new ResponseEntity<Response>(new Response("sucessful", "Published successfully"), HttpStatus.OK);
 
         } catch (Exception e){
-            LOGGER.error("Published failed "+ e.getMessage());
             return new ResponseEntity(new Response("failed", e.getMessage()), HttpStatus.BAD_REQUEST);
         }
 
@@ -65,7 +64,6 @@ public class ProducerController {
             return "Published successfully";
 
         } catch (Exception e){
-            LOGGER.error("Published failed "+ e.getMessage());
             return "Published failed: "+e.getMessage();
         }
 

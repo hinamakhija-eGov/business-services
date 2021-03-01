@@ -152,7 +152,7 @@ public class MicroServiceUtilImpl implements MicroServiceUtil{
         } catch (ServiceCallException e) {
 			
         } catch (Exception e) {
-        	throw new VoucherCustomException(ProcessStatus.FAILED,"Error Occured While calling the URL : "+mdmsUrl);
+        	throw new VoucherCustomException(ProcessStatus.FAILED,"Error Occured While calling the URL : " + mdmsUrl);
 		}
 	}
 	

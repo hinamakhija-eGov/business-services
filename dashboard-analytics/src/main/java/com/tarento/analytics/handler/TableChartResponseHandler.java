@@ -135,7 +135,7 @@ public class TableChartResponseHandler implements IResponseHandler {
             plotMap.put(headerPath, plot);
         }
         catch (Exception e){
-            e.printStackTrace();
+            logger.error("ERROR: ", e);
             logger.info("headerPath: "+headerPath);
             logger.info("bucket: "+bucket);
         }
