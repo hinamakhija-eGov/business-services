@@ -19,57 +19,51 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/**
- * A Object holds the basic data for a Trade License
- */
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @ToString
-@EqualsAndHashCode(of = {"tenantId","currentState","action"})
-public class Action   {
+@EqualsAndHashCode(of = { "tenantId", "currentState", "action" })
+public class Action {
 
-        @Size(max=256)
-        @JsonProperty("uuid")
-        private String uuid;
+	@Size(max = 256)
+	@JsonProperty("uuid")
+	private String uuid;
 
-        @Size(max=256)
-        @JsonProperty("tenantId")
-        private String tenantId;
+	@Size(max = 256)
+	@JsonProperty("tenantId")
+	private String tenantId;
 
-        @Size(max=256)
-        @JsonProperty("currentState")
-        private String currentState;
+	@Size(max = 256)
+	@JsonProperty("currentState")
+	private String currentState;
 
-        @NotNull
-        @Size(max=256)
-        @JsonProperty("action")
-        private String action;
+	@NotNull
+	@Size(max = 256)
+	@JsonProperty("action")
+	private String action;
 
-        @NotNull
-        @Size(max=256)
-        @JsonProperty("nextState")
-        private String nextState;
+	@NotNull
+	@Size(max = 256)
+	@JsonProperty("nextState")
+	private String nextState;
 
-        @NotNull
-        @Size(max=1024)
-        @JsonProperty("roles")
-        @Valid
-        private List<String> roles;
+	@NotNull
+	@Size(max = 1024)
+	@JsonProperty("roles")
+	@Valid
+	private List<String> roles;
 
-        private AuditDetails auditDetails;
+	private AuditDetails auditDetails;
 
-
-        public Action addRolesItem(String rolesItem) {
-            if (this.roles == null) {
-            this.roles = new ArrayList<>();
-            }
-        this.roles.add(rolesItem);
-        return this;
-        }
+	public Action addRolesItem(String rolesItem) {
+		if (this.roles == null) {
+			this.roles = new ArrayList<>();
+		}
+		this.roles.add(rolesItem);
+		return this;
+	}
 
 }
-
