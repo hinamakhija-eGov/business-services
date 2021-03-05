@@ -61,6 +61,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.demand.config.ApplicationProperties;
@@ -96,6 +97,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.HttpClientErrorException.Forbidden;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -456,13 +458,28 @@ public class BillServicev2 {
 	 * @return expiryDate
 	 */
 	private Long getExpiryDateForDemand(Demand demand) {
+		
+		Long previousExpiryDate = 0l;
+		
+		BillSearchCriteria criteria = BillSearchCriteria.builder()
+				.consumerCode(Stream.of(demand.getConsumerCode()).collect(Collectors.toSet()))
+				.tenantId(demand.getTenantId())
+				.build();
+		List<BillV2> searchBills = billRepository.findBill(criteria);
+		
+		if (!CollectionUtils.isEmpty(searchBills)) {
 
+			for (BillDetailV2 billDetail : searchBills.get(0).getBillDetails()) {
+				if (previousExpiryDate.compareTo(billDetail.getExpiryDate()) <= 0)
+					previousExpiryDate = billDetail.getExpiryDate();
+			}
+		}
+		
 		Long billExpiryPeriod = demand.getBillExpiryTime();
-		Long fixedBillExpiryDate = demand.getFixedBillExpiryDate();
 		Calendar cal = Calendar.getInstance();
 		
-		if (!ObjectUtils.isEmpty(fixedBillExpiryDate) && fixedBillExpiryDate > cal.getTimeInMillis()) {
-			cal.setTimeInMillis(fixedBillExpiryDate);
+		if (previousExpiryDate.compareTo(cal.getTimeInMillis()) > 0) {
+			cal.setTimeInMillis(previousExpiryDate);
 		} else if (!ObjectUtils.isEmpty(billExpiryPeriod) && 0 < billExpiryPeriod) {
 			cal.setTimeInMillis(cal.getTimeInMillis() + billExpiryPeriod);
 		}
