@@ -10,6 +10,7 @@ import org.egov.demand.model.IdGenerationRequest;
 import org.egov.demand.model.IdGenerationResponse;
 import org.egov.demand.model.IdRequest;
 import org.egov.demand.model.IdResponse;
+import org.egov.tracer.model.CustomException;
 import org.egov.tracer.model.ServiceCallException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -46,10 +47,9 @@ public class IdGenRepo {
 		} catch (HttpClientErrorException e) {
 			log.error("ID Gen Service failure ", e);
 			throw new ServiceCallException(e.getResponseBodyAsString());
-		} catch (Exception e) {
+		} catch (CustomException e) {
 			log.error("ID Gen Service failure", e);
-			throw new org.egov.tracer.model.CustomException("IDGEN_SERVICE_ERROR",
-					"Failed to generate ID, unknown error occurred");
+			throw new CustomException("IDGEN_SERVICE_ERROR", "Failed to generate ID, unknown error occurred");
 		}
 	}
 }

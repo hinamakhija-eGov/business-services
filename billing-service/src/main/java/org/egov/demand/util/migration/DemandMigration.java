@@ -14,6 +14,7 @@ import org.egov.demand.model.DemandDetail;
 import org.egov.demand.repository.DemandRepository;
 import org.egov.demand.repository.rowmapper.DemandRowMapper;
 import org.egov.demand.web.contract.DemandRequest;
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -116,7 +117,7 @@ public class DemandMigration {
 
 				apportionDemands(demands);
 				postDemands(demands);
-			} catch (Exception e) {
+			} catch (CustomException e) {
 
 				log.error("Migration failed at batch count of : " + i);
 				responseMap.put( "Migration failed at batch count : " + i, e.getMessage());

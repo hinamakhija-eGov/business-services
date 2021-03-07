@@ -155,7 +155,7 @@ public class BillingServiceConsumer {
 			updatePaymentBackUpdateForFailure(consumerRecord.toString(), UUID.randomUUID().toString() + " : " + e.getClass().getName(), isReceiptCancellation);
 			log.info("EGBS_PAYMENT_SERIALIZE_ERROR",e.getClass().getName() + " : " + e.getMessage());
 			
-		} catch (Exception e ) {
+		} catch (CustomException e ) {
 
 			String paymentId = util.getValueFromAdditionalDetailsForKey(
 					billReq.getBills().get(0).getAdditionalDetails(), Constants.PAYMENT_ID_KEY);

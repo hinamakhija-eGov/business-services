@@ -5,13 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.demand.config.ApplicationProperties;
 import org.egov.demand.model.Demand;
 import org.egov.demand.web.contract.User;
 import org.egov.demand.web.contract.UserResponse;
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -60,7 +60,7 @@ public class UserService {
 					response.put("id", userResponse.getUser().get(0).getUuid());
 				}
 			}
-		} catch (Exception e) {
+		} catch (CustomException e) {
 			log.error("Exception while fetching user: ", e);
 		}
 		
@@ -99,7 +99,7 @@ public class UserService {
 		try {
 			
 			response = restTemplate.postForObject(url.toString(), request, UserResponse.class);
-		}catch(Exception e) {
+		}catch(CustomException e) {
 			log.error("Exception while creating user: ", e);
 			return null;
 		}

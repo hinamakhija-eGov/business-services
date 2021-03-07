@@ -599,7 +599,7 @@ public class BillService {
 
 		try {
 			kafkaTemplate.send(appProps.getCreateBillTopic(), appProps.getCreateBillTopicKey(), billRequest);
-		} catch (Exception e) {
+		} catch (CustomException e) {
 			log.debug("BillService createAsync:" + e);
 			throw new CustomException("EGBS_BILL_SAVE_ERROR", e.getMessage());
 

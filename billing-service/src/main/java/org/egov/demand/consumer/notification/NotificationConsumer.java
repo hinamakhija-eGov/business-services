@@ -11,6 +11,7 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.demand.model.Bill;
 import org.egov.demand.model.BillDetail;
 import org.egov.demand.web.contract.BillRequest;
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -89,7 +90,7 @@ public class NotificationConsumer {
 		try {
 			BillRequest req = objectMapper.convertValue(record, BillRequest.class);
 			sendNotification(req);
-		} catch (Exception e) {
+		} catch (CustomException e) {
 			log.error("Exception while reading from the queue: ", e);
 		}
 	}
@@ -203,7 +204,7 @@ public class NotificationConsumer {
 			result = restTemplate.postForObject(uri.toString(), request, Map.class);
 			codes = JsonPath.read(result, LOCALIZATION_CODES_JSONPATH);
 			messages = JsonPath.read(result, LOCALIZATION_MSGS_JSONPATH);
-		} catch (Exception e) {
+		} catch (CustomException e) {
 			log.error("Exception while fetching from localization: " + e);
 		}
 		if (null != result) {
