@@ -13,6 +13,7 @@ import org.egov.collection.producer.CollectionProducer;
 import org.egov.collection.repository.PaymentRepository;
 import org.egov.collection.util.PaymentEnricher;
 import org.egov.collection.util.PaymentValidator;
+import org.egov.collection.util.PropertyPaymentFilterTemp;
 import org.egov.collection.web.contract.Bill;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.tracer.model.CustomException;
@@ -39,10 +40,13 @@ public class PaymentService {
 
     private CollectionProducer producer;
 
+    private PropertyPaymentFilterTemp propertyPaymentFilterTemp;
+
 
     @Autowired
     public PaymentService(ApportionerService apportionerService, PaymentEnricher paymentEnricher, ApplicationProperties applicationProperties,
-                          UserService userService, PaymentValidator paymentValidator, PaymentRepository paymentRepository, CollectionProducer producer) {
+                          UserService userService, PaymentValidator paymentValidator, PaymentRepository paymentRepository, CollectionProducer producer,
+                          PropertyPaymentFilterTemp propertyPaymentFilterTemp) {
         this.apportionerService = apportionerService;
         this.paymentEnricher = paymentEnricher;
         this.applicationProperties = applicationProperties;
@@ -50,6 +54,7 @@ public class PaymentService {
         this.paymentValidator = paymentValidator;
         this.paymentRepository = paymentRepository;
         this.producer = producer;
+        this.propertyPaymentFilterTemp = propertyPaymentFilterTemp;
     }
 
 
@@ -78,6 +83,9 @@ public class PaymentService {
             paymentSearchCriteria.setPayerIds(payerIds);
         }*/
         List<Payment> payments = paymentRepository.fetchPayments(paymentSearchCriteria);
+
+        if(!propertyPaymentFilterTemp.isUserAuthorized(requestInfo,paymentSearchCriteria,payments))
+            return new LinkedList<>();
 
         return payments;
     }
