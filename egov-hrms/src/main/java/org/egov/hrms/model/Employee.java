@@ -63,15 +63,18 @@ public class Employee {
 
     private Long id;
 
+    @Size(max = 1024)
     private String uuid;
 
     @Size(min = 1, max = 256)
     private String code;
 
     @NotNull
+    @Size(max = 250)
     private String employeeStatus;
 
     @NotNull
+    @Size(max = 250)
     private String employeeType;
 
     private Long dateOfAppointment;
@@ -103,7 +106,7 @@ public class Employee {
     private List<DepartmentalTest> tests = new ArrayList<>();
 
     @NotNull
-    @Size(max = 256)
+    @Size(max = 250)
     private String tenantId;
 
     @Valid
