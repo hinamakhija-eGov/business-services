@@ -339,9 +339,15 @@ public class ReadUtil {
 		String currentWorkingFolder = System.getProperty("user.dir"),
 				filePathSeperator = System.getProperty("file.separator"),
 				filePath = currentWorkingFolder + filePathSeperator + fileName;
-		BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(new File(filePath)));
-		bufferedWriter.write(data.toString());
-		bufferedWriter.flush();
-		bufferedWriter.close();
+		BufferedWriter bufferedWriter = null;
+		try {
+			bufferedWriter = new BufferedWriter(new FileWriter(new File(filePath)));
+			bufferedWriter.write(data.toString());
+		}catch (Exception e){
+			LOGGER.error("Error while writing to file. ");
+		}finally {
+			bufferedWriter.flush();
+			bufferedWriter.close();
+		}
 	}
 }
