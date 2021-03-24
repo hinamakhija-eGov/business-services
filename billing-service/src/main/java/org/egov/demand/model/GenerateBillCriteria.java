@@ -77,6 +77,10 @@ public class GenerateBillCriteria {
 	
 	private String mobileNumber;
 	
+	private Long periodFrom;
+	
+	private Long periodTo;
+	
 	public DemandCriteria toDemandCriteria() {
 		
 		Set<String> consumerCodeSet = new HashSet<>();
@@ -92,6 +96,8 @@ public class GenerateBillCriteria {
 				.demandId(demandIdSet)
 				.tenantId(tenantId)
 				.email(email)
+				.periodFrom(periodFrom)
+				.periodTo(periodTo)
 				.build();
 	}
 	
@@ -110,6 +116,8 @@ public class GenerateBillCriteria {
 				.tenantId(tenantId)
 				.isOrderBy(true)
 				.email(email)
+				.periodFrom(periodFrom)
+				.periodTo(periodTo)
 				.build();
 	}
 

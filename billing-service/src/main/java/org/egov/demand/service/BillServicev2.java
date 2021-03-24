@@ -289,6 +289,8 @@ public class BillServicev2 {
 				.isPaymentCompleted(false)
 				.receiptRequired(false)
 				.demandId(demandIds)
+				.periodFrom(billCriteria.getPeriodFrom())
+				.periodTo(billCriteria.getPeriodTo())
 				.build();
 
 		/* Fetching demands for the given bill search criteria */
