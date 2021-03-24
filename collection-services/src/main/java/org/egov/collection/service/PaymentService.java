@@ -205,5 +205,28 @@ public class PaymentService {
         return paymentRepository.fetchPaymentsForPlainSearch(criteria);
     }
 
+    @Transactional
+    public Payment createPaymentForWSMigration(PaymentRequest paymentRequest) {
+    	
+        paymentEnricher.enrichPaymentPreValidate(paymentRequest);
+        paymentValidator.validatePaymentForCreate(paymentRequest);
+        paymentEnricher.enrichPaymentPostValidate(paymentRequest);
+
+        Payment payment = paymentRequest.getPayment();
+       // Map<String, Bill> billIdToApportionedBill = apportionerService.apportionBill(paymentRequest);
+      //  paymentEnricher.enrichAdvanceTaxHead(new LinkedList<>(billIdToApportionedBill.values()));
+       // setApportionedBillsToPayment(billIdToApportionedBill,payment);
+
+        String payerId = createUser(paymentRequest);
+        if(!StringUtils.isEmpty(payerId))
+            payment.setPayerId(payerId);
+        paymentRepository.savePayment(payment);
+
+       // producer.producer(applicationProperties.getCreatePaymentTopicName(), paymentRequest);
+
+
+        return payment;
+    }
+
 
 }

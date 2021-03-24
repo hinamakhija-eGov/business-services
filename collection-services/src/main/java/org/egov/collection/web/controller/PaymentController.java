@@ -163,5 +163,14 @@ public class PaymentController {
 
         return getSuccessResponse(payments, requestInfo);
     }
+    
+    @RequestMapping(value = "ws/migration/_create", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<PaymentResponse> migration(@RequestBody @Valid PaymentRequest paymentRequest) {
+
+        Payment payment = paymentService.createPaymentForWSMigration(paymentRequest);
+        return getSuccessResponse(Collections.singletonList(payment), paymentRequest.getRequestInfo());
+
+    }
 
 }
