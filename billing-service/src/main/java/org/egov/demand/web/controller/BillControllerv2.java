@@ -69,8 +69,8 @@ public class BillControllerv2 {
 	@ResponseBody
 	public ResponseEntity<?> create(@RequestBody BillRequestV2 billRequest, BindingResult bindingResult){
 
-		BillResponseV2 billResponse = billService.sendBillToKafka(billRequest);
 		billHelper.getBillRequestWithIds(billRequest);
+		BillResponseV2 billResponse = billService.sendBillToKafka(billRequest);
 		return new ResponseEntity<>(billResponse,HttpStatus.CREATED);
 	}
 }
