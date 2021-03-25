@@ -96,7 +96,7 @@ public class PaymentService {
     @Transactional
     public Payment createPayment(PaymentRequest paymentRequest) {
     	
-        paymentEnricher.enrichPaymentPreValidate(paymentRequest);
+        paymentEnricher.enrichPaymentPreValidate(paymentRequest,false);
         paymentValidator.validatePaymentForCreate(paymentRequest);
         paymentEnricher.enrichPaymentPostValidate(paymentRequest);
 
@@ -180,7 +180,7 @@ public class PaymentService {
      */
     @Transactional
     public Payment vaidateProvisonalPayment(PaymentRequest paymentRequest) {
-        paymentEnricher.enrichPaymentPreValidate(paymentRequest);
+        paymentEnricher.enrichPaymentPreValidate(paymentRequest,false);
         paymentValidator.validatePaymentForCreate(paymentRequest);
         
         return paymentRequest.getPayment();
@@ -208,7 +208,7 @@ public class PaymentService {
     @Transactional
     public Payment createPaymentForWSMigration(PaymentRequest paymentRequest) {
     	
-        paymentEnricher.enrichPaymentPreValidate(paymentRequest);
+        paymentEnricher.enrichPaymentPreValidate(paymentRequest,true);
         paymentValidator.validatePaymentForCreate(paymentRequest);
         paymentEnricher.enrichPaymentPostValidate(paymentRequest);
 
