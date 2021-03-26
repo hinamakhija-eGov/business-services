@@ -67,7 +67,7 @@ public class AmazonS3ClientServiceImpl implements AmazonS3ClientService
             String fileName = System.currentTimeMillis() + randomString + "." +imagetype;
             //creating the file in the server (temporarily)
             File file = new File(fileName);
-            FileOutputStream fos = new FileOutputStream(file);
+            fos = new FileOutputStream(file);
 
             fos.write(multipartFile.getBytes());
 
