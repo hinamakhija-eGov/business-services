@@ -213,9 +213,9 @@ public class PaymentService {
         paymentEnricher.enrichPaymentPostValidate(paymentRequest);
 
         Payment payment = paymentRequest.getPayment();
-       // Map<String, Bill> billIdToApportionedBill = apportionerService.apportionBill(paymentRequest);
-      //  paymentEnricher.enrichAdvanceTaxHead(new LinkedList<>(billIdToApportionedBill.values()));
-       // setApportionedBillsToPayment(billIdToApportionedBill,payment);
+        Map<String, Bill> billIdToApportionedBill = apportionerService.apportionBill(paymentRequest);
+        paymentEnricher.enrichAdvanceTaxHead(new LinkedList<>(billIdToApportionedBill.values()));
+        setApportionedBillsToPayment(billIdToApportionedBill,payment);
 
         String payerId = createUser(paymentRequest);
         if(!StringUtils.isEmpty(payerId))
