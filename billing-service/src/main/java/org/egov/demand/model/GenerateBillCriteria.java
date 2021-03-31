@@ -55,6 +55,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.validator.constraints.SafeHtml;
 
 @Setter
 @Getter
@@ -63,16 +64,19 @@ import lombok.ToString;
 @Builder
 @ToString
 public class GenerateBillCriteria {
-	
+
+	@SafeHtml
 	@NotNull
 	@Size(max = 256)
 	private String tenantId;
 
+	@SafeHtml
 	@Size(max = 64)
 	private String demandId;
 	
 	private Set<String> consumerCode;
-	
+
+	@SafeHtml
 	@NotNull
 	@Size(max = 256)
 	private String businessService;
