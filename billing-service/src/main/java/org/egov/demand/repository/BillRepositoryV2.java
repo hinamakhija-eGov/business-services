@@ -2,6 +2,7 @@ package org.egov.demand.repository;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -238,6 +239,7 @@ public String  getLatestActiveBillId(CancelBillCriteria cancelBillCriteria){
 		List<Object> prepareStatementValues=new ArrayList<Object>();
 		prepareStatementValues.add(billStatus);
 		prepareStatementValues.add(billId);
-		jdbcTemplate.update(queryStr, prepareStatementValues);
+		int[] types = {Types.VARCHAR, Types.VARCHAR};
+		jdbcTemplate.update(queryStr, prepareStatementValues.toArray(),types);
 	}
 }
