@@ -212,7 +212,7 @@ public class BillQueryBuilder {
 			final CancelBillCriteria cancelBillCriteria) {
 
 		StringBuilder selectQuery = new StringBuilder(GET_LATEST_BILL_QUERY);
-		selectQuery.append("where bill.tenantid=?");
+		selectQuery.append(" where bill.tenantid=?");
 		preparedStatementValues.add(cancelBillCriteria.getTenantId().toString());
 
 		selectQuery.append(" AND bill.status = ?");
