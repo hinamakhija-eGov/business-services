@@ -67,6 +67,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.validation.Valid;
+
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.demand.config.ApplicationProperties;
 import org.egov.demand.model.BillAccountDetailV2;
@@ -88,6 +90,7 @@ import org.egov.demand.util.Util;
 import org.egov.demand.web.contract.BillRequestV2;
 import org.egov.demand.web.contract.BillResponseV2;
 import org.egov.demand.web.contract.BusinessServiceDetailCriteria;
+import org.egov.demand.web.contract.CancelBillCriteria;
 import org.egov.demand.web.contract.RequestInfoWrapper;
 import org.egov.demand.web.contract.User;
 import org.egov.demand.web.contract.factory.ResponseFactory;
@@ -630,6 +633,18 @@ public class BillServicev2 {
 		if (!CollectionUtils.isEmpty(billRequest.getBills()))
 			billRepository.saveBill(billRequest);
 		return getBillResponse(billRequest.getBills());
+	}
+
+	public void cancelBill( CancelBillCriteria cancelBillCriteria,
+			RequestInfoWrapper requestInfoWrapper) {
+		try {
+		String billId=billRepository.getLatestActiveBillId(cancelBillCriteria);
+		billRepository.updateBillStatusBYId(billId,BillStatus.ACTIVE.toString());
+		}
+		catch (Exception e) {
+			throw new CustomException("EGBS_CANCEL_BILL_ERROR", e.getMessage());
+		}
+		
 	}
 	
 }

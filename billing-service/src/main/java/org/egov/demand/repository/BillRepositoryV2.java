@@ -17,6 +17,7 @@ import org.egov.demand.repository.querybuilder.BillQueryBuilder;
 import org.egov.demand.repository.rowmapper.BillRowMapperV2;
 import org.egov.demand.util.Util;
 import org.egov.demand.web.contract.BillRequestV2;
+import org.egov.demand.web.contract.CancelBillCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -48,6 +49,15 @@ public class BillRepositoryV2 {
 		log.debug("query:::"+queryStr+"  preparedStatementValues::"+preparedStatementValues);
 		return jdbcTemplate.query(queryStr, preparedStatementValues.toArray(), searchBillRowMapper);
 	}
+	
+public String  getLatestActiveBillId(CancelBillCriteria cancelBillCriteria){
+		
+		List<Object> preparedStatementValues = new ArrayList<>();
+		String queryStr = billQueryBuilder.getLatestBillQuery( preparedStatementValues, cancelBillCriteria);
+		log.debug("query:::"+queryStr+"  preparedStatementValues::"+preparedStatementValues);
+		return jdbcTemplate.queryForObject(queryStr, preparedStatementValues.toArray(), String.class);
+	}
+	
 	
 	@Transactional
 	public void saveBill(BillRequestV2 billRequest){
@@ -220,5 +230,14 @@ public class BillRepositoryV2 {
 				return billIdAndStatusMap.size();
 			}
 		});
+	}
+
+	public void updateBillStatusBYId(String billId, String billStatus) {
+		// TODO Auto-generated method stub
+		String queryStr = billQueryBuilder.getBillStatusUpdateBatchQuery();
+		List<Object> prepareStatementValues=new ArrayList<Object>();
+		prepareStatementValues.add(billStatus);
+		prepareStatementValues.add(billId);
+		jdbcTemplate.update(queryStr, prepareStatementValues);
 	}
 }

@@ -153,6 +153,8 @@ public class Constants {
 	
 	public static final String DEBIT_NOTE_VALUE = "DN";
 	
+	public static final String ACTIVE="ACTIVE";
+	
 
 	private Constants() {}
 }
