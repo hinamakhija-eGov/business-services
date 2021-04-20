@@ -154,6 +154,8 @@ public class Constants {
 	public static final String DEBIT_NOTE_VALUE = "DN";
 	
 	public static final String ACTIVE="ACTIVE";
+
+	public static final String SUCCESS_CANCEL_BILL = "Successfully canclled latest active bill";
 	
 
 	private Constants() {}

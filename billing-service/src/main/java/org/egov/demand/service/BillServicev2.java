@@ -635,8 +635,7 @@ public class BillServicev2 {
 		return getBillResponse(billRequest.getBills());
 	}
 
-	public void cancelBill( CancelBillCriteria cancelBillCriteria,
-			RequestInfoWrapper requestInfoWrapper) {
+	public void cancelBill( CancelBillCriteria cancelBillCriteria) {
 		try {
 		String billId=billRepository.getLatestActiveBillId(cancelBillCriteria);
 		billRepository.updateBillStatusBYId(billId,BillStatus.ACTIVE.toString());
