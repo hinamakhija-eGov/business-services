@@ -638,7 +638,7 @@ public class BillServicev2 {
 	public void cancelBill( CancelBillCriteria cancelBillCriteria) {
 		try {
 		String billId=billRepository.getLatestActiveBillId(cancelBillCriteria);
-		billRepository.updateBillStatusBYId(billId,BillStatus.ACTIVE.toString());
+		billRepository.updateBillStatusBYId(billId,BillStatus.EXPIRED.toString());
 		}
 		catch (Exception e) {
 			throw new CustomException("EGBS_CANCEL_BILL_ERROR", e.getMessage());
