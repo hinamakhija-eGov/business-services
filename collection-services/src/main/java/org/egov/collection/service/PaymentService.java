@@ -209,7 +209,7 @@ public class PaymentService {
     public Payment createPaymentForWSMigration(PaymentRequest paymentRequest) {
     	
         paymentEnricher.enrichPaymentPreValidate(paymentRequest,true);
-        paymentValidator.validatePaymentForCreate(paymentRequest);
+        paymentValidator.validatePaymentForCreateWSMigration(paymentRequest);
         paymentEnricher.enrichPaymentPostValidate(paymentRequest);
 
         Payment payment = paymentRequest.getPayment();
