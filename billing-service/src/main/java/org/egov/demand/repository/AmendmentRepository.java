@@ -74,8 +74,10 @@ public class AmendmentRepository {
 		});
 		
 		saveTaxDetail(amendment.getDemandDetails(), amendment.getId());
-		savedocs(amendment.getDocuments(), amendment.getId());
 		
+		if (amendment.getDocuments() != null && !amendment.getDocuments().isEmpty())
+		savedocs(amendment.getDocuments(), amendment.getId());
+
 		// save document
 	}
 	
