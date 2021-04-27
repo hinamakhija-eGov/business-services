@@ -36,7 +36,7 @@ public class AmendmentQueryBuilder {
 			+ " FROM egbs_amendment amendment "
 			+ " INNER JOIN "
 			+ " egbs_amendment_taxdetail amdl ON amendment.id = amdl.amendmentid " 
-			+ "	INNER JOIN egbs_document doc ON amendment.id = doc.amendmentid WHERE ";
+			+ "	LEFT OUTER JOIN egbs_document doc ON amendment.id = doc.amendmentid WHERE ";
 
 	
 	public String getSearchQuery(AmendmentCriteria amendmentCriteria, List<Object> preparedStatementValues) {
