@@ -161,7 +161,7 @@ public class BillQueryBuilder {
 	 * @param billIds
 	 * @param preparedStmtList
 	 */
-	public String getBillStatusUpdateQuery(List<String> consumerCodes, List<Object> preparedStmtList) {
+	public String getBillStatusUpdateQuery(List<String> consumerCodes,String businessService, List<Object> preparedStmtList) {
 
 		StringBuilder builder = new StringBuilder(BILL_STATUS_UPDATE_QUERY);
 
@@ -169,8 +169,10 @@ public class BillQueryBuilder {
 
 			builder.append(" AND id IN ( SELECT billid from egbs_billdetail_v1 where consumercode IN (");
 			appendListToQuery(consumerCodes, preparedStmtList, builder);
-			builder.append(")");
+			builder.append(") AND businessservice=?");
+			preparedStmtList.add(businessService);
 		}
+		
 		return builder.toString();
 	}
 

@@ -222,7 +222,7 @@ public class BillServicev2 {
 			log.info("fetchBill--------before updateDemandsForexpiredBillDetails-------------------");
 			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), billCriteria.getConsumerCode(), billCriteria.getTenantId(), requestInfoWrapper);
 			log.info("fetchBill--------after updateDemandsForexpiredBillDetails-------------------");
-			billRepository.updateBillStatus(cosnumerCodesToBeExpired, BillStatus.EXPIRED);
+			billRepository.updateBillStatus(cosnumerCodesToBeExpired,billCriteria.getBusinessService(), BillStatus.EXPIRED);
 			BillResponseV2 finalResponse = generateBill(billCriteria, requestInfo);
 			finalResponse.getBill().addAll(billsToBeReturned);
 			return finalResponse;
