@@ -169,7 +169,7 @@ public class BillQueryBuilder {
 
 			builder.append(" AND id IN ( SELECT billid from egbs_billdetail_v1 where consumercode IN (");
 			appendListToQuery(consumerCodes, preparedStmtList, builder);
-			builder.append(") AND businessservice=?");
+			builder.append(" AND businessservice=? )");
 			preparedStmtList.add(businessService);
 		}
 		
