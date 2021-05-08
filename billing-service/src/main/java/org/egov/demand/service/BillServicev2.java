@@ -48,6 +48,8 @@ import static org.egov.demand.util.Constants.URL_NOT_CONFIGURED_FOR_DEMAND_UPDAT
 import static org.egov.demand.util.Constants.URL_NOT_CONFIGURED_FOR_DEMAND_UPDATE_MSG;
 import static org.egov.demand.util.Constants.URL_NOT_CONFIGURED_REPLACE_TEXT;
 import static org.egov.demand.util.Constants.URL_PARAMS_FOR_SERVICE_BASED_DEMAND_APIS;
+import static org.egov.demand.util.Constants.BUSINESS_SERVICE_URL_PARAMETER;
+import static org.egov.demand.util.Constants.URL_PARAM_SEPERATOR;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -238,7 +240,7 @@ public class BillServicev2 {
 
 		Map<String, String> serviceUrlMap = appProps.getBusinessCodeAndDemandUpdateUrlMap();
 
-		log.info("--------gupdateDemandsForexpiredBillDetails-------------serviceUrlMap-----" + serviceUrlMap);
+		log.info("--------updateDemandsForexpiredBillDetails-------------serviceUrlMap-----" + serviceUrlMap);
 			String url = serviceUrlMap.get(businessService);
 			log.info("--------gupdateDemandsForexpiredBillDetails-------------url-----" + url);
 			if (StringUtils.isEmpty(url)) {
@@ -251,7 +253,7 @@ public class BillServicev2 {
 			StringBuilder completeUrl = new StringBuilder(url)
 					.append(URL_PARAMS_FOR_SERVICE_BASED_DEMAND_APIS.replace(TENANTID_REPLACE_TEXT, tenantId).replace(
 							CONSUMERCODES_REPLACE_TEXT, consumerCodesTobeUpdated.toString().replace("[", "").replace("]", "")));
-
+			completeUrl.append(URL_PARAM_SEPERATOR).append(BUSINESS_SERVICE_URL_PARAMETER).append(businessService);
 			log.info("updateDemandsForexpiredBillDetails --completeUrl---" + completeUrl);
 			restRepository.fetchResult(completeUrl.toString(), requestInfoWrapper);
 	}
