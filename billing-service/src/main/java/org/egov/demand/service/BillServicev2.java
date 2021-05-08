@@ -169,12 +169,13 @@ public class BillServicev2 {
 			billCriteria.setConsumerCode(new HashSet<>());
 		BillResponseV2 res = searchBill(billCriteria.toBillSearchCriteria(), requestInfo);
 		List<BillV2> bills = res.getBill();
-
+		log.info("fetchBill--> bills-->" + bills.size());
 		/* 
 		 * If no existing bills found then Generate new bill 
 		 */
 		if (CollectionUtils.isEmpty(bills))
 			return generateBill(billCriteria, requestInfo);
+		log.info("fetchBill--------going to generate new bill-------------------");
 		
 		Map<String, BillV2> consumerCodeAndBillMap = bills.stream().collect(Collectors.toMap(BillV2::getConsumerCode, Function.identity()));
 		billCriteria.getConsumerCode().addAll(consumerCodeAndBillMap.keySet());
@@ -216,7 +217,9 @@ public class BillServicev2 {
 			
 			billCriteria.getConsumerCode().retainAll(cosnumerCodesToBeExpired);
 			billCriteria.getConsumerCode().addAll(cosnumerCodesNotFoundInBill);
+			log.info("fetchBill--------before updateDemandsForexpiredBillDetails-------------------");
 			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), billCriteria.getConsumerCode(), billCriteria.getTenantId(), requestInfoWrapper);
+			log.info("fetchBill--------after updateDemandsForexpiredBillDetails-------------------");
 			billRepository.updateBillStatus(cosnumerCodesToBeExpired, BillStatus.EXPIRED);
 			BillResponseV2 finalResponse = generateBill(billCriteria, requestInfo);
 			finalResponse.getBill().addAll(billsToBeReturned);
@@ -235,8 +238,9 @@ public class BillServicev2 {
 
 		Map<String, String> serviceUrlMap = appProps.getBusinessCodeAndDemandUpdateUrlMap();
 
-
+		log.info("--------gupdateDemandsForexpiredBillDetails-------------serviceUrlMap-----" + serviceUrlMap);
 			String url = serviceUrlMap.get(businessService);
+			log.info("--------gupdateDemandsForexpiredBillDetails-------------url-----" + url);
 			if (StringUtils.isEmpty(url)) {
 				
 				log.info(URL_NOT_CONFIGURED_FOR_DEMAND_UPDATE_KEY, URL_NOT_CONFIGURED_FOR_DEMAND_UPDATE_MSG
@@ -248,7 +252,7 @@ public class BillServicev2 {
 					.append(URL_PARAMS_FOR_SERVICE_BASED_DEMAND_APIS.replace(TENANTID_REPLACE_TEXT, tenantId).replace(
 							CONSUMERCODES_REPLACE_TEXT, consumerCodesTobeUpdated.toString().replace("[", "").replace("]", "")));
 
-			log.info("the url : " + completeUrl);
+			log.info("updateDemandsForexpiredBillDetails --completeUrl---" + completeUrl);
 			restRepository.fetchResult(completeUrl.toString(), requestInfoWrapper);
 	}
 
