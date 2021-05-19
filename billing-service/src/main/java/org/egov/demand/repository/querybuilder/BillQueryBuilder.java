@@ -78,10 +78,11 @@ public class BillQueryBuilder {
 	private void addWhereClause(final StringBuilder selectQuery, final List preparedStatementValues,
 			final BillSearchCriteria searchBill) {
 		
-		if(searchBill.getBillId() != null && !searchBill.getBillId().isEmpty())
+		if(!CollectionUtils.isEmpty(searchBill.getBillId())){
 			selectQuery.append(" AND b.id in (");
 			appendListToQuery(searchBill.getBillId(), preparedStatementValues, selectQuery);
-		
+		}
+
 		if (searchBill.getStatus() != null) {
 			selectQuery.append(" AND b.status = ?");
 			preparedStatementValues.add(searchBill.getStatus().toString());
