@@ -1,20 +1,14 @@
 package org.egov.demand.repository.querybuilder;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
-import org.egov.demand.config.ApplicationProperties;
 import org.egov.demand.model.BillSearchCriteria;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 @Component
 public class BillQueryBuilder {
-	
-	@Autowired
-	private ApplicationProperties applicationProperties;
 	
 	public static final String REPLACE_STRING = "{replace}";
 	
@@ -85,7 +79,8 @@ public class BillQueryBuilder {
 			final BillSearchCriteria searchBill) {
 		
 		if(searchBill.getBillId() != null && !searchBill.getBillId().isEmpty())
-			selectQuery.append(" AND b.id in (" + getIdQuery(searchBill.getBillId()));
+			selectQuery.append(" AND b.id in (");
+			appendListToQuery(searchBill.getBillId(), preparedStatementValues, selectQuery);
 		
 		if (searchBill.getStatus() != null) {
 			selectQuery.append(" AND b.status = ?");
@@ -114,11 +109,11 @@ public class BillQueryBuilder {
 
 		if (!CollectionUtils.isEmpty(searchBill.getConsumerCode())) {
 			selectQuery.append(" AND bd.consumercode IN (");
-			appendListToQuery(new ArrayList<>(searchBill.getConsumerCode()), preparedStatementValues, selectQuery);
+			appendListToQuery(searchBill.getConsumerCode(), preparedStatementValues, selectQuery);
 		}
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({"rawtypes" })
 	private StringBuilder addPagingClause(final StringBuilder selectQuery, final List preparedStatementValues,
 			final BillSearchCriteria searchBillCriteria) {
 		
@@ -169,30 +164,18 @@ public class BillQueryBuilder {
 	/**
 	 * @param billIds
 	 * @param preparedStmtList
-	 * @param builder
+	 * @param query
 	 */
-	private void appendListToQuery(List<String> values, List<Object> preparedStmtList, StringBuilder builder) {
+	private void appendListToQuery(Collection<String> values, List<Object> preparedStmtList, StringBuilder query) {
 		int length = values.size();
+		String[] valueArray = values.toArray(new String[length]);
 
 		for (int i = 0; i < length; i++) {
-			builder.append(" ?");
+			query.append(" ?");
 			if (i != length - 1)
-				builder.append(",");
-			preparedStmtList.add(values.get(i));
+				query.append(",");
+			preparedStmtList.add(valueArray[i]);
 		}
-		builder.append(")");
+		query.append(")");
 	}
-
-	private static String getIdQuery(Set<String> idList) {
-
-		StringBuilder query = new StringBuilder();
-		if (!idList.isEmpty()) {
-			String[] list = idList.toArray(new String[idList.size()]);
-			query.append("'" + list[0] + "'");
-			for (int i = 1; i < idList.size(); i++)
-				query.append("," + "'" + list[i] + "'");
-		}
-		return query.append(")").toString();
-	}
-
 }
