@@ -202,7 +202,7 @@ public class PaymentService {
             return Collections.emptyList();
 
         PaymentSearchCriteria criteria = PaymentSearchCriteria.builder().ids(new HashSet<String>(ids)).build();
-        return paymentRepository.fetchPaymentsForPlainSearch(criteria);
+        return paymentRepository.fetchPayments(criteria);
     }
 
 
