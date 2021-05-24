@@ -29,13 +29,13 @@ public class PaymentQueryBuilder {
     @Autowired
     private ApplicationProperties config;
 
-    public static final String SELECT_PAYMENT_SQL = "SELECT py.*,pyd.*," +
-            "py.id as py_id,py.tenantId as py_tenantId,py.totalAmountPaid as py_totalAmountPaid,py.createdBy as py_createdBy,py.createdtime as py_createdtime," +
-            "py.lastModifiedBy as py_lastModifiedBy,py.lastmodifiedtime as py_lastmodifiedtime,py.additionalDetails as py_additionalDetails," +
+    public static final String SELECT_PAYMENT_SQL = "SELECT py_inner.*,pyd.*," +
+            "py_inner.id as py_id,py_inner.tenantId as py_tenantId,py_inner.totalAmountPaid as py_totalAmountPaid,py_inner.createdBy as py_createdBy,py_inner.createdtime as py_createdtime," +
+            "py_inner.lastModifiedBy as py_lastModifiedBy,py_inner.lastmodifiedtime as py_lastmodifiedtime,py_inner.additionalDetails as py_additionalDetails," +
             "pyd.id as pyd_id, pyd.tenantId as pyd_tenantId, pyd.manualreceiptnumber as manualreceiptnumber,pyd.manualreceiptdate as manualreceiptdate, pyd.createdBy as pyd_createdBy,pyd.createdtime as pyd_createdtime,pyd.lastModifiedBy as pyd_lastModifiedBy," +
             "pyd.lastmodifiedtime as pyd_lastmodifiedtime,pyd.additionalDetails as pyd_additionalDetails" +
-            " FROM egcl_payment py  " +
-            " INNER JOIN egcl_paymentdetail pyd ON pyd.paymentid = py.id ";
+            " FROM egcl_payment py_inner  " +
+            " INNER JOIN egcl_paymentdetail pyd ON pyd.paymentid = py_inner.id ";
 
     /*public static final String ID_QUERY = "SELECT DISTINCT py.id as id,py.transactiondate as date " +
             " FROM egcl_payment py  " +
@@ -314,7 +314,7 @@ public class PaymentQueryBuilder {
                                                Map<String, Object> preparedStatementValues) {
         StringBuilder selectQuery = new StringBuilder(SELECT_PAYMENT_SQL);
         addClauseIfRequired(preparedStatementValues, selectQuery);
-        selectQuery.append(" py.id IN (:id)  ");
+        selectQuery.append(" py_inner.id IN (:id)  ");
         preparedStatementValues.put("id", ids);
         return addOrderByClause(selectQuery);
     }
