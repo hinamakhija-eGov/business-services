@@ -549,7 +549,7 @@ public class PaymentQueryBuilder {
     }
 
     private static String addOrderByClause(StringBuilder selectQuery) {
-        return selectQuery.append(" ORDER BY py.transactiondate DESC ").toString();
+        return selectQuery.append(" ORDER BY py_inner.transactiondate DESC ").toString();
 
     }
 
