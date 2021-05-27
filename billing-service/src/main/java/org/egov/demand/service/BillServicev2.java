@@ -48,6 +48,8 @@ import static org.egov.demand.util.Constants.URL_NOT_CONFIGURED_FOR_DEMAND_UPDAT
 import static org.egov.demand.util.Constants.URL_NOT_CONFIGURED_FOR_DEMAND_UPDATE_MSG;
 import static org.egov.demand.util.Constants.URL_NOT_CONFIGURED_REPLACE_TEXT;
 import static org.egov.demand.util.Constants.URL_PARAMS_FOR_SERVICE_BASED_DEMAND_APIS;
+import static org.egov.demand.util.Constants.BUSINESS_SERVICE_URL_PARAMETER;
+import static org.egov.demand.util.Constants.URL_PARAM_SEPERATOR;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -65,6 +67,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.demand.config.ApplicationProperties;
@@ -212,7 +215,7 @@ public class BillServicev2 {
 			billCriteria.getConsumerCode().retainAll(cosnumerCodesToBeExpired);
 			billCriteria.getConsumerCode().addAll(cosnumerCodesNotFoundInBill);
 			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), billCriteria.getConsumerCode(), billCriteria.getTenantId(), requestInfoWrapper);
-			billRepository.updateBillStatus(cosnumerCodesToBeExpired, BillStatus.EXPIRED);
+			billRepository.updateBillStatus(cosnumerCodesToBeExpired,billCriteria.getBusinessService(), BillStatus.EXPIRED);
 			BillResponseV2 finalResponse = generateBill(billCriteria, requestInfo);
 			finalResponse.getBill().addAll(billsToBeReturned);
 			return finalResponse;
@@ -243,6 +246,7 @@ public class BillServicev2 {
 					.append(URL_PARAMS_FOR_SERVICE_BASED_DEMAND_APIS.replace(TENANTID_REPLACE_TEXT, tenantId).replace(
 							CONSUMERCODES_REPLACE_TEXT, consumerCodesTobeUpdated.toString().replace("[", "").replace("]", "")));
 
+			completeUrl.append(URL_PARAM_SEPERATOR).append(BUSINESS_SERVICE_URL_PARAMETER).append(businessService);
 			log.info("the url : " + completeUrl);
 			restRepository.fetchResult(completeUrl.toString(), requestInfoWrapper);
 	}

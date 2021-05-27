@@ -155,4 +155,8 @@ public class Constants {
 	
 
 	private Constants() {}
+	
+	public static final String BUSINESS_SERVICE_URL_PARAMETER = "businessService=";
+
+	public static final String URL_PARAM_SEPERATOR = "&";
 }
