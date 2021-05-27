@@ -52,8 +52,12 @@ import static org.egov.demand.util.Constants.URL_PARAMS_FOR_SERVICE_BASED_DEMAND
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -284,26 +288,48 @@ public class BillServicev2 {
 				.tenantId(billCriteria.getTenantId())
 				.email(billCriteria.getEmail())
 				.consumerCode(consumerCodes)
-				.isPaymentCompleted(false)
 				.receiptRequired(false)
 				.demandId(demandIds)
 				.build();
 
 		/* Fetching demands for the given bill search criteria */
-		List<Demand> demands = demandService.getDemands(demandCriteria, requestInfo);
+		List<Demand> demandsWithMultipleActive = demandService.getDemands(demandCriteria, requestInfo);
+
+		if (demandsWithMultipleActive.isEmpty()) {
+			throw new CustomException(EG_BS_BILL_NO_DEMANDS_FOUND_KEY, EG_BS_BILL_NO_DEMANDS_FOUND_MSG);
+		}
+
+		//filter the demands which are fully paid
+		demandsWithMultipleActive = demandsWithMultipleActive.stream().filter(demand -> !demand.getIsPaymentCompleted()).collect(Collectors.toList());
+
+		List<Demand> demands = filterMultipleActiveDemands(demandsWithMultipleActive);
 
 		List<BillV2> bills;
 
 		if (!demands.isEmpty())
 			bills = prepareBill(demands, requestInfo);
 		else
-			throw new CustomException(EG_BS_BILL_NO_DEMANDS_FOUND_KEY, EG_BS_BILL_NO_DEMANDS_FOUND_MSG);
+			return getBillResponse(Collections.emptyList());
 
 		BillRequestV2 billRequest = BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
 		//kafkaTemplate.send(notifTopicName, null, billRequest);
 		return create(billRequest);
 	}
 
+	private List<Demand> filterMultipleActiveDemands(List<Demand> demands) {
+
+		Comparator<Demand> comparator = Comparator.comparing(h -> h.getAuditDetails().getCreatedTime());
+		demands.sort(comparator);
+
+		Map<Long, Demand> fromPeriodToDemand = new LinkedHashMap<>();
+
+		demands.forEach(demand -> {
+			fromPeriodToDemand.put(demand.getTaxPeriodFrom(), demand);
+		});
+
+		return new LinkedList<>(fromPeriodToDemand.values());
+
+	}
 	/**
 	 * Prepares the bill object from the list of given demands
 	 * 
