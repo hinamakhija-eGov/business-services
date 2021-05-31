@@ -170,7 +170,7 @@ public class DemandService {
 		if(!CollectionUtils.isEmpty(demandToBeUpdated))
 			update(new DemandRequest(requestInfo,demandToBeUpdated), null);
 		
-		billRepoV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()), BillStatus.EXPIRED);
+		billRepoV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()),businessService, BillStatus.EXPIRED);
 		
 		return new DemandResponse(responseInfoFactory.getResponseInfo(requestInfo, HttpStatus.CREATED), demands);
 	}
@@ -259,12 +259,13 @@ public class DemandService {
 		generateAndSetIdsForNewDemands(newDemands, auditDetail);
 
 		update(demandRequest, paymentBackUpdateAudit);
+		String businessService = demands.get(0).getBusinessService();
 		if (ObjectUtils.isEmpty(paymentBackUpdateAudit))
 			billRepoV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()),
-					BillStatus.EXPIRED);
+					businessService,BillStatus.EXPIRED);
 		else
 			billRepoV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()),
-					BillStatus.PAID);
+					businessService,BillStatus.PAID);
 		// producer.push(applicationProperties.getDemandIndexTopic(), demandRequest);
 		return new DemandResponse(responseInfoFactory.getResponseInfo(requestInfo, HttpStatus.CREATED), demands);
 	}

@@ -186,11 +186,11 @@ public class BillRepositoryV2 {
 	 * executes query to update bill status to expired 
 	 * @param billIds
 	 */
-	public void updateBillStatus(List<String> cosnumerCodes, BillStatus status) {
+	public void updateBillStatus(List<String> cosnumerCodes,String businessService, BillStatus status) {
 
 		List<Object> preparedStmtList = new ArrayList<>();
 		preparedStmtList.add(status.toString());
-		String queryStr = billQueryBuilder.getBillStatusUpdateQuery(cosnumerCodes, preparedStmtList);
+		String queryStr = billQueryBuilder.getBillStatusUpdateQuery(cosnumerCodes,businessService, preparedStmtList);
 		jdbcTemplate.update(queryStr, preparedStmtList.toArray());
 	}
 	
