@@ -170,6 +170,8 @@ public class PaymentQueryBuilder {
 			+ "WHERE b.id IN (:id);"; 
 
 
+	public static final String UPDATE_PAYMENT_BANKDETAIL_SQL = "UPDATE egcl_payment SET additionaldetails = jsonb_set(additionaldetails, '{bankDetails}', :additionaldetails, true) WHERE ifsccode=:ifsccode ";
+	public static final String UPDATE_PAYMENT_BANKDETAIL_EMPTYADDTL_SQL = "UPDATE egcl_payment SET additionaldetails = :additionaldetails ::jsonb WHERE length(additionaldetails :: text) is null and ifsccode=:ifsccode ";
 
 	public static String getBillQuery() {
 		return BILL_BASE_QUERY;
@@ -792,8 +794,13 @@ public class PaymentQueryBuilder {
 
 
 
+    public static MapSqlParameterSource getParametersForBankDetailUpdate(JsonNode additionalDetails,String ifsccode) {
+        MapSqlParameterSource sqlParameterSource = new MapSqlParameterSource(); 
+        sqlParameterSource.addValue("additionaldetails",getJsonb(additionalDetails));
+        sqlParameterSource.addValue("ifsccode",ifsccode );
+        return sqlParameterSource;
 
-
+    }
 
 
 

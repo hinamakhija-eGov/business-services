@@ -24,6 +24,8 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -246,5 +248,35 @@ public class PaymentRepository {
         Map<String, Object> preparedStatementValues = new HashMap<>();
         String query = paymentQueryBuilder.getIdQuery(paymentSearchCriteria, preparedStatementValues);
         return namedParameterJdbcTemplate.query(query, preparedStatementValues, new SingleColumnRowMapper<>(String.class));
-    }
+	}
+
+	/**
+	 * API is to get the distinct ifsccode from payment
+	 * 
+	 * @return ifsccode list
+	 */
+	public List<String> fetchIfsccode() {
+
+		return namedParameterJdbcTemplate.query("SELECT distinct ifsccode from egcl_payment ",
+				new SingleColumnRowMapper<>(String.class));
+
+	}
+
+	/**
+	 * API, All payments with @param ifsccode, additional details updated
+	 * with @param additionaldetails
+	 * 
+	 * @param additionaldetails
+	 * @param ifsccode
+	 */
+
+	@Transactional
+	public void updatePaymentBankDetail(JsonNode additionaldetails, String ifsccode) {
+		List<MapSqlParameterSource> paymentSource = new ArrayList<>();
+		paymentSource.add(getParametersForBankDetailUpdate(additionaldetails, ifsccode));
+		namedParameterJdbcTemplate.batchUpdate(UPDATE_PAYMENT_BANKDETAIL_SQL,
+				paymentSource.toArray(new MapSqlParameterSource[0]));
+		namedParameterJdbcTemplate.batchUpdate(UPDATE_PAYMENT_BANKDETAIL_EMPTYADDTL_SQL,
+				paymentSource.toArray(new MapSqlParameterSource[0]));
+	}
 }
