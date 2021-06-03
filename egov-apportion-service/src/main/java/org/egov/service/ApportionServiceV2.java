@@ -14,8 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import lombok.extern.slf4j.Slf4j;
+
 
 @Service
+@Slf4j
 public class ApportionServiceV2 {
 
     private final List<ApportionV2> apportions;
@@ -69,6 +72,7 @@ public class ApportionServiceV2 {
         Object masterData = mdmsService.mDMSCall(request.getRequestInfo(), request.getTenantId());
 
         for (Bill bill : bills) {
+        	log.info("Bill object:: {}", bill.toString());
         	
             // Create a map of businessService to list of billDetails belonging to that businessService
          //   Map<String, List<BillDetail>> businessServiceToBillDetails = util.groupByBusinessService(billInfo.getBillDetails());
