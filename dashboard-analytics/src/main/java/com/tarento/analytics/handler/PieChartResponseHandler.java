@@ -91,7 +91,7 @@ public class PieChartResponseHandler implements IResponseHandler {
                 data1.setHeaderName(localizationMessageCodeMap.get(data1.getHeaderName()));
             }
             data1.getPlots().forEach(plot -> {
-                if(!isNull(plot.getSymbol()) && plot.getSymbol().equals("number")){
+                if(!isNull(plot.getSymbol()) && plot.getSymbol().equals("text")){
                     if(!isNull(plot.getLabel()) && localizationMessageCodeMap.containsKey(plot.getLabel())) {
                         plot.setLabel(localizationMessageCodeMap.get(plot.getLabel()));
                     }

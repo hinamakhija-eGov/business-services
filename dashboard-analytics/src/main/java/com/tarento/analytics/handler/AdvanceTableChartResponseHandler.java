@@ -145,7 +145,7 @@ public class AdvanceTableChartResponseHandler implements IResponseHandler {
                 data.setHeaderName(localizationMessageCodeMap.get(data.getHeaderName()));
             }
             data.getPlots().forEach(plot -> {
-                if(!isNull(plot.getSymbol()) && plot.getSymbol().equals("number")){
+                if(!isNull(plot.getSymbol()) && plot.getSymbol().equals("text")){
                     if(!isNull(plot.getLabel()) && localizationMessageCodeMap.containsKey(plot.getLabel())) {
                         plot.setLabel(localizationMessageCodeMap.get(plot.getLabel()));
                     }
