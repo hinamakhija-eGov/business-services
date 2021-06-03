@@ -135,7 +135,7 @@ public class PerformanceChartResponeHandler implements IResponseHandler {
             }
             data.getPlots().forEach(plot -> {
                 if(!isNull(plot.getSymbol()) && plot.getSymbol().equals("number")){
-                    if(!isNull(plot.getLabel())) {
+                    if(!isNull(plot.getLabel()) && localizationMessageCodeMap.containsKey(plot.getLabel())) {
                         plot.setLabel(localizationMessageCodeMap.get(plot.getLabel()));
                     }
                 }
