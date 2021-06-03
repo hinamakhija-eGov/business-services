@@ -1,23 +1,18 @@
 package com.tarento.analytics.handler;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import com.tarento.analytics.helper.ComputedFieldFactory;
 import com.tarento.analytics.helper.IComputedField;
 import com.tarento.analytics.model.ComputedFields;
+import lombok.extern.slf4j.Slf4j;
+import org.egov.common.contract.request.RequestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +26,11 @@ import com.tarento.analytics.dto.AggregateDto;
 import com.tarento.analytics.dto.AggregateRequestDto;
 import com.tarento.analytics.dto.Data;
 import com.tarento.analytics.dto.Plot;
+import org.springframework.web.client.RestTemplate;
 
+import static com.tarento.analytics.constant.Constants.*;
 import static com.tarento.analytics.constant.Constants.JsonPaths.DAYS;
+import static java.util.Objects.isNull;
 
 /**
  * This handles ES response for single index, multiple index to represent data as line chart
@@ -48,6 +46,9 @@ public class LineChartResponseHandler implements IResponseHandler {
     private ObjectMapper mapper;
     @Autowired
     private ComputedFieldFactory computedFieldFactory;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     @Override
     public AggregateDto translate(AggregateRequestDto requestDto, ObjectNode aggregations) throws IOException {
@@ -139,7 +140,47 @@ public class LineChartResponseHandler implements IResponseHandler {
         dataList.forEach(data -> {
             appendMissingPlot(plotKeys, data, symbol, isCumulative);
         });
+
+        Map<String, String> localizationMessageCodeMap = new HashMap();
+        fetchMapFromLocalization(localizationMessageCodeMap);
+        dataList.forEach(data -> {
+            if(!isNull(data.getHeaderName()) && localizationMessageCodeMap.containsKey(data.getHeaderName())){
+                data.setHeaderName(localizationMessageCodeMap.get(data.getHeaderName()));
+            }
+            data.getPlots().forEach(plot -> {
+                if(!isNull(plot.getSymbol()) && plot.getSymbol().equals("number")){
+                    if(!isNull(plot.getLabel())) {
+                        plot.setLabel(localizationMessageCodeMap.get(plot.getLabel()));
+                    }
+                }
+            });
+        });
+
         return getAggregatedDto(chartNode, dataList, requestDto.getVisualizationCode());
+    }
+
+    private void fetchMapFromLocalization(Map<String, String> localizationMessageCodeMap){
+        RequestInfo requestInfo = new RequestInfo();
+        StringBuilder localizationUri = new StringBuilder(LOCALIZATION_URL);
+        Object result = null;
+        List<String> codes = new ArrayList<>();
+        List<String> messages = new ArrayList<>();
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("RequestInfo", requestInfo);
+
+        try {
+            result = restTemplate.postForObject(localizationUri.toString(), request, Map.class);
+            codes = JsonPath.read(result, LOCALIZATION_CODES_JSONPATH);
+            messages = JsonPath.read(result, LOCALIZATION_MSGS_JSONPATH);
+        } catch (Exception e) {
+            logger.error("Exception while fetching from localization: " + e);
+        }
+
+        for(int i = 0; i < messages.size(); i++){
+            localizationMessageCodeMap.put(messages.get(i), codes.get(i));
+        }
+
     }
 
     private String getIntervalKey(String epocString, Constants.Interval interval) {

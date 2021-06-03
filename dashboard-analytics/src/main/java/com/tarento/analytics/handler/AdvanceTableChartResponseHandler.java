@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.jayway.jsonpath.JsonPath;
 import com.tarento.analytics.dto.AggregateDto;
 import com.tarento.analytics.dto.AggregateRequestDto;
 import com.tarento.analytics.dto.Data;
@@ -13,20 +14,27 @@ import com.tarento.analytics.dto.Plot;
 import com.tarento.analytics.helper.ComputedFieldFactory;
 import com.tarento.analytics.helper.IComputedField;
 import com.tarento.analytics.model.ComputedFields;
+import lombok.extern.slf4j.Slf4j;
+import org.egov.common.contract.request.RequestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.tarento.analytics.constant.Constants.*;
+import static java.util.Objects.isNull;
 
 /**
  * This handles ES response for single index, multiple index to represent data as pie figure
  * Creates plots by merging/computing(by summation) index values for same key
  *
  */
+@Slf4j
 @Component
 public class AdvanceTableChartResponseHandler implements IResponseHandler {
     public static final Logger logger = LoggerFactory.getLogger(AdvanceTableChartResponseHandler.class);
@@ -36,6 +44,9 @@ public class AdvanceTableChartResponseHandler implements IResponseHandler {
 
     @Autowired
     private ComputedFieldFactory computedFieldFactory;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
 
     @Override
@@ -127,8 +138,46 @@ public class AdvanceTableChartResponseHandler implements IResponseHandler {
             }
 
         });
+        Map<String, String> localizationMessageCodeMap = new HashMap();
+        fetchMapFromLocalization(localizationMessageCodeMap);
+        dataList.forEach(data -> {
+            if(!isNull(data.getHeaderName()) && localizationMessageCodeMap.containsKey(data.getHeaderName())){
+                data.setHeaderName(localizationMessageCodeMap.get(data.getHeaderName()));
+            }
+            data.getPlots().forEach(plot -> {
+                if(!isNull(plot.getSymbol()) && plot.getSymbol().equals("number")){
+                    if(!isNull(plot.getLabel())) {
+                        plot.setLabel(localizationMessageCodeMap.get(plot.getLabel()));
+                    }
+                }
+            });
+        });
         //dataList.sort((o1, o2) -> ((Integer) o1.getHeaderValue()).compareTo((Integer) o2.getHeaderValue()));
         return getAggregatedDto(chartNode, dataList, requestDto.getVisualizationCode());
+
+    }
+
+    private void fetchMapFromLocalization(Map<String, String> localizationMessageCodeMap){
+        RequestInfo requestInfo = new RequestInfo();
+        StringBuilder localizationUri = new StringBuilder(LOCALIZATION_URL);
+        Object result = null;
+        List<String> codes = new ArrayList<>();
+        List<String> messages = new ArrayList<>();
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("RequestInfo", requestInfo);
+
+        try {
+            result = restTemplate.postForObject(localizationUri.toString(), request, Map.class);
+            codes = JsonPath.read(result, LOCALIZATION_CODES_JSONPATH);
+            messages = JsonPath.read(result, LOCALIZATION_MSGS_JSONPATH);
+        } catch (Exception e) {
+            log.error("Exception while fetching from localization: " + e);
+        }
+
+        for(int i = 0; i < messages.size(); i++){
+            localizationMessageCodeMap.put(messages.get(i), codes.get(i));
+        }
 
     }
 

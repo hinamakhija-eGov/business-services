@@ -2,11 +2,17 @@ package com.tarento.analytics.handler;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.jayway.jsonpath.JsonPath;
+import lombok.extern.slf4j.Slf4j;
+import org.egov.common.contract.request.RequestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,6 +26,10 @@ import com.tarento.analytics.helper.ComputeHelper;
 import com.tarento.analytics.helper.ComputeHelperFactory;
 
 import com.tarento.analytics.utils.ResponseRecorder;
+import org.springframework.web.client.RestTemplate;
+
+import static com.tarento.analytics.constant.Constants.*;
+import static java.util.Objects.isNull;
 
 /**
  * This handles ES response for single index, multiple index to represent single data value
@@ -28,6 +38,7 @@ import com.tarento.analytics.utils.ResponseRecorder;
  * AGGS_PATH : this defines the path/key to be used to search the tree
  *
  */
+@Slf4j
 @Component
 public class MetricChartResponseHandler implements IResponseHandler{
     public static final Logger logger = LoggerFactory.getLogger(MetricChartResponseHandler.class);
@@ -42,6 +53,9 @@ public class MetricChartResponseHandler implements IResponseHandler{
     
     @Autowired
     ResponseRecorder responseRecorder;
+
+    @Autowired
+    RestTemplate restTemplate;
 
 
     /**
@@ -113,6 +127,45 @@ public class MetricChartResponseHandler implements IResponseHandler{
             logger.info("data chart name = "+chartName +" ex occurred "+e.getMessage());
         }
 
+        Map<String, String> localizationMessageCodeMap = new HashMap();
+        fetchMapFromLocalization(localizationMessageCodeMap);
+        dataList.forEach(data -> {
+            if(!isNull(data.getHeaderName()) && localizationMessageCodeMap.containsKey(data.getHeaderName())){
+                data.setHeaderName(localizationMessageCodeMap.get(data.getHeaderName()));
+            }
+            data.getPlots().forEach(plot -> {
+                if(!isNull(plot.getSymbol()) && plot.getSymbol().equals("number")){
+                    if(!isNull(plot.getLabel())) {
+                        plot.setLabel(localizationMessageCodeMap.get(plot.getLabel()));
+                    }
+                }
+            });
+        });
+
         return getAggregatedDto(chartNode, dataList, request.getVisualizationCode());
+    }
+
+    private void fetchMapFromLocalization(Map<String, String> localizationMessageCodeMap){
+        RequestInfo requestInfo = new RequestInfo();
+        StringBuilder localizationUri = new StringBuilder(LOCALIZATION_URL);
+        Object result = null;
+        List<String> codes = new ArrayList<>();
+        List<String> messages = new ArrayList<>();
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("RequestInfo", requestInfo);
+
+        try {
+            result = restTemplate.postForObject(localizationUri.toString(), request, Map.class);
+            codes = JsonPath.read(result, LOCALIZATION_CODES_JSONPATH);
+            messages = JsonPath.read(result, LOCALIZATION_MSGS_JSONPATH);
+        } catch (Exception e) {
+            log.error("Exception while fetching from localization: " + e);
+        }
+
+        for(int i = 0; i < messages.size(); i++){
+            localizationMessageCodeMap.put(messages.get(i), codes.get(i));
+        }
+
     }
 }
