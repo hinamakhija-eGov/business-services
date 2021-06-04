@@ -82,8 +82,10 @@ public class EmployeeQueryBuilder {
 		else
 			pagination = pagination.replace("$offset", "0");
 		
-		if(null != criteria.getLimit())
-			pagination = pagination.replace("$limit", criteria.getLimit().toString());
+		if(null != criteria.getLimit()){
+			Integer limit = criteria.getLimit() + criteria.getOffset();
+			pagination = pagination.replace("$limit", limit.toString());
+		}
 		else
 			pagination = pagination.replace("$limit", defaultLimit.toString());
 		
