@@ -729,4 +729,14 @@ public class EmployeeValidator {
 
 	}
 
+	public void validateEmployeeCountRequest(String tenantId){
+		Map<String, String> errorMap = new HashMap<>();
+		if(StringUtils.isEmpty(tenantId))
+			errorMap.put(ErrorConstants.HRMS_EMPLOYEE_COUNT_ERROR_CODE, ErrorConstants.HRMS_EMPLOYEE_COUNT_ERROR_MSG);
+
+		if(!CollectionUtils.isEmpty(errorMap.keySet())) {
+			throw new CustomException(errorMap);
+		}
+	}
+
 }
