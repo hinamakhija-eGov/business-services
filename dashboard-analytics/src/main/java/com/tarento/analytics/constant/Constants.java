@@ -137,7 +137,7 @@ public class Constants {
 
 	public static final String TENANTID_PLACEHOLDER = "{TENANTID_PLACEHOLDER}";
 
-	public static final String LOCALIZATION_URL = "https://qa.digit.org/localization/messages/v1/_search?locale=en_IN&tenantId=pb&module=rainmaker-pt,rainmaker-dss";
+	public static final String LOCALIZATION_URL = "https://qa.digit.org/localization/messages/v1/_search?locale=en_IN&tenantId=pb&module=rainmaker-pt,rainmaker-dss,rainmaker-pgr,rainmaker-common";
 
 	public static final String LOCALIZATION_CODES_JSONPATH = "$.messages.*.code";
 
