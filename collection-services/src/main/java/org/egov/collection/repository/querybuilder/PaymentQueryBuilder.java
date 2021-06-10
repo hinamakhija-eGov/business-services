@@ -22,6 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Service
 public class PaymentQueryBuilder {
@@ -170,7 +172,10 @@ public class PaymentQueryBuilder {
 			+ "WHERE b.id IN (:id);"; 
 
 
-
+	public static final String UPDATE_PAYMENT_BANKDETAIL_SQL = "UPDATE egcl_payment SET additionaldetails = jsonb_set(additionaldetails, '{bankDetails}', :additionaldetails, true) WHERE length(additionaldetails :: text) is not null and length(additionaldetails :: text) > 4  and jsonb_typeof( additionaldetails ::jsonb ) ='object' and ifsccode=:ifsccode ";
+	public static final String UPDATE_PAYMENT_BANKDETAIL_EMPTYADDTL_SQL = "UPDATE egcl_payment SET additionaldetails = :additionaldetails ::jsonb WHERE (length(additionaldetails :: text) is null or length(additionaldetails :: text) = 4) and jsonb_typeof( additionaldetails ::jsonb ) ='object' and ifsccode=:ifsccode ";
+	public static final String UPDATE_PAYMENT_BANKDETAIL_ARRAYADDTL_SQL = "UPDATE egcl_payment SET additionaldetails =  additionaldetails || :additionaldetails ::jsonb WHERE length(additionaldetails :: text) is not null and length(additionaldetails :: text) > 4  and jsonb_typeof(additionaldetails ::jsonb) ='array' and ifsccode=:ifsccode ";
+	
 	public static String getBillQuery() {
 		return BILL_BASE_QUERY;
 	}
@@ -791,9 +796,25 @@ public class PaymentQueryBuilder {
     }
 
 
+	public static MapSqlParameterSource getParametersForBankDetailUpdate(JsonNode additionalDetails, String ifsccode) {
+		MapSqlParameterSource sqlParameterSource = new MapSqlParameterSource();
+		sqlParameterSource.addValue("additionaldetails", getJsonb(additionalDetails));
+		sqlParameterSource.addValue("ifsccode", ifsccode);
+		return sqlParameterSource;
 
+	}
 
+	public static MapSqlParameterSource getParametersEmptyDtlBankDetailUpdate(JsonNode additionalDetails,
+			String ifsccode) {
+		MapSqlParameterSource sqlParameterSource = new MapSqlParameterSource();
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode objectNode = mapper.createObjectNode();
+		objectNode.set("bankDetails", additionalDetails);
+		sqlParameterSource.addValue("additionaldetails", getJsonb(objectNode));
+		sqlParameterSource.addValue("ifsccode", ifsccode);
+		return sqlParameterSource;
 
+	}
 
 
 
