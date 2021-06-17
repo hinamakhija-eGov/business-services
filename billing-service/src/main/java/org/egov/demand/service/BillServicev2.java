@@ -40,6 +40,7 @@
 
 package org.egov.demand.service;
 
+import static org.egov.demand.util.Constants.BUSINESS_SERVICE_URL_PARAMETER;
 import static org.egov.demand.util.Constants.CONSUMERCODES_REPLACE_TEXT;
 import static org.egov.demand.util.Constants.EG_BS_BILL_NO_DEMANDS_FOUND_KEY;
 import static org.egov.demand.util.Constants.EG_BS_BILL_NO_DEMANDS_FOUND_MSG;
@@ -48,7 +49,6 @@ import static org.egov.demand.util.Constants.URL_NOT_CONFIGURED_FOR_DEMAND_UPDAT
 import static org.egov.demand.util.Constants.URL_NOT_CONFIGURED_FOR_DEMAND_UPDATE_MSG;
 import static org.egov.demand.util.Constants.URL_NOT_CONFIGURED_REPLACE_TEXT;
 import static org.egov.demand.util.Constants.URL_PARAMS_FOR_SERVICE_BASED_DEMAND_APIS;
-import static org.egov.demand.util.Constants.BUSINESS_SERVICE_URL_PARAMETER;
 import static org.egov.demand.util.Constants.URL_PARAM_SEPERATOR;
 
 import java.math.BigDecimal;
@@ -67,7 +67,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.demand.config.ApplicationProperties;
