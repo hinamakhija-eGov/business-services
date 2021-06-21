@@ -3,8 +3,12 @@ package org.egov.collection.repository.querybuilder;
 import static java.util.stream.Collectors.toSet;
 
 import java.sql.SQLException;
-import java.time.Instant;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.egov.collection.config.ApplicationProperties;
@@ -38,6 +42,9 @@ public class PaymentQueryBuilder {
             "pyd.lastmodifiedtime as pyd_lastmodifiedtime,pyd.additionalDetails as pyd_additionalDetails" +
             " FROM egcl_payment py  " +
             " INNER JOIN egcl_paymentdetail pyd ON pyd.paymentid = py.id ";
+    
+    public static final String SELECT_COUNT_PAYMENT_SQL = "SELECT count(distinct(py.id)) FROM egcl_payment py "
+    		+ "INNER JOIN egcl_paymentdetail pyd ON pyd.paymentid = py.id where pyd.businessservice= :businessservice and pyd.tenantid= :tenantid ";
 
     /*public static final String ID_QUERY = "SELECT DISTINCT py.id as id,py.transactiondate as date " +
             " FROM egcl_payment py  " +
@@ -313,9 +320,18 @@ public class PaymentQueryBuilder {
 
         return sqlParameterSource;
     }
+    
+    public String getPaymentCountQuery (String tenantId, String businessService, Map<String, Object> preparedStatementValues) {
+    	
+    	  StringBuilder selectQuery = new StringBuilder(SELECT_COUNT_PAYMENT_SQL);
+    	  preparedStatementValues.put("businessservice", businessService);
+    	  preparedStatementValues.put("tenantid", tenantId);
+    	  
+    	return selectQuery.toString();
+    }
 
 
-    public static String getPaymentSearchQuery(List<String> ids,
+    public String getPaymentSearchQuery(List<String> ids,
                                                Map<String, Object> preparedStatementValues) {
         StringBuilder selectQuery = new StringBuilder(SELECT_PAYMENT_SQL);
         addClauseIfRequired(preparedStatementValues, selectQuery);

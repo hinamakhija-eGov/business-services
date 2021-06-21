@@ -114,6 +114,13 @@ public class PaymentRepository {
 
         return payments;
     }
+    
+    public Long getPaymentsCount (String tenantId, String businessService) {
+    	
+    	Map<String, Object> preparedStatementValues = new HashMap<>();
+    	String query = paymentQueryBuilder.getPaymentCountQuery(tenantId, businessService, preparedStatementValues);
+    	return namedParameterJdbcTemplate.queryForObject(query, preparedStatementValues, Long.class);
+    }
 
     public List<Payment> fetchPaymentsForPlainSearch(PaymentSearchCriteria paymentSearchCriteria) {
         Map<String, Object> preparedStatementValues = new HashMap<>();
