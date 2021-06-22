@@ -164,6 +164,8 @@ public class DemandService {
 		else {
 			demandsToBeCreated.addAll(demandRequest.getDemands());
 		}
+		
+		log.info("demandsToBeCreated: {}", demandsToBeCreated.toString());
 
 		save(new DemandRequest(requestInfo,demandsToBeCreated));
 		if (!CollectionUtils.isEmpty(amendmentUpdates))
@@ -389,10 +391,18 @@ public class DemandService {
 			demandsToBeApportioned.add(demand);
 
 			DemandApportionRequest apportionRequest = DemandApportionRequest.builder().requestInfo(requestInfo).demands(demandsToBeApportioned).tenantId(tenantId).build();
-
+			try {
+				String apportionRequestStr = mapper.writeValueAsString(apportionRequest);
+				log.info("apportionRequest: {} and ApportionURL: {}", apportionRequestStr, util.getApportionURL());
+			}catch (Exception e) {e.printStackTrace();}
+			
 			Object response = serviceRequestRepository.fetchResult(util.getApportionURL(), apportionRequest);
 			ApportionDemandResponse apportionDemandResponse = mapper.convertValue(response, ApportionDemandResponse.class);
-
+			try {
+				String apportionDemandResponseStr = mapper.writeValueAsString(apportionDemandResponse);
+				log.info("apportionDemandResponse: {} and ApportionURL: {}", apportionDemandResponseStr, util.getApportionURL());
+			}catch (Exception e) {e.printStackTrace();}
+			
 			// Only the current demand is to be created rest all are to be updated
 			apportionDemandResponse.getDemands().forEach(demandFromResponse -> {
 				if(demandFromResponse.getId().equalsIgnoreCase(demand.getId()))
