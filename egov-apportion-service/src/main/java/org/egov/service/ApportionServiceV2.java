@@ -238,10 +238,15 @@ public class ApportionServiceV2 {
         }
 
         if(advanceBucket != null){
+        	Demand demand = demands.get(demands.size()-1);
             DemandDetail demandDetailForAdvance = new DemandDetail();
             demandDetailForAdvance.setTaxAmount(advanceBucket.getAmount());
             demandDetailForAdvance.setTaxHeadMasterCode(advanceBucket.getTaxHeadCode());
-            demands.get(demands.size()-1).getDemandDetails().add(demandDetailForAdvance);
+            demandDetailForAdvance.setTenantId(demand.getTenantId());
+            demandDetailForAdvance.setAuditDetails(demand.getAuditDetails());
+            demandDetailForAdvance.setDemandId(demand.getId());
+            demandDetailForAdvance.setId(UUID.randomUUID().toString());
+            demand.getDemandDetails().add(demandDetailForAdvance);
         }
 
     }

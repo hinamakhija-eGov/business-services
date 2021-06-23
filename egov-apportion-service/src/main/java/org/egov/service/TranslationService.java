@@ -101,9 +101,8 @@ public class TranslationService {
                         .build();
                 taxDetail.addBucket(bucket);
 
-
-                amountToBePaid = amountToBePaid.add(demandDetail.getTaxAmount());
-                collectedAmount = collectedAmount.add(demandDetail.getCollectionAmount());
+                amountToBePaid = amountToBePaid.add(demandDetail.getTaxAmount().abs());
+                collectedAmount = collectedAmount.add(demandDetail.getCollectionAmount().abs());
             }
 
             taxDetail.setAmountPaid(collectedAmount);
