@@ -6,7 +6,7 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>2.2.6.RELEASE</version>
-    <relativePath></relativePath>
+    <relativePath/>
   </parent>
   <groupId>collection-services</groupId>
   <artifactId>collection-services</artifactId>
@@ -87,7 +87,7 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.5</version>
+      <version>2.7</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -205,7 +205,7 @@
     								</goals>
     							</pluginExecutionFilter>
     							<action>
-    								<ignore></ignore>
+    								<ignore/>
     							</action>
     						</pluginExecution>
     					</pluginExecutions>
