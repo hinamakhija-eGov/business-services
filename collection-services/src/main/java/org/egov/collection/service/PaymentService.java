@@ -196,6 +196,10 @@ public class PaymentService {
             searchCriteria.setOffset(0);
             searchCriteria.setLimit(applicationProperties.getReceiptsSearchDefaultLimit());
         }
+        
+        if(paymentSearchCriteria.getTenantId() != null) {
+        	searchCriteria.setTenantId(paymentSearchCriteria.getTenantId());
+        }
 
         List<String> ids = paymentRepository.fetchPaymentIds(searchCriteria);
         if (ids.isEmpty())
