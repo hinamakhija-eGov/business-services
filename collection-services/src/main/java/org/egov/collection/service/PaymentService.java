@@ -200,6 +200,10 @@ public class PaymentService {
         if(paymentSearchCriteria.getTenantId() != null) {
         	searchCriteria.setTenantId(paymentSearchCriteria.getTenantId());
         }
+        
+        if(paymentSearchCriteria.getBusinessServices() != null) {
+        	searchCriteria.setBusinessServices(paymentSearchCriteria.getBusinessServices());
+        }
 
         List<String> ids = paymentRepository.fetchPaymentIds(searchCriteria);
         if (ids.isEmpty())
