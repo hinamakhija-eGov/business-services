@@ -33,11 +33,12 @@ public class TargetPerDateComputeHelper implements ComputeHelper {
 				logger.info("Start Date : " + String.valueOf(sDate));
 				Long eDate = Long.parseLong(request.getRequestDate().getEndDate());
 				logger.info("End Date : " + String.valueOf(eDate));
-				Calendar cal = Calendar.getInstance(); 
-				cal.setTime(new Date(eDate));
-				if(cal.get(Calendar.HOUR_OF_DAY) == LAST_HOUR && cal.get(Calendar.MINUTE) == LAST_MINUTE) { 
-					eDate = eDate + ROUND_OFF; 
-				}
+//				Calendar cal = Calendar.getInstance(); 
+//				cal.setTime(new Date(eDate));
+//				if(cal.get(Calendar.HOUR_OF_DAY) == LAST_HOUR && cal.get(Calendar.MINUTE) == LAST_MINUTE) { 
+//					eDate = eDate + ROUND_OFF; 
+//				}
+				eDate = eDate + ROUND_OFF;
 				logger.info("End Date after Round Off: " + String.valueOf(eDate));
 		        Long dateDifference = TimeUnit.DAYS.convert((eDate - sDate), TimeUnit.MILLISECONDS);
 		        if(dateDifference == 0l) dateDifference = dateDifference + 1l ;
@@ -63,11 +64,12 @@ public class TargetPerDateComputeHelper implements ComputeHelper {
 				logger.info("Start Date : " + String.valueOf(sDate));
 				Long eDate = Long.parseLong(request.getRequestDate().getEndDate());
 				logger.info("End Date : " + String.valueOf(eDate));
-				Calendar cal = Calendar.getInstance();
-				cal.setTime(new Date(eDate));
-				if(cal.get(Calendar.HOUR_OF_DAY) == LAST_HOUR && cal.get(Calendar.MINUTE) == LAST_MINUTE) {
-					eDate = eDate + ROUND_OFF;
-				}
+//				Calendar cal = Calendar.getInstance();
+//				cal.setTime(new Date(eDate));
+//				if(cal.get(Calendar.HOUR_OF_DAY) == LAST_HOUR && cal.get(Calendar.MINUTE) == LAST_MINUTE) {
+//					eDate = eDate + ROUND_OFF;
+//				}
+				eDate = eDate + ROUND_OFF;
 				logger.info("End Date after Round Off: " + String.valueOf(eDate));
 				Long dateDifference = TimeUnit.DAYS.convert((eDate - sDate), TimeUnit.MILLISECONDS);
 				if(dateDifference == 0l) dateDifference = dateDifference + 1l ;
