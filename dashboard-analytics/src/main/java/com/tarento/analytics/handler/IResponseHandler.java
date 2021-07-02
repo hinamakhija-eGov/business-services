@@ -75,6 +75,10 @@ public interface IResponseHandler {
     public final String DOC_COUNT = "doc_count"; 
     
     public static final String POST_AGGREGATION_THEORY = "postAggregationTheory";
+    
+    public static final String CHART_SPECIFIC = "chartSpecificProperty";
+	
+	public static final String XTABLE_COLUMN = "XtableColumnOrder";
 
 	public static Double BOUNDARY_VALUE = 50.0;
 
