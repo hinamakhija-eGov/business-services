@@ -31,11 +31,14 @@ public class MetricsInsightsHandler implements InsightsHandler {
 				Double insightValue = (difference / (Double)pastData.getHeaderValue()) * 100;
 				if(insightValue.isInfinite()) 
 					return aggregateDto;
-				if(insightValue.isNaN())
-					insightValue = 0.00;
-				textToDisplay = textToDisplay.replace(INDICATOR_PLACEHOLDER, POSITIVE);
-				textToDisplay = textToDisplay.replace(VALUE_PLACEHOLDER, String.valueOf(new DecimalFormat("#.##").format(insightValue)));
-				insightIndicator = INSIGHT_INDICATOR_POSITIVE; 
+				if (insightValue.isNaN()) {
+					textToDisplay = null;
+				} else {
+					textToDisplay = textToDisplay.replace(INDICATOR_PLACEHOLDER, POSITIVE);
+					textToDisplay = textToDisplay.replace(VALUE_PLACEHOLDER,
+							String.valueOf(new DecimalFormat("#.##").format(insightValue)));
+					insightIndicator = INSIGHT_INDICATOR_POSITIVE;
+				}
 			} else { 
 				difference = (Double) pastData.getHeaderValue() - (Double) currentData.getHeaderValue();
 				Double insightValue = (difference / (Double)pastData.getHeaderValue()) * 100;
@@ -47,11 +50,17 @@ public class MetricsInsightsHandler implements InsightsHandler {
 				textToDisplay = textToDisplay.replace(VALUE_PLACEHOLDER, String.valueOf(new DecimalFormat("#.##").format(insightValue)));
 				insightIndicator = INSIGHT_INDICATOR_NEGATIVE; 
 			}
-			textToDisplay = textToDisplay.replace(INSIGHT_INTERVAL_PLACEHOLDER, insightsConfig.getInsightInterval());
-			InsightsWidget insightsWidget = new InsightsWidget(INSIGHT_WIDGET_NAME, textToDisplay, insightIndicator, insightIndicator);
-			List<Data> dataList = aggregateDto.getData(); 
-			for(Data data : dataList) { 
-				data.setInsight(insightsWidget);
+			if (textToDisplay == null) {
+				return aggregateDto;
+			} else {
+				textToDisplay = textToDisplay.replace(INSIGHT_INTERVAL_PLACEHOLDER,
+						insightsConfig.getInsightInterval());
+				InsightsWidget insightsWidget = new InsightsWidget(INSIGHT_WIDGET_NAME, textToDisplay, insightIndicator,
+						insightIndicator);
+				List<Data> dataList = aggregateDto.getData();
+				for (Data data : dataList) {
+					data.setInsight(insightsWidget);
+				}
 			}
 		}
 		return aggregateDto;
