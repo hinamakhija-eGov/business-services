@@ -35,6 +35,7 @@ import org.egov.mdms.model.ModuleDetail;
 import org.egov.tracer.model.CustomException;
 import org.postgresql.util.PGobject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -95,6 +96,7 @@ public class Util {
 	 * @return Map of MasterData name to the list of code in the MasterData
 	 *
 	 */
+	@Cacheable(value = "mdmsCache", sync = true, key = "{#mdmsReq.getMdmsCriteria()}")
 	public DocumentContext getAttributeValues(MdmsCriteriaReq mdmsReq) {
 		StringBuilder uri = new StringBuilder(appProps.getMdmsHost()).append(appProps.getMdmsEndpoint());
 

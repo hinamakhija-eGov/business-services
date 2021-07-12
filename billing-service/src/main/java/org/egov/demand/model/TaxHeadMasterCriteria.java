@@ -5,12 +5,7 @@ import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.Builder.Default;
 
 @Setter
@@ -19,6 +14,7 @@ import lombok.Builder.Default;
 @AllArgsConstructor
 @ToString
 @Builder
+@EqualsAndHashCode
 public class TaxHeadMasterCriteria {
 
 	@NotNull
