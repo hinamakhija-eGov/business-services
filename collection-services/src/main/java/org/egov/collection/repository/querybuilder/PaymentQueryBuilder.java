@@ -55,9 +55,9 @@ public class PaymentQueryBuilder {
     public static final String ID_QUERY = "WITH py_filtered as (" +
             "select id from egcl_payment as py_inner {{WHERE_CLAUSE}} ) " +
             " SELECT py.id as id FROM py_filtered as py " +
-            " INNER JOIN egcl_paymentdetail as pyd ON pyd.paymentid = py.id and pyd.tenantid= :tenantId " +
+            " INNER JOIN egcl_paymentdetail as pyd ON pyd.paymentid = py.id and pyd.tenantid {{operator}} :tenantId " +
             " INNER JOIN egcl_bill bill ON bill.id = pyd.billid " +
-            " INNER JOIN egcl_billdetial bd ON bd.billid = bill.id and bd.tenantid = :tenantId; ";
+            " INNER JOIN egcl_billdetial bd ON bd.billid = bill.id and bd.tenantid {{operator}} :tenantId; ";
 
     private static final String PAGINATION_WRAPPER = "SELECT * FROM " +
             "(SELECT *, DENSE_RANK() OVER (ORDER BY py_id) offset_ FROM " +
@@ -360,6 +360,11 @@ public class PaymentQueryBuilder {
         whereClause.append(" ORDER BY py_inner.transactiondate DESC ").toString();
         addPagination(whereClause,preparedStatementValues,searchCriteria);
         String query = ID_QUERY.replace("{{WHERE_CLAUSE}}",whereClause.toString());
+        if(searchCriteria.getTenantId().split("\\.").length > 1){
+            query = query.replace("{{operator}}", "=");
+        }
+        else
+            query = query.replace("{{operator}}", "LIKE");
 
         return query;
     }
