@@ -187,9 +187,11 @@ public class AmendmentService {
 					.build();
 			
 			amendmentRepository.updateAmendment(Arrays.asList(amendmentUpdate));
+			
+			List<String> consumerCodes = demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList());
 			String businessService = demands.get(0).getBusinessService();
-			billRepositoryV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()),
-					businessService,BillStatus.EXPIRED);
+			String tenantId = demands.get(0).getTenantId();
+			billRepositoryV2.updateBillStatus(consumerCodes, businessService, tenantId, BillStatus.EXPIRED);
 		}
 	}
 

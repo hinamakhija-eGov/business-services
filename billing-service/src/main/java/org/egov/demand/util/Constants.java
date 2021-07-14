@@ -159,4 +159,12 @@ public class Constants {
 	public static final String BUSINESS_SERVICE_URL_PARAMETER = "businessService=";
 
 	public static final String URL_PARAM_SEPERATOR = "&";
+	
+	public static final String RESPONSEINFO_STRING = "ResponseInfo";
+	
+	public static final String MESSAGE_STRING = "Message";
+	
+	public static final String SUCCESS_CANCEL_BILL_MSG = "Successfully cancelled {count} Active bills for given consumer codes";
+	
+	public static final String COUNT_REPLACE_CANCEL_BILL_MSG = "{count}";
 }

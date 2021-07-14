@@ -3,6 +3,7 @@ package org.egov.demand.repository;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,7 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -186,39 +188,16 @@ public class BillRepositoryV2 {
 	 * executes query to update bill status to expired 
 	 * @param billIds
 	 */
-	public void updateBillStatus(List<String> cosnumerCodes,String businessService, BillStatus status) {
+	public Integer updateBillStatus(Collection<String> consumerCodes, String businessService, String tenantId,
+			BillStatus status) {
 
+		if (CollectionUtils.isEmpty(consumerCodes))
+			return 0;
 		List<Object> preparedStmtList = new ArrayList<>();
 		preparedStmtList.add(status.toString());
-		String queryStr = billQueryBuilder.getBillStatusUpdateQuery(cosnumerCodes,businessService, preparedStmtList);
-		jdbcTemplate.update(queryStr, preparedStmtList.toArray());
+		preparedStmtList.add(tenantId);
+		String queryStr = billQueryBuilder.getBillStatusUpdateQuery(consumerCodes, businessService, preparedStmtList);
+		return jdbcTemplate.update(queryStr, preparedStmtList.toArray());
 	}
 	
-	/**
-	 * executes batch query to update bill status for bill id
-	 *  
-	 * @param billIds
-	 */
-	public void updateBillStatusInBatch(Map<String, String> billIdAndStatusMap) {
-
-		String queryStr = billQueryBuilder.getBillStatusUpdateBatchQuery();
-		List<String> keys = new ArrayList<>(billIdAndStatusMap.keySet());
-		jdbcTemplate.batchUpdate(queryStr, new BatchPreparedStatementSetter() {
-			
-			@Override
-			public void setValues(PreparedStatement ps, int rowNum) throws SQLException {
-
-				String key = keys.get(rowNum);
-
-				ps.setString(1, billIdAndStatusMap.get(key));
-				ps.setString(2, key);
-			}
-			
-			@Override
-			public int getBatchSize() {
-
-				return billIdAndStatusMap.size();
-			}
-		});
-	}
 }

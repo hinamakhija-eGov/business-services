@@ -80,6 +80,7 @@ import org.egov.demand.model.TaxHeadMasterCriteria;
 import org.egov.demand.repository.BillRepositoryV2;
 import org.egov.demand.repository.IdGenRepo;
 import org.egov.demand.repository.ServiceRequestRepository;
+import org.egov.demand.util.Constants;
 import org.egov.demand.util.Util;
 import org.egov.demand.web.contract.BillRequestV2;
 import org.egov.demand.web.contract.BillResponseV2;
@@ -140,6 +141,22 @@ public class BillServicev2 {
 	@Value("${kafka.topics.billgen.topic.name}")
 	private String notifTopicName;
 	
+	/**
+	 * Cancell bill operation can be carried by this method, based on consumerCodes
+	 * and businessService.
+	 * 
+	 * Only ACTIVE bills will be cancelled as of now
+	 * 
+	 * @param cancelBillCriteria
+	 * @param requestInfoWrapper
+	 */
+	public String cancelBill(BillSearchCriteria cancelBillCriteria, RequestInfoWrapper requestInfoWrapper) {
+
+		Integer updateCount = billRepository.updateBillStatus(cancelBillCriteria.getConsumerCode(),
+				cancelBillCriteria.getService(), cancelBillCriteria.getTenantId(), BillStatus.CANCELLED);
+		return Constants.SUCCESS_CANCEL_BILL_MSG.replace(Constants.COUNT_REPLACE_CANCEL_BILL_MSG, updateCount.toString());
+	}
+
 	/**
 	 * Fetches the bill for given parameters
 	 * 
@@ -209,7 +226,7 @@ public class BillServicev2 {
 			billCriteria.getConsumerCode().retainAll(cosnumerCodesToBeExpired);
 			billCriteria.getConsumerCode().addAll(cosnumerCodesNotFoundInBill);
 			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), billCriteria.getConsumerCode(), billCriteria.getTenantId(), requestInfoWrapper);
-			billRepository.updateBillStatus(cosnumerCodesToBeExpired,billCriteria.getBusinessService(), BillStatus.EXPIRED);
+			billRepository.updateBillStatus(cosnumerCodesToBeExpired,billCriteria.getBusinessService(), billCriteria.getTenantId(), BillStatus.EXPIRED);
 			BillResponseV2 finalResponse = generateBill(billCriteria, requestInfo);
 			finalResponse.getBill().addAll(billsToBeReturned);
 			return finalResponse;

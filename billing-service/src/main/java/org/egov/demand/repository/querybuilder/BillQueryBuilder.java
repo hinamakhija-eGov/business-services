@@ -13,9 +13,7 @@ public class BillQueryBuilder {
 	
 	public static final String REPLACE_STRING = "{replace}";
 	
-	public static final String BILL_STATUS_UPDATE_QUERY = "UPDATE egbs_bill_v1 SET status=? WHERE status='ACTIVE' ";
-	
-	public static final String BILL_STATUS_UPDATE_BATCH_QUERY = "UPDATE egbs_bill_v1 SET status=? WHERE id = ?";
+	public static final String BILL_STATUS_UPDATE_BASE_QUERY = "UPDATE egbs_bill_v1 SET status=? WHERE status='ACTIVE' AND tenantId = ? ";
 	
 	public static final String INSERT_BILL_QUERY = "INSERT into egbs_bill_v1 "
 			+"(id, tenantid, payername, payeraddress, payeremail, isactive, iscancelled, createdby, createddate, lastmodifiedby, lastmodifieddate, mobilenumber, status, additionaldetails)"
@@ -149,19 +147,6 @@ public class BillQueryBuilder {
 			finalQuery.append(" ORDER BY billresult.bd_consumercode ");
 		}
 
-//		maxQuery.append(" LIMIT ?");
-//		long pageSize = Integer.parseInt(applicationProperties.getCommonSearchDefaultLimit());
-//		if (searchBillCriteria.getSize() != null)
-//			pageSize = searchBillCriteria.getSize();
-//		preparedStatementValues.add(pageSize); // Set limit to pageSize
-//
-//		// handle offset here
-//		maxQuery.append(" OFFSET ?");
-//		long pageNumber = 0; // Default pageNo is zero meaning first page
-//		if (searchBillCriteria.getOffset() != null)
-//			pageNumber = searchBillCriteria.getOffset() - 1;
-//		preparedStatementValues.add(pageNumber * pageSize); // Set offset to
-//															// pageNo * pageSize
 		return finalQuery;
 	}
 	
@@ -171,24 +156,19 @@ public class BillQueryBuilder {
 	 * @param billIds
 	 * @param preparedStmtList
 	 */
-	public String getBillStatusUpdateQuery(List<String> consumerCodes,String businessService, List<Object> preparedStmtList) {
+	public String getBillStatusUpdateQuery(Collection<String> consumerCodes, String businessService,
+			List<Object> preparedStmtList) {
 
-		StringBuilder builder = new StringBuilder(BILL_STATUS_UPDATE_QUERY);
+		StringBuilder builder = new StringBuilder(BILL_STATUS_UPDATE_BASE_QUERY);
 
-		if (!CollectionUtils.isEmpty(consumerCodes)) {
+		builder.append(" AND id IN ( SELECT billid from egbs_billdetail_v1 where consumercode IN (");
+		appendListToQuery(consumerCodes, preparedStmtList, builder);
+		builder.append(" AND businessservice=? )");
+		preparedStmtList.add(businessService);
 
-			builder.append(" AND id IN ( SELECT billid from egbs_billdetail_v1 where consumercode IN (");
-			appendListToQuery(consumerCodes, preparedStmtList, builder);
-			builder.append(" AND businessservice=? )");
-			preparedStmtList.add(businessService);
-		}
 		return builder.toString();
 	}
 	
-	public String getBillStatusUpdateBatchQuery() {
-		
-		return BILL_STATUS_UPDATE_BATCH_QUERY;
-	}
 	/**
 	 * @param billIds
 	 * @param preparedStmtList
