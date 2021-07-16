@@ -3,10 +3,12 @@ package org.egov.demand.repository;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.egov.demand.model.AuditDetails;
 import org.egov.demand.model.BillAccountDetailV2;
@@ -14,6 +16,7 @@ import org.egov.demand.model.BillDetailV2;
 import org.egov.demand.model.BillSearchCriteria;
 import org.egov.demand.model.BillV2;
 import org.egov.demand.model.BillV2.BillStatus;
+import org.egov.demand.model.UpdateBillCriteria;
 import org.egov.demand.repository.querybuilder.BillQueryBuilder;
 import org.egov.demand.repository.rowmapper.BillRowMapperV2;
 import org.egov.demand.util.Util;
@@ -23,7 +26,6 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -188,15 +190,25 @@ public class BillRepositoryV2 {
 	 * executes query to update bill status to expired 
 	 * @param billIds
 	 */
-	public Integer updateBillStatus(Collection<String> consumerCodes, String businessService, String tenantId,
-			BillStatus status) {
+	public Integer updateBillStatus(UpdateBillCriteria updateBillCriteria) {
 
-		if (CollectionUtils.isEmpty(consumerCodes))
-			return 0;
+		if(BillStatus.CANCELLED.equals(updateBillCriteria.getStatusToBeUpdated())) {
+			
+			Set<String> consumerCodes = updateBillCriteria.getConsumerCodes();
+			
+			List<BillV2> bills =  findBill(BillSearchCriteria.builder()
+					.consumerCode(Stream.of(consumerCodes.iterator().next()).collect(Collectors.toSet()))
+					.service(updateBillCriteria.getBusinessService())
+					.tenantId(updateBillCriteria.getTenantId())
+					.build());
+			
+			updateBillCriteria.setBillIds(Stream.of(bills.get(0).getId()).collect(Collectors.toSet()));
+			updateBillCriteria.setAdditionalDetails(
+					util.jsonMerge(updateBillCriteria.getAdditionalDetails(), bills.get(0).getAdditionalDetails()));
+		}
+		
 		List<Object> preparedStmtList = new ArrayList<>();
-		preparedStmtList.add(status.toString());
-		preparedStmtList.add(tenantId);
-		String queryStr = billQueryBuilder.getBillStatusUpdateQuery(consumerCodes, businessService, preparedStmtList);
+		String queryStr = billQueryBuilder.getBillStatusUpdateQuery(updateBillCriteria, preparedStmtList);
 		return jdbcTemplate.update(queryStr, preparedStmtList.toArray());
 	}
 	

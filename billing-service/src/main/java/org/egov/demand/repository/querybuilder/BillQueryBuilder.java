@@ -5,15 +5,21 @@ import java.util.List;
 
 import org.egov.demand.model.BillSearchCriteria;
 import org.egov.demand.model.BillV2.BillStatus;
+import org.egov.demand.model.UpdateBillCriteria;
+import org.egov.demand.util.Util;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 @Component
 public class BillQueryBuilder {
 	
+	@Autowired
+	private Util util;
+	
 	public static final String REPLACE_STRING = "{replace}";
 	
-	public static final String BILL_STATUS_UPDATE_BASE_QUERY = "UPDATE egbs_bill_v1 SET status=? WHERE status='ACTIVE' AND tenantId = ? ";
+	public static final String BILL_STATUS_UPDATE_BASE_QUERY = "UPDATE egbs_bill_v1 SET status=? {replace} WHERE status='ACTIVE' AND tenantId = ? ";
 	
 	public static final String INSERT_BILL_QUERY = "INSERT into egbs_bill_v1 "
 			+"(id, tenantid, payername, payeraddress, payeremail, isactive, iscancelled, createdby, createddate, lastmodifiedby, lastmodifieddate, mobilenumber, status, additionaldetails)"
@@ -156,15 +162,40 @@ public class BillQueryBuilder {
 	 * @param billIds
 	 * @param preparedStmtList
 	 */
-	public String getBillStatusUpdateQuery(Collection<String> consumerCodes, String businessService,
-			List<Object> preparedStmtList) {
+	public String getBillStatusUpdateQuery(UpdateBillCriteria updateBillCriteria, List<Object> preparedStmtList) {
 
-		StringBuilder builder = new StringBuilder(BILL_STATUS_UPDATE_BASE_QUERY);
+		String additionalDetailsQuery = ", additionaldetails = ?";
+		StringBuilder builder = new StringBuilder();
+		
+		preparedStmtList.add(updateBillCriteria.getStatusToBeUpdated().toString());
+		
+		if (updateBillCriteria.getStatusToBeUpdated().equals(BillStatus.CANCELLED)
+				&& updateBillCriteria.getAdditionalDetails() != null) {
+			
+			builder.append(BILL_STATUS_UPDATE_BASE_QUERY.replace(REPLACE_STRING, additionalDetailsQuery));
+			preparedStmtList.add(util.getPGObject(updateBillCriteria.getAdditionalDetails()));
+		} else
+			builder.append(BILL_STATUS_UPDATE_BASE_QUERY.replace(REPLACE_STRING, ""));
 
-		builder.append(" AND id IN ( SELECT billid from egbs_billdetail_v1 where consumercode IN (");
-		appendListToQuery(consumerCodes, preparedStmtList, builder);
+		/*
+		 *  where condition parameters
+		 */
+		preparedStmtList.add(updateBillCriteria.getTenantId());
+		
 		builder.append(" AND businessservice=? )");
-		preparedStmtList.add(businessService);
+		preparedStmtList.add(updateBillCriteria.getBusinessService());
+
+		if (!CollectionUtils.isEmpty(updateBillCriteria.getBillIds())) {
+
+			builder.append(" AND id IN ( ");
+			appendListToQuery(updateBillCriteria.getBillIds(), preparedStmtList, builder);
+		}
+
+		if (!CollectionUtils.isEmpty(updateBillCriteria.getConsumerCodes())) {
+			
+			builder.append(" AND id IN ( SELECT billid from egbs_billdetail_v1 where consumercode IN (");
+			appendListToQuery(updateBillCriteria.getConsumerCodes(), preparedStmtList, builder);
+		}
 
 		return builder.toString();
 	}

@@ -77,6 +77,7 @@ import org.egov.demand.model.DemandDetail;
 import org.egov.demand.model.GenerateBillCriteria;
 import org.egov.demand.model.TaxHeadMaster;
 import org.egov.demand.model.TaxHeadMasterCriteria;
+import org.egov.demand.model.UpdateBillCriteria;
 import org.egov.demand.repository.BillRepositoryV2;
 import org.egov.demand.repository.IdGenRepo;
 import org.egov.demand.repository.ServiceRequestRepository;
@@ -150,10 +151,19 @@ public class BillServicev2 {
 	 * @param cancelBillCriteria
 	 * @param requestInfoWrapper
 	 */
-	public String cancelBill(BillSearchCriteria cancelBillCriteria, RequestInfoWrapper requestInfoWrapper) {
+	public String cancelBill(UpdateBillCriteria cancelBillCriteria, RequestInfoWrapper requestInfoWrapper) {
+		
+		Set<String> consumerCodes = cancelBillCriteria.getConsumerCodes();
+		cancelBillCriteria.setStatusToBeUpdated(BillStatus.CANCELLED);
+		Integer updateCount;
 
-		Integer updateCount = billRepository.updateBillStatus(cancelBillCriteria.getConsumerCode(),
-				cancelBillCriteria.getService(), cancelBillCriteria.getTenantId(), BillStatus.CANCELLED);
+		if (!CollectionUtils.isEmpty(consumerCodes) && consumerCodes.size() > 1) {
+			
+			throw new CustomException("EG_BS_CANCEL_BILL_ERROR", "Only one consumer code can be provided in the Cancel request");
+		} else {
+
+			updateCount = billRepository.updateBillStatus(cancelBillCriteria);
+		}
 		return Constants.SUCCESS_CANCEL_BILL_MSG.replace(Constants.COUNT_REPLACE_CANCEL_BILL_MSG, updateCount.toString());
 	}
 
@@ -195,7 +205,7 @@ public class BillServicev2 {
 		 * consumerCodes against the service code
 		 */
  		List<String> cosnumerCodesNotFoundInBill = new ArrayList<>(billCriteria.getConsumerCode());
-		List<String> cosnumerCodesToBeExpired = new ArrayList<>();
+		Set<String> cosnumerCodesToBeExpired = new HashSet<>();
 		List<BillV2> billsToBeReturned = new ArrayList<>();
 		Boolean isBillExpired = false;
 		
@@ -226,7 +236,15 @@ public class BillServicev2 {
 			billCriteria.getConsumerCode().retainAll(cosnumerCodesToBeExpired);
 			billCriteria.getConsumerCode().addAll(cosnumerCodesNotFoundInBill);
 			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), billCriteria.getConsumerCode(), billCriteria.getTenantId(), requestInfoWrapper);
-			billRepository.updateBillStatus(cosnumerCodesToBeExpired,billCriteria.getBusinessService(), billCriteria.getTenantId(), BillStatus.EXPIRED);
+			
+			billRepository.updateBillStatus(
+					UpdateBillCriteria.builder()
+					.statusToBeUpdated(BillStatus.EXPIRED)
+					.businessService(billCriteria.getBusinessService())
+					.consumerCodes(cosnumerCodesToBeExpired)
+					.tenantId(billCriteria.getTenantId())
+					.build()
+					);
 			BillResponseV2 finalResponse = generateBill(billCriteria, requestInfo);
 			finalResponse.getBill().addAll(billsToBeReturned);
 			return finalResponse;

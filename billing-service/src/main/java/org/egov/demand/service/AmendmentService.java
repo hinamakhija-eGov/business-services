@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -21,6 +22,7 @@ import org.egov.demand.model.AuditDetails;
 import org.egov.demand.model.BillV2.BillStatus;
 import org.egov.demand.model.Demand;
 import org.egov.demand.model.DemandCriteria;
+import org.egov.demand.model.UpdateBillCriteria;
 import org.egov.demand.repository.AmendmentRepository;
 import org.egov.demand.repository.BillRepositoryV2;
 import org.egov.demand.util.Util;
@@ -188,10 +190,18 @@ public class AmendmentService {
 			
 			amendmentRepository.updateAmendment(Arrays.asList(amendmentUpdate));
 			
-			List<String> consumerCodes = demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList());
+			Set<String> consumerCodes = demands.stream().map(Demand::getConsumerCode).collect(Collectors.toSet());
 			String businessService = demands.get(0).getBusinessService();
 			String tenantId = demands.get(0).getTenantId();
-			billRepositoryV2.updateBillStatus(consumerCodes, businessService, tenantId, BillStatus.EXPIRED);
+			
+			billRepositoryV2.updateBillStatus(
+					UpdateBillCriteria.builder()
+					.statusToBeUpdated(BillStatus.EXPIRED)
+					.businessService(businessService)
+					.consumerCodes(consumerCodes)
+					.tenantId(tenantId)
+					.build()
+					);
 		}
 	}
 
