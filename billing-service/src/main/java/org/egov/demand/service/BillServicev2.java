@@ -78,6 +78,7 @@ import org.egov.demand.model.GenerateBillCriteria;
 import org.egov.demand.model.TaxHeadMaster;
 import org.egov.demand.model.TaxHeadMasterCriteria;
 import org.egov.demand.model.UpdateBillCriteria;
+import org.egov.demand.model.UpdateBillRequest;
 import org.egov.demand.repository.BillRepositoryV2;
 import org.egov.demand.repository.IdGenRepo;
 import org.egov.demand.repository.ServiceRequestRepository;
@@ -151,8 +152,9 @@ public class BillServicev2 {
 	 * @param cancelBillCriteria
 	 * @param requestInfoWrapper
 	 */
-	public String cancelBill(UpdateBillCriteria cancelBillCriteria, RequestInfoWrapper requestInfoWrapper) {
+	public String cancelBill(UpdateBillRequest updateBillRequest) {
 		
+		UpdateBillCriteria cancelBillCriteria = updateBillRequest.getUpdateBillCriteria();
 		Set<String> consumerCodes = cancelBillCriteria.getConsumerCodes();
 		cancelBillCriteria.setStatusToBeUpdated(BillStatus.CANCELLED);
 		Integer updateCount;

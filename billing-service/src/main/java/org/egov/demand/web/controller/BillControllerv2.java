@@ -10,7 +10,7 @@ import org.egov.common.contract.response.ResponseInfo;
 import org.egov.demand.helper.BillHelperV2;
 import org.egov.demand.model.BillSearchCriteria;
 import org.egov.demand.model.GenerateBillCriteria;
-import org.egov.demand.model.UpdateBillCriteria;
+import org.egov.demand.model.UpdateBillRequest;
 import org.egov.demand.service.BillServicev2;
 import org.egov.demand.util.Constants;
 import org.egov.demand.web.contract.BillRequestV2;
@@ -86,11 +86,10 @@ public class BillControllerv2 {
 	
 	@PostMapping("_cancelbill")
 	@ResponseBody
-	public ResponseEntity<?> cancelBill(@RequestBody RequestInfoWrapper requestInfoWrapper, 
-			@ModelAttribute @Valid UpdateBillCriteria cancelBillCriteria){
+	public ResponseEntity<?> cancelBill(@RequestBody UpdateBillRequest updateBillRequest){
 
-		String responseMsg = billService.cancelBill(cancelBillCriteria, requestInfoWrapper);
-		ResponseInfo responseInfo = responseFactory.getResponseInfo(requestInfoWrapper.getRequestInfo(), HttpStatus.OK);
+		String responseMsg = billService.cancelBill(updateBillRequest);
+		ResponseInfo responseInfo = responseFactory.getResponseInfo(updateBillRequest.getRequestInfo(), HttpStatus.OK);
 		Map<String, Object> responseMap = new HashMap<>(); 
 		responseMap.put(Constants.RESPONSEINFO_STRING, responseInfo);
 		responseMap.put(Constants.MESSAGE_STRING, responseMsg);
