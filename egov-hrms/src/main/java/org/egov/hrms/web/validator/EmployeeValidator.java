@@ -258,7 +258,8 @@ public class EmployeeValidator {
 		validateConsistencyEmployeeDocument(existingEmp, employee, errorMap);
 		validateConsistencyDeactivationDetails(existingEmp, employee, errorMap);
 		validateDeactivationDetails(existingEmp, employee, errorMap, mdmsData);
-		validateReactivationDetails(existingEmp, employee, errorMap, mdmsData);
+		if(employee.getIsActive() && employee.getReActivateEmployee())
+			validateReactivationDetails(existingEmp, employee, errorMap, mdmsData);
 	}
 
 	/**
@@ -506,6 +507,9 @@ public class EmployeeValidator {
 	 */
 	private void validateDeactivationDetails(Employee existingEmp, Employee updatedEmployeeData, Map<String, String> errorMap, Map<String, List<String>> mdmsData){
 		if(!CollectionUtils.isEmpty(updatedEmployeeData.getDeactivationDetails())) {
+			Date date = new Date();
+			Date  currentDateStartTime = Date.from(date.toInstant().atZone(ZoneId.systemDefault())
+					.truncatedTo(ChronoUnit.DAYS).toInstant());
 			for (DeactivationDetails deactivationDetails : updatedEmployeeData.getDeactivationDetails()) {
 				if (deactivationDetails.getId()==null){
 					if(updatedEmployeeData.getIsActive()){
@@ -515,7 +519,7 @@ public class EmployeeValidator {
 				if(deactivationDetails.getEffectiveFrom() > new Date().getTime())
 					errorMap.put(ErrorConstants.HRMS_UPDATE_DEACT_DETAILS_INCORRECT_EFFECTIVEFROM_CODE, ErrorConstants.HRMS_UPDATE_DEACT_DETAILS_INCORRECT_EFFECTIVEFROM_MSG);
 
-				if(deactivationDetails.getEffectiveFrom() < existingEmp.getDateOfAppointment())
+				if(deactivationDetails.getEffectiveFrom() < currentDateStartTime.getTime())
 					errorMap.put(ErrorConstants.HRMS_UPDATE_DEACT_DETAILS_INCORRECT_EFFECTIVEFROM_CODE, ErrorConstants.HRMS_UPDATE_DEACT_DETAILS_INCORRECT_EFFECTIVEFROM_MSG);
 
 				if (! mdmsData.get(HRMSConstants.HRMS_MDMS_DEACT_REASON_CODE).contains(deactivationDetails.getReasonForDeactivation()))
@@ -526,12 +530,10 @@ public class EmployeeValidator {
 
 	private void validateReactivationDetails(Employee existingEmp, Employee updatedEmployeeData, Map<String, String> errorMap, Map<String, List<String>> mdmsData){
 		if(!CollectionUtils.isEmpty(updatedEmployeeData.getReactivationDetails())) {
-			Date date = new Date();
-			Date  currentDate = Date.from(date.toInstant().atZone(ZoneId.systemDefault())
-					.truncatedTo(ChronoUnit.DAYS).toInstant());
 			for (ReactivationDetails reactivationDetails : updatedEmployeeData.getReactivationDetails()) {
-
-				if(reactivationDetails.getEffectiveFrom() < currentDate.getTime())
+				Boolean isValidDetails = existingEmp.getDeactivationDetails().get(0).getEffectiveFrom() <= reactivationDetails.getEffectiveFrom()
+										 && reactivationDetails.getEffectiveFrom() <= new Date().getTime();
+				if(!isValidDetails)
 					errorMap.put(ErrorConstants.HRMS_UPDATE_REACT_DETAILS_INCORRECT_EFFECTIVEFROM_CODE, ErrorConstants.HRMS_UPDATE_REACT_DETAILS_INCORRECT_EFFECTIVEFROM_MSG);
 
 			}
