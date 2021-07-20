@@ -257,7 +257,8 @@ public class EmployeeValidator {
 		validateConsistencyServiceHistory(existingEmp, employee, errorMap);
 		validateConsistencyEmployeeDocument(existingEmp, employee, errorMap);
 		validateConsistencyDeactivationDetails(existingEmp, employee, errorMap);
-		validateDeactivationDetails(existingEmp, employee, errorMap, mdmsData);
+		if(!employee.getIsActive())
+			validateDeactivationDetails(existingEmp, employee, errorMap, mdmsData);
 		if(employee.getIsActive() && employee.getReActivateEmployee())
 			validateReactivationDetails(existingEmp, employee, errorMap, mdmsData);
 	}
