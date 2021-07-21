@@ -248,7 +248,9 @@ public class BillServicev2 {
 					.build()
 					);
 			BillResponseV2 finalResponse = generateBill(billCriteria, requestInfo);
-			finalResponse.getBill().addAll(billsToBeReturned);
+			// gen bill returns immutable empty list incase of zero bills
+			billsToBeReturned.addAll(finalResponse.getBill());
+			finalResponse.setBill(billsToBeReturned);
 			return finalResponse;
 		}
 	}
