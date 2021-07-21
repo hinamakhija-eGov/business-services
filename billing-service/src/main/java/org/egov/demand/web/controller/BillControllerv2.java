@@ -86,7 +86,7 @@ public class BillControllerv2 {
 	
 	@PostMapping("_cancelbill")
 	@ResponseBody
-	public ResponseEntity<?> cancelBill(@RequestBody UpdateBillRequest updateBillRequest){
+	public ResponseEntity<?> cancelBill(@RequestBody @Valid UpdateBillRequest updateBillRequest){
 
 		String responseMsg = billService.cancelBill(updateBillRequest);
 		ResponseInfo responseInfo = responseFactory.getResponseInfo(updateBillRequest.getRequestInfo(), HttpStatus.OK);

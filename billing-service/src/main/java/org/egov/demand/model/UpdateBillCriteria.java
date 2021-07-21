@@ -22,6 +22,7 @@ public class UpdateBillCriteria {
 	@NotNull
 	private String tenantId;
 	
+	@NotNull
 	private Set<String> consumerCodes;
 	
 	@NotNull
