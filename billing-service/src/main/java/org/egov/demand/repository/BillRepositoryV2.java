@@ -192,12 +192,15 @@ public class BillRepositoryV2 {
 	 * @param billIds
 	 */
 	public Integer updateBillStatus(UpdateBillCriteria updateBillCriteria) {
-		
+
 		Set<String> consumerCodes = updateBillCriteria.getConsumerCodes();
+		if(CollectionUtils.isEmpty(consumerCodes))
+			return 0;
+		
 		List<BillV2> bills =  findBill(BillSearchCriteria.builder()
-				.consumerCode(Stream.of(consumerCodes.iterator().next()).collect(Collectors.toSet()))
 				.service(updateBillCriteria.getBusinessService())
 				.tenantId(updateBillCriteria.getTenantId())
+				.consumerCode(consumerCodes)
 				.status(BillStatus.ACTIVE)
 				.build());
 		
