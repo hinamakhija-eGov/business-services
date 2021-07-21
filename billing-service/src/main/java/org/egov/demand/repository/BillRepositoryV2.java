@@ -26,6 +26,7 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -191,20 +192,26 @@ public class BillRepositoryV2 {
 	 * @param billIds
 	 */
 	public Integer updateBillStatus(UpdateBillCriteria updateBillCriteria) {
+		
+		Set<String> consumerCodes = updateBillCriteria.getConsumerCodes();
+		List<BillV2> bills =  findBill(BillSearchCriteria.builder()
+				.consumerCode(Stream.of(consumerCodes.iterator().next()).collect(Collectors.toSet()))
+				.service(updateBillCriteria.getBusinessService())
+				.tenantId(updateBillCriteria.getTenantId())
+				.status(BillStatus.ACTIVE)
+				.build());
+		
+		if(CollectionUtils.isEmpty(bills))
+			return 0;
 
-		if(BillStatus.CANCELLED.equals(updateBillCriteria.getStatusToBeUpdated())) {
-			
-			Set<String> consumerCodes = updateBillCriteria.getConsumerCodes();
-			
-			List<BillV2> bills =  findBill(BillSearchCriteria.builder()
-					.consumerCode(Stream.of(consumerCodes.iterator().next()).collect(Collectors.toSet()))
-					.service(updateBillCriteria.getBusinessService())
-					.tenantId(updateBillCriteria.getTenantId())
-					.build());
-			
+		if (BillStatus.CANCELLED.equals(updateBillCriteria.getStatusToBeUpdated())) {
+
 			updateBillCriteria.setBillIds(Stream.of(bills.get(0).getId()).collect(Collectors.toSet()));
 			updateBillCriteria.setAdditionalDetails(
 					util.jsonMerge(updateBillCriteria.getAdditionalDetails(), bills.get(0).getAdditionalDetails()));
+		} else {
+
+			updateBillCriteria.setBillIds(bills.stream().map(BillV2::getId).collect(Collectors.toSet()));
 		}
 		
 		List<Object> preparedStmtList = new ArrayList<>();

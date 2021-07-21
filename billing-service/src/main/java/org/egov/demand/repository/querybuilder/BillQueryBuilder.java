@@ -168,22 +168,19 @@ public class BillQueryBuilder {
 		StringBuilder builder = new StringBuilder();
 		
 		preparedStmtList.add(updateBillCriteria.getStatusToBeUpdated().toString());
-		
+
 		if (updateBillCriteria.getStatusToBeUpdated().equals(BillStatus.CANCELLED)
 				&& updateBillCriteria.getAdditionalDetails() != null) {
-			
+
 			builder.append(BILL_STATUS_UPDATE_BASE_QUERY.replace(REPLACE_STRING, additionalDetailsQuery));
 			preparedStmtList.add(util.getPGObject(updateBillCriteria.getAdditionalDetails()));
 		} else
 			builder.append(BILL_STATUS_UPDATE_BASE_QUERY.replace(REPLACE_STRING, ""));
 
 		/*
-		 *  where condition parameters
+		 * where condition parameters
 		 */
 		preparedStmtList.add(updateBillCriteria.getTenantId());
-		
-		builder.append(" AND businessservice=? )");
-		preparedStmtList.add(updateBillCriteria.getBusinessService());
 
 		if (!CollectionUtils.isEmpty(updateBillCriteria.getBillIds())) {
 
@@ -191,11 +188,6 @@ public class BillQueryBuilder {
 			appendListToQuery(updateBillCriteria.getBillIds(), preparedStmtList, builder);
 		}
 
-		if (!CollectionUtils.isEmpty(updateBillCriteria.getConsumerCodes())) {
-			
-			builder.append(" AND id IN ( SELECT billid from egbs_billdetail_v1 where consumercode IN (");
-			appendListToQuery(updateBillCriteria.getConsumerCodes(), preparedStmtList, builder);
-		}
 
 		return builder.toString();
 	}
