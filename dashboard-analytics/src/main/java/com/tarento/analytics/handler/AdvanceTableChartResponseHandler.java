@@ -103,12 +103,11 @@ public class AdvanceTableChartResponseHandler implements IResponseHandler {
                 //
                 if(executeComputedFields){
                     try {
-
                         List<ComputedFields> computedFieldsList = mapper.readValue(computedFields.toString(), new TypeReference<List<ComputedFields>>(){});
                         computedFieldsList.forEach(cfs -> {
                             IComputedField computedFieldObject = computedFieldFactory.getInstance(cfs.getActionName());
                             computedFieldObject.set(requestDto, cfs.getPostAggregationTheory());
-                            computedFieldObject.add(data, cfs.getFields(), cfs.getNewField() );
+                            computedFieldObject.add(data, cfs.getFields(), cfs.getNewField(), chartNode );
 
                         });
                         // exclude the fields no to be displayed
@@ -215,7 +214,10 @@ public class AdvanceTableChartResponseHandler implements IResponseHandler {
                 doc_value = (null == valueNode.findValue(DOC_COUNT)) ? 0.0 : valueNode.findValue(DOC_COUNT).asDouble();
             Double value = (null == valueNode || null == valueNode.findValue(VALUE)) ? doc_value : valueNode.findValue(VALUE).asDouble();
             String dataType = getDataType(chartNode, headerPath.asText(), valueNode);
-
+            
+            if(chartNode.get(IS_ROUND_OFF)!=null && chartNode.get(IS_ROUND_OFF).asBoolean()) {
+            	value =  (double) Math.round(value);
+            }
             Plot plot = new Plot(headerPath.asText(), value, dataType);
             if (mappings.containsKey(key)) {
                 double newval = mappings.get(key).get(headerPath.asText()) == null ? value : (mappings.get(key).get(headerPath.asText()).getValue() + value);

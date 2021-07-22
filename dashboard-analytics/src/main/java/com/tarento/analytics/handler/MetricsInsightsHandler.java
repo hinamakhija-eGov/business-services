@@ -35,8 +35,13 @@ public class MetricsInsightsHandler implements InsightsHandler {
 					textToDisplay = null;
 				} else {
 					textToDisplay = textToDisplay.replace(INDICATOR_PLACEHOLDER, POSITIVE);
-					textToDisplay = textToDisplay.replace(VALUE_PLACEHOLDER,
-							String.valueOf(new DecimalFormat("#.##").format(insightValue)));
+					if(insightsConfig.getIsRoundOff()!=null && insightsConfig.getIsRoundOff()) {
+						textToDisplay = textToDisplay.replace(VALUE_PLACEHOLDER,
+								String.valueOf(Math.round(insightValue)));
+					}else {
+						textToDisplay = textToDisplay.replace(VALUE_PLACEHOLDER,
+								String.valueOf(new DecimalFormat("#.##").format(insightValue)));
+					}
 					insightIndicator = INSIGHT_INDICATOR_POSITIVE;
 				}
 			} else { 
@@ -47,7 +52,13 @@ public class MetricsInsightsHandler implements InsightsHandler {
 				if(difference.equals(0.0) && insightValue.equals(0.0)) 
 					return aggregateDto;
 				textToDisplay = textToDisplay.replace(INDICATOR_PLACEHOLDER, NEGATIVE);
-				textToDisplay = textToDisplay.replace(VALUE_PLACEHOLDER, String.valueOf(new DecimalFormat("#.##").format(insightValue)));
+				if(insightsConfig.getIsRoundOff()!=null && insightsConfig.getIsRoundOff()) {
+					textToDisplay = textToDisplay.replace(VALUE_PLACEHOLDER,
+							String.valueOf(Math.round(insightValue)));
+				}else {
+					textToDisplay = textToDisplay.replace(VALUE_PLACEHOLDER,
+							String.valueOf(new DecimalFormat("#.##").format(insightValue)));
+				}
 				insightIndicator = INSIGHT_INDICATOR_NEGATIVE; 
 			}
 			if (textToDisplay == null) {
