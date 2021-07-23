@@ -82,7 +82,6 @@ import org.egov.demand.model.UpdateBillRequest;
 import org.egov.demand.repository.BillRepositoryV2;
 import org.egov.demand.repository.IdGenRepo;
 import org.egov.demand.repository.ServiceRequestRepository;
-import org.egov.demand.util.Constants;
 import org.egov.demand.util.Util;
 import org.egov.demand.web.contract.BillRequestV2;
 import org.egov.demand.web.contract.BillResponseV2;
@@ -152,21 +151,19 @@ public class BillServicev2 {
 	 * @param cancelBillCriteria
 	 * @param requestInfoWrapper
 	 */
-	public String cancelBill(UpdateBillRequest updateBillRequest) {
+	public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 		
 		UpdateBillCriteria cancelBillCriteria = updateBillRequest.getUpdateBillCriteria();
 		Set<String> consumerCodes = cancelBillCriteria.getConsumerCodes();
 		cancelBillCriteria.setStatusToBeUpdated(BillStatus.CANCELLED);
-		Integer updateCount;
 
 		if (!CollectionUtils.isEmpty(consumerCodes) && consumerCodes.size() > 1) {
 			
 			throw new CustomException("EG_BS_CANCEL_BILL_ERROR", "Only one consumer code can be provided in the Cancel request");
 		} else {
 
-			updateCount = billRepository.updateBillStatus(cancelBillCriteria);
+			return billRepository.updateBillStatus(cancelBillCriteria);
 		}
-		return Constants.SUCCESS_CANCEL_BILL_MSG.replace(Constants.COUNT_REPLACE_CANCEL_BILL_MSG, updateCount.toString());
 	}
 
 	/**

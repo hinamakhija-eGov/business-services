@@ -88,11 +88,23 @@ public class BillControllerv2 {
 	@ResponseBody
 	public ResponseEntity<?> cancelBill(@RequestBody @Valid UpdateBillRequest updateBillRequest){
 
-		String responseMsg = billService.cancelBill(updateBillRequest);
-		ResponseInfo responseInfo = responseFactory.getResponseInfo(updateBillRequest.getRequestInfo(), HttpStatus.OK);
+		Integer count = billService.cancelBill(updateBillRequest);
+		
+		HttpStatus status;
+		String responseMsg;
+		
+		if (count == 0) {
+			status = HttpStatus.BAD_REQUEST;
+			responseMsg = Constants.FAILURE_CANCEL_BILL_MSG;
+		} else {
+			status = HttpStatus.OK;
+			responseMsg = Constants.SUCCESS_CANCEL_BILL_MSG.replace(
+					Constants.COUNT_REPLACE_CANCEL_BILL_MSG, count.toString());
+		}
+		ResponseInfo responseInfo = responseFactory.getResponseInfo(updateBillRequest.getRequestInfo(), status);
 		Map<String, Object> responseMap = new HashMap<>(); 
 		responseMap.put(Constants.RESPONSEINFO_STRING, responseInfo);
 		responseMap.put(Constants.MESSAGE_STRING, responseMsg);
-		return new ResponseEntity<>(responseMap, HttpStatus.OK);
+		return new ResponseEntity<>(responseMap, status);
 	}
 }
