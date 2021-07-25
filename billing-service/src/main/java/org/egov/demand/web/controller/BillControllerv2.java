@@ -93,14 +93,15 @@ public class BillControllerv2 {
 		HttpStatus status;
 		String responseMsg;
 		
-		if (count == 0) {
-			status = HttpStatus.BAD_REQUEST;
-			responseMsg = Constants.FAILURE_CANCEL_BILL_MSG;
-		} else {
+		if (count > 0) {
 			status = HttpStatus.OK;
-			responseMsg = Constants.SUCCESS_CANCEL_BILL_MSG.replace(
-					Constants.COUNT_REPLACE_CANCEL_BILL_MSG, count.toString());
+			responseMsg = Constants.SUCCESS_CANCEL_BILL_MSG.replace(Constants.COUNT_REPLACE_CANCEL_BILL_MSG,
+					count.toString());
+		} else {
+			status = HttpStatus.BAD_REQUEST;
+			responseMsg = count < 0 ? Constants.PAID_CANCEL_BILL_MSG : Constants.FAILURE_CANCEL_BILL_MSG;
 		}
+		
 		ResponseInfo responseInfo = responseFactory.getResponseInfo(updateBillRequest.getRequestInfo(), status);
 		Map<String, Object> responseMap = new HashMap<>(); 
 		responseMap.put(Constants.RESPONSEINFO_STRING, responseInfo);

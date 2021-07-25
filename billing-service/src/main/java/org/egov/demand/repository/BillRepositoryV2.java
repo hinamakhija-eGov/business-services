@@ -201,11 +201,18 @@ public class BillRepositoryV2 {
 				.service(updateBillCriteria.getBusinessService())
 				.tenantId(updateBillCriteria.getTenantId())
 				.consumerCode(consumerCodes)
-				.status(BillStatus.ACTIVE)
 				.build());
 		
-		if(CollectionUtils.isEmpty(bills))
+		if (CollectionUtils.isEmpty(bills))
 			return 0;
+
+		BillStatus status = bills.get(0).getStatus();
+		if (!status.equals(BillStatus.ACTIVE)) {
+			if (status.equals(BillStatus.PAID) || status.equals(BillStatus.PARTIALLY_PAID))
+				return -1;
+			else
+				return 0;
+		}
 
 		if (BillStatus.CANCELLED.equals(updateBillCriteria.getStatusToBeUpdated())) {
 

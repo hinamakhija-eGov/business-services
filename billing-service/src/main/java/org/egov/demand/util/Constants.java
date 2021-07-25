@@ -166,7 +166,9 @@ public class Constants {
 	
 	public static final String SUCCESS_CANCEL_BILL_MSG = "Successfully cancelled {count} Active bills for given consumer codes";
 	
-	public static final String FAILURE_CANCEL_BILL_MSG = "You cannot cancel the bill in the workflow";
+	public static final String FAILURE_CANCEL_BILL_MSG = "No Active bills found for cancellation for the given criteria";
+	
+	public static final String PAID_CANCEL_BILL_MSG = "You cannot cancel the bill in the workflow";
 	
 	public static final String COUNT_REPLACE_CANCEL_BILL_MSG = "{count}";
 }
