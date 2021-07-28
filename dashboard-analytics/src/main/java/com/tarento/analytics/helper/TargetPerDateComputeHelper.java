@@ -73,9 +73,10 @@ public class TargetPerDateComputeHelper implements ComputeHelper {
 				logger.info("End Date after Round Off: " + String.valueOf(eDate));
 				Long dateDifference = TimeUnit.DAYS.convert((eDate - sDate), TimeUnit.MILLISECONDS);
 				if(dateDifference == 0l) dateDifference = dateDifference + 1l ;
-
+				
+				logger.info("Initial Value is : " + value);
 				value = (value / NUMBER_OF_DAYS) * dateDifference;
-				logger.info("Value is : " + value + " :: Date Difference is : " + dateDifference);
+				logger.info("Value after computation : " + value + " :: Date Difference is : " + dateDifference);
 
 			} catch (Exception ex) {
 				logger.error("Encountered an error while computing the logic in Target Date Computer : " + ex.getMessage());
