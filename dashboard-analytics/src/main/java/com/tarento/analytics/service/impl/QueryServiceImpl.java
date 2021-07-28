@@ -441,6 +441,7 @@ public class QueryServiceImpl implements QueryService {
 				Entry<String, Object> entry = filtersItr.next();
 				if(null != requestQueryMaps.get(entry.getKey()) && !String.valueOf(entry.getValue()).equals(Constants.Filters.FILTER_ALL)) {
 					// Filters in put filters are added as esfilters usign mapping in requestQueryMap
+					System.out.print("key:" + entry.getKey() + "value:" + entry.getValue());
 					String esQueryKey = requestQueryMaps.get(entry.getKey()).asText();
 					request.getEsFilters().put(esQueryKey, entry.getValue());
 				}
