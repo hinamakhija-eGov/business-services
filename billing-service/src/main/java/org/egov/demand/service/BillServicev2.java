@@ -433,7 +433,6 @@ public class BillServicev2 {
 		return bills;
 	}
 	
-}
 
 	private List<String> getBillNumbers(RequestInfo requestInfo, String tenantId, String module, int count) {
 
