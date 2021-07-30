@@ -111,7 +111,6 @@ public class GenerateBillCriteria {
 		return BillSearchCriteria.builder()
 				.consumerCode(consumerCode)
 				.mobileNumber(mobileNumber)
-				.status(BillStatus.ACTIVE)
 				.service(businessService)
 				.tenantId(tenantId)
 				.isOrderBy(true)

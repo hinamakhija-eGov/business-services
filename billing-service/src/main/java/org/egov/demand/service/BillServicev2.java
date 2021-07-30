@@ -40,6 +40,7 @@
 
 package org.egov.demand.service;
 
+import static org.egov.demand.util.Constants.BUSINESS_SERVICE_URL_PARAMETER;
 import static org.egov.demand.util.Constants.CONSUMERCODES_REPLACE_TEXT;
 import static org.egov.demand.util.Constants.EG_BS_BILL_NO_DEMANDS_FOUND_KEY;
 import static org.egov.demand.util.Constants.EG_BS_BILL_NO_DEMANDS_FOUND_MSG;
@@ -48,7 +49,6 @@ import static org.egov.demand.util.Constants.URL_NOT_CONFIGURED_FOR_DEMAND_UPDAT
 import static org.egov.demand.util.Constants.URL_NOT_CONFIGURED_FOR_DEMAND_UPDATE_MSG;
 import static org.egov.demand.util.Constants.URL_NOT_CONFIGURED_REPLACE_TEXT;
 import static org.egov.demand.util.Constants.URL_PARAMS_FOR_SERVICE_BASED_DEMAND_APIS;
-import static org.egov.demand.util.Constants.BUSINESS_SERVICE_URL_PARAMETER;
 import static org.egov.demand.util.Constants.URL_PARAM_SEPERATOR;
 
 import java.math.BigDecimal;
@@ -68,8 +68,6 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.validation.Valid;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.demand.config.ApplicationProperties;
@@ -106,7 +104,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.HttpClientErrorException.Forbidden;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -171,14 +168,22 @@ public class BillServicev2 {
 			billCriteria.setConsumerCode(new HashSet<>());
 		BillResponseV2 res = searchBill(billCriteria.toBillSearchCriteria(), requestInfo);
 		List<BillV2> bills = res.getBill();
-		log.info("fetchBill--> bills-->" + bills.size());
+		
+		log.debug("fetchBill--> bills-->" + bills.size());
 		/* 
 		 * If no existing bills found then Generate new bill 
 		 */
 		if (CollectionUtils.isEmpty(bills))
 			return generateBill(billCriteria, requestInfo);
-		log.info("fetchBill--------going to generate new bill-------------------");
 		
+		if (!(StringUtils.isEmpty(billCriteria.getMobileNumber()) && StringUtils.isEmpty(billCriteria.getEmail()))) {
+
+			List<Demand> demands = demandService.getDemands(billCriteria.toDemandCriteria(), requestInfo);
+			billCriteria.getConsumerCode().addAll(
+					demands.stream().map(Demand::getConsumerCode).collect(Collectors.toSet()));
+		}
+
+		log.debug("fetchBill--------going to generate new bill-------------------");
 		Map<String, BillV2> consumerCodeAndBillMap = bills.stream().collect(Collectors.toMap(BillV2::getConsumerCode, Function.identity()));
 		billCriteria.getConsumerCode().addAll(consumerCodeAndBillMap.keySet());
 		/*
