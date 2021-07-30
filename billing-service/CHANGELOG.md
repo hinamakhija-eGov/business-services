@@ -8,6 +8,11 @@ All notable changes to this module will be documented in this file.
  - State level bill gen fix added
  - Provision to add unbilled demands to bill generate
 
+ - Earliest bill search
+ - Bill cancellation
+ - State level bill gen fix added
+ - Provision to add unbilled demands to bill generate
+
 ## 1.3.2 - 2021-05-11
 - apportion fix
 - Added size validations
