@@ -48,7 +48,9 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 import org.egov.demand.model.BillV2.BillStatus;
+import org.egov.demand.model.enums.DemandStatus;
 import org.hibernate.validator.constraints.SafeHtml;
+import org.springframework.util.StringUtils;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -89,13 +91,21 @@ public class GenerateBillCriteria {
 	
 	public DemandCriteria toDemandCriteria() {
 		
-		Set<String> consumerCodeSet = new HashSet<>();
-		consumerCodeSet.addAll(consumerCode);
-		
-		Set<String> demandIdSet = new HashSet<>();
-		demandIdSet.add(demandId);
+		Set<String> consumerCodeSet = null;
+		Set<String> demandIdSet = null;
+
+		if (!StringUtils.isEmpty(consumerCode)) {
+			consumerCodeSet = new HashSet<>();
+			consumerCodeSet.addAll(consumerCode);
+		}
+
+		if (!StringUtils.isEmpty(demandId)) {
+			demandIdSet = new HashSet<>();
+			demandIdSet.add(demandId);
+		}
 		
 		return DemandCriteria.builder()
+				.status(DemandStatus.ACTIVE.toString())
 				.businessService(businessService)
 				.consumerCode(consumerCodeSet)
 				.mobileNumber(mobileNumber)
