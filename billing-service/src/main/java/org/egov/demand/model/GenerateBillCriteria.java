@@ -95,6 +95,7 @@ public class GenerateBillCriteria {
 				.mobileNumber(mobileNumber)
 				.demandId(demandIdSet)
 				.tenantId(tenantId)
+				.isPaymentCompleted(true)
 				.email(email)
 				.periodFrom(periodFrom)
 				.periodTo(periodTo)
