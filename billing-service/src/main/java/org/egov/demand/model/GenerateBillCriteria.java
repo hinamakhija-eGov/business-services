@@ -41,6 +41,8 @@ package org.egov.demand.model;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.egov.demand.model.enums.DemandStatus;
+import org.springframework.util.StringUtils;
 
 import javax.validation.constraints.NotNull;
 
@@ -83,13 +85,21 @@ public class GenerateBillCriteria {
 	
 	public DemandCriteria toDemandCriteria() {
 		
-		Set<String> consumerCodeSet = new HashSet<>();
-		consumerCodeSet.addAll(consumerCode);
-		
-		Set<String> demandIdSet = new HashSet<>();
-		demandIdSet.add(demandId);
+		Set<String> consumerCodeSet = null;
+		Set<String> demandIdSet = null;
+
+		if (!StringUtils.isEmpty(consumerCode)) {
+			consumerCodeSet = new HashSet<>();
+			consumerCodeSet.addAll(consumerCode);
+		}
+
+		if (!StringUtils.isEmpty(demandId)) {
+			demandIdSet = new HashSet<>();
+			demandIdSet.add(demandId);
+		}
 		
 		return DemandCriteria.builder()
+				.status(DemandStatus.ACTIVE.toString())
 				.businessService(businessService)
 				.consumerCode(consumerCodeSet)
 				.mobileNumber(mobileNumber)
