@@ -24,6 +24,7 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -197,11 +198,13 @@ public String  getLatestActiveBillId(CancelBillCriteria cancelBillCriteria){
 	 * executes query to update bill status to expired 
 	 * @param billIds
 	 */
-	public void updateBillStatus(List<String> cosnumerCodes,String businessService, BillStatus status) {
+	public void updateBillStatus(List<String> consumerCodes,String businessService, BillStatus status) {
+		if (CollectionUtils.isEmpty(consumerCodes))
+			return;
 
 		List<Object> preparedStmtList = new ArrayList<>();
 		preparedStmtList.add(status.toString());
-		String queryStr = billQueryBuilder.getBillStatusUpdateQuery(cosnumerCodes,businessService, preparedStmtList);
+		String queryStr = billQueryBuilder.getBillStatusUpdateQuery(consumerCodes,businessService, preparedStmtList);
 		jdbcTemplate.update(queryStr, preparedStmtList.toArray());
 	}
 	
