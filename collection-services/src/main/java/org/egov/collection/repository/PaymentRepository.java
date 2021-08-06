@@ -14,6 +14,7 @@ import org.egov.collection.model.PaymentSearchCriteria;
 import org.egov.collection.repository.querybuilder.PaymentQueryBuilder;
 import org.egov.collection.repository.rowmapper.BillRowMapper;
 import org.egov.collection.repository.rowmapper.PaymentRowMapper;
+import org.egov.collection.util.Utils;
 import org.egov.collection.web.contract.Bill;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,6 +96,7 @@ public class PaymentRepository {
             return new LinkedList<>();
 
         String query = paymentQueryBuilder.getPaymentSearchQuery(ids, preparedStatementValues);
+        query = Utils.replaceSchemaPlaceholder(query, paymentSearchCriteria.getTenantId());
         log.info("Query: " + query);
         log.info("preparedStatementValues: " + preparedStatementValues);
         List<Payment> payments = namedParameterJdbcTemplate.query(query, preparedStatementValues, paymentRowMapper);
@@ -125,6 +127,7 @@ public class PaymentRepository {
     public List<Payment> fetchPaymentsForPlainSearch(PaymentSearchCriteria paymentSearchCriteria) {
         Map<String, Object> preparedStatementValues = new HashMap<>();
         String query = paymentQueryBuilder.getPaymentSearchQueryForPlainSearch(paymentSearchCriteria, preparedStatementValues);
+        query = Utils.replaceSchemaPlaceholder(query, paymentSearchCriteria.getTenantId());
         log.info("Query: " + query);
         log.info("preparedStatementValues: " + preparedStatementValues);
         List<Payment> payments = namedParameterJdbcTemplate.query(query, preparedStatementValues, paymentRowMapper);
@@ -254,6 +257,7 @@ public class PaymentRepository {
     public List<String> fetchPaymentIdsByCriteria(PaymentSearchCriteria paymentSearchCriteria) {
         Map<String, Object> preparedStatementValues = new HashMap<>();
         String query = paymentQueryBuilder.getIdQuery(paymentSearchCriteria, preparedStatementValues);
+        query = Utils.replaceSchemaPlaceholder(query, paymentSearchCriteria.getTenantId());
         return namedParameterJdbcTemplate.query(query, preparedStatementValues, new SingleColumnRowMapper<>(String.class));
 	}
 

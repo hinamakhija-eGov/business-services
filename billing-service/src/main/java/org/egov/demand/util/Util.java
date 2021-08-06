@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.tomcat.util.bcel.Const;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.demand.amendment.model.ProcessInstance;
 import org.egov.demand.amendment.model.ProcessInstanceRequest;
@@ -345,6 +346,11 @@ public class Util {
 		query.append(")");
 		
 		return query.toString();
+	}
+	public static String replaceSchemaPlaceholder(String query, String tenantId){
+		String stateLevelTenant = tenantId.split("\\.")[1];
+		String finalQuery = query.replace(Constants.SCHEMA_PLACEHOLDER, stateLevelTenant);
+		return finalQuery;
 	}
 
 	private String createPlaceHolderForList(Set<String> ids) {

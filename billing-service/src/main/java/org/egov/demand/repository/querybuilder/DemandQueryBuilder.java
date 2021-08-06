@@ -75,7 +75,7 @@ public class DemandQueryBuilder {
 			+ "dmdl.createdby AS dlcreatedby,dmdl.lastModifiedby AS dllastModifiedby,"
 			+ "dmdl.createdtime AS dlcreatedtime,dmdl.lastModifiedtime AS dllastModifiedtime,"
 			+ "dmdl.tenantid AS dltenantid,dmdl.additionaldetails as detailadditionaldetails " + "FROM egbs_demand_v1 dmd "
-			+ "INNER JOIN egbs_demanddetail_v1 dmdl ON dmd.id=dmdl.demandid " + "AND dmd.tenantid=dmdl.tenantid WHERE ";
+			+ "INNER JOIN {{SCHEMA}}.egbs_demanddetail_v1 dmdl ON dmd.id=dmdl.demandid " + "AND dmd.tenantid=dmdl.tenantid WHERE ";
 
 	public static final String BASE_DEMAND_DETAIL_QUERY = "SELECT "
 			+ "demanddetail.id AS dlid,demanddetail.demandid AS dldemandid,demanddetail.taxheadcode AS dltaxheadcode,"
@@ -83,7 +83,7 @@ public class DemandQueryBuilder {
 			+ "demanddetail.createdby AS dlcreatedby,demanddetail.lastModifiedby AS dllastModifiedby,"
 			+ "demanddetail.createdtime AS dlcreatedtime,demanddetail.lastModifiedtime AS dllastModifiedtime,"
 			+ "demanddetail.tenantid AS dltenantid " + " FROM egbs_demanddetail_v1 demanddetail "
-					+ "INNER JOIN egbs_demand demand ON demanddetail.demandid=demand.id AND "
+					+ "INNER JOIN {{SCHEMA}}.egbs_demand demand ON demanddetail.demandid=demand.id AND "
 					+ "demanddetail.tenantid=demand.tenantid WHERE ";
 
 	public static final String DEMAND_QUERY_ORDER_BY_CLAUSE = "dmd.taxperiodfrom";
@@ -112,12 +112,12 @@ public class DemandQueryBuilder {
 			+ "minimumAmountPayable,createdby,createdtime,tenantid, status, additionaldetails,id,billexpirytime, ispaymentcompleted) "
 			+ "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
 
-	public static final String DEMAND_DETAIL_AUDIT_INSERT_QUERY = "INSERT INTO egbs_demanddetail_v1_audit "
+	public static final String DEMAND_DETAIL_AUDIT_INSERT_QUERY = "INSERT INTO {{SCHEMA}}.egbs_demanddetail_v1_audit "
 			+ "(demanddetailid,demandid,taxHeadCode,taxamount,collectionamount,"
 			+ "createdby,createdtime,tenantid,additionaldetails,id)" 
 			+ " VALUES (?,?,?,?,?,?,?,?,?,?);";
 	
-	public static final String DEMAND_UPDATE_CONSUMERCODE_QUERY="UPDATE egbs_demand_v1 SET consumercode=?, lastmodifiedby=?, lastmodifiedtime=? "
+	public static final String DEMAND_UPDATE_CONSUMERCODE_QUERY="UPDATE {{SCHEMA}}.egbs_demand_v1 SET consumercode=?, lastmodifiedby=?, lastmodifiedtime=? "
 			+ " WHERE tenantid=? AND id IN (";
 	
 
