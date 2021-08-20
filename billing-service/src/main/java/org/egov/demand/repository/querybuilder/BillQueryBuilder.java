@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.egov.demand.config.ApplicationProperties;
 import org.egov.demand.model.BillSearchCriteria;
+import org.egov.demand.model.BillV2.BillStatus;
 import org.egov.demand.web.contract.CancelBillCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -43,6 +44,10 @@ public class BillQueryBuilder {
 	public static final String BILL_MAX_QUERY = "WITH billresult AS ({replace}) SELECT * FROM billresult "
 			+ " INNER JOIN (SELECT bd_consumercode, max(b_createddate) as maxdate FROM billresult GROUP BY bd_consumercode) as uniqbill"
 			+ " ON uniqbill.bd_consumercode=billresult.bd_consumercode AND uniqbill.maxdate=billresult.b_createddate ";
+
+	public static final String BILL_MIN_QUERY = "WITH billresult AS ({replace}) SELECT * FROM billresult "
+			+ " INNER JOIN (SELECT bd_consumercode, min(b_createddate) as mindate FROM billresult GROUP BY bd_consumercode) as uniqbill"
+			+ " ON uniqbill.bd_consumercode=billresult.bd_consumercode AND uniqbill.mindate=billresult.b_createddate ";
 
 	public static final String BILL_BASE_QUERY = "SELECT b.id AS b_id,b.mobilenumber, b.tenantid AS b_tenantid,"
 			+ " b.payername AS b_payername, b.payeraddress AS b_payeraddress, b.payeremail AS b_payeremail,b.filestoreid AS b_fileStoreId,"
@@ -99,9 +104,14 @@ public class BillQueryBuilder {
 		if (searchBill.getBillId() != null && !searchBill.getBillId().isEmpty())
 			selectQuery.append(" AND b.id in (" + getIdQuery(searchBill.getBillId()));
 
-		if (searchBill.getStatus() != null) {
-			selectQuery.append(" AND b.status = ?");
-			preparedStatementValues.add(searchBill.getStatus().toString());
+		if (!searchBill.getRetrieveOldest()) {
+			if (searchBill.getStatus() != null) {
+				selectQuery.append(" AND b.status = ?");
+				preparedStatementValues.add(searchBill.getStatus().toString());
+			}
+		} else {
+			selectQuery.append(" AND b.status != ?");
+			preparedStatementValues.add(BillStatus.CANCELLED.toString());
 		}
 
 		if (searchBill.getEmail() != null) {
@@ -134,10 +144,16 @@ public class BillQueryBuilder {
 	private StringBuilder addPagingClause(final StringBuilder selectQuery, final List preparedStatementValues,
 			final BillSearchCriteria searchBillCriteria) {
 
-		StringBuilder maxQuery = new StringBuilder(BILL_MAX_QUERY.replace(REPLACE_STRING, selectQuery));
+		StringBuilder finalQuery;
 
-		if (searchBillCriteria.isOrderBy())
-			maxQuery.append(" ORDER BY billresult.bd_consumercode ");
+		if (searchBillCriteria.getRetrieveOldest())
+			finalQuery = new StringBuilder(BILL_MIN_QUERY.replace(REPLACE_STRING, selectQuery));
+		else
+			finalQuery = new StringBuilder(BILL_MAX_QUERY.replace(REPLACE_STRING, selectQuery));
+
+		if (searchBillCriteria.isOrderBy()) {
+			finalQuery.append(" ORDER BY billresult.bd_consumercode ");
+		}
 
 //		maxQuery.append(" LIMIT ?");
 //		long pageSize = Integer.parseInt(applicationProperties.getCommonSearchDefaultLimit());
@@ -152,7 +168,7 @@ public class BillQueryBuilder {
 //			pageNumber = searchBillCriteria.getOffset() - 1;
 //		preparedStatementValues.add(pageNumber * pageSize); // Set offset to
 //															// pageNo * pageSize
-		return maxQuery;
+		return finalQuery;
 	}
 
 	/**
