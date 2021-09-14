@@ -136,7 +136,7 @@ public class User {
     @JsonProperty("fatherOrHusbandName")
     private String fatherOrHusbandName;
 
-    @JsonProperty("guardianrelationship")
+    @JsonProperty("guardianrelation")
     private GuardianRelation relationship;
 
     @Size(max=32)
