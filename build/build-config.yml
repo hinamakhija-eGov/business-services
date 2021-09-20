@@ -25,7 +25,7 @@ config:
       - work-dir: "billing-service/src/main/resources/db"
         image-name: "billing-service-db"
 
-  - name: "builds/business-services/collection-services"
+  - name: "builds/digit-impel-builds/business-services/collection-services"
     build:
       - work-dir: "collection-services"
         image-name: "collection-services"
