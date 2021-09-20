@@ -8,7 +8,13 @@ public enum PaymentModeEnum {
     CHEQUE("CHEQUE"),
     DD("DD"),
     ONLINE("ONLINE"),
-    CARD("CARD");
+    CARD("CARD"),
+    OFFLINE_NEFT("OFFLINE_NEFT"),
+    OFFLINE_RTGS("OFFLINE_RTGS"),
+    ONLINE_NEFT("ONLINE_NEFT"),
+    ONLINE_RTGS("ONLINE_RTGS"),
+    POSTAL_ORDER("POSTAL_ORDER"),
+    POS("POS");
 
 
     private String value;
