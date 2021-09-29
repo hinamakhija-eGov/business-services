@@ -266,4 +266,14 @@ public class PaymentRepository {
         String query = paymentQueryBuilder.getIdQuery(paymentSearchCriteria, preparedStatementValues);
         return namedParameterJdbcTemplate.query(query, preparedStatementValues, new SingleColumnRowMapper<>(String.class));
     }
+    
+	public List<Map> generateTotalReport() {
+		String query = PaymentQueryBuilder.WHATSAAP_ADOPTION_REPORT_QUERY;
+		log.info("generateTotalReport: " + query);
+		Map<String, Object> preparedStatementValues = new HashMap<>();
+		List<Map> result = namedParameterJdbcTemplate.queryForList(query, preparedStatementValues, Map.class);
+		log.info("Result of whatsapp chatbot adoption data: " + result.toString());
+		return result;
+
+	}
 }

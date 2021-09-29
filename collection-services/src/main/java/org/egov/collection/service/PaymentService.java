@@ -235,6 +235,24 @@ public class PaymentService {
 
         return payment;
     }
+    
+    public void chatbotdailyreport(boolean isTotalReport) {
+//    	if(isTotalReport) {
+    		generateTotalReport();
+//    	}else {
+//    		
+//    	}
+    	
+    }
+    
+    @Transactional(readOnly = true)
+    public void generateTotalReport() {
+    	List<Map> adoptionData = paymentRepository.generateTotalReport();
+    	for (Map map : adoptionData) {
+    		producer.producer(applicationProperties.getKafkaWhatsappAdoptionDataTopic(), map);
+		}
+    	
+    }
 
 
 }
