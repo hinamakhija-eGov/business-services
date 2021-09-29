@@ -267,10 +267,22 @@ public class PaymentRepository {
         return namedParameterJdbcTemplate.query(query, preparedStatementValues, new SingleColumnRowMapper<>(String.class));
     }
     
-	public List<String> generateTotalReport() {
+    public int getTotalPropertiesCount() {
+    	String query =  PaymentQueryBuilder.TOTAL_PROPERTIES_COUNT_QUERY;
+		Map<String, Object> preparedStatementValues = new HashMap<>();
+		preparedStatementValues.put("status", "ACTIVE");
+    	int size = namedParameterJdbcTemplate.queryForObject(query,preparedStatementValues, Integer.class);
+		log.info("Result of total properties count: " + size);
+
+    	return size;
+    }
+	public List<String> generateTotalReport(int offset, int limit) {
 		String query = PaymentQueryBuilder.WHATSAAP_ADOPTION_REPORT_QUERY;
 		log.info("generateTotalReport: " + query);
 		Map<String, Object> preparedStatementValues = new HashMap<>();
+		preparedStatementValues.put("offset", offset);
+		preparedStatementValues.put("limit", limit);
+
 		List<String> result = namedParameterJdbcTemplate.queryForList(query, preparedStatementValues, String.class);
 		log.info("Result of whatsapp chatbot adoption data: " + result.toString());
 		return result;

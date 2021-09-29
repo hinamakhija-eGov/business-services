@@ -243,18 +243,37 @@ public class PaymentService {
     }
     
     public void chatbotdailyreport(boolean isTotalReport) {
-//    	if(isTotalReport) {
+    	if(isTotalReport) {
     		generateTotalReport();
-//    	}else {
-//    		
-//    	}
+    	}else {
+    		
+    	}
     	
     }
     
     @Transactional(readOnly = true)
     public void generateTotalReport() {
+    	int totalSize = paymentRepository.getTotalPropertiesCount();
+    	int limit = 500;
+    	int totalRecordsCount = totalSize;
+    	int offset=0;
 
-    	List<String> adoptionData = paymentRepository.generateTotalReport();
+    	while (offset < totalRecordsCount) { 
+
+    		pushTotalDataTokafka(offset, limit);
+    		totalRecordsCount=totalRecordsCount-limit;
+    		offset=offset+limit;
+
+    		if(totalRecordsCount <= limit) {
+    			pushTotalDataTokafka(offset, limit);
+    			break;
+    		}
+    	}
+
+    }
+    
+    public void pushTotalDataTokafka(int offset, int limit) {
+    	List<String> adoptionData = paymentRepository.generateTotalReport(offset, limit);
 
     	List<Map> mapData = new LinkedList<Map>();
 
@@ -267,7 +286,6 @@ public class PaymentService {
     	});
 
     	producer.producer(applicationProperties.getKafkaWhatsappAdoptionDataTopic(), mapData);
-
     }
 
 
