@@ -253,20 +253,21 @@ public class PaymentService {
     
     @Transactional(readOnly = true)
     public void generateTotalReport() {
-    	List<String> adoptionData = paymentRepository.generateTotalReport();
-    	
-    	Map data = null;
-    	for (String jsonData : adoptionData) {
-    		
-			try {
-				data = objectMapper.readValue(jsonData, Map.class);
-			} catch (JsonProcessingException e) {
-				e.printStackTrace();
-			}
 
-    		producer.producer(applicationProperties.getKafkaWhatsappAdoptionDataTopic(), data);
-		}
-    	
+    	List<String> adoptionData = paymentRepository.generateTotalReport();
+
+    	List<Map> mapData = new LinkedList<Map>();
+
+    	adoptionData.stream().forEach(data -> {
+    		try {
+    			mapData.add(objectMapper.readValue(data, Map.class));
+    		} catch (Exception e1) {
+    			e1.printStackTrace();
+    		}
+    	});
+
+    	producer.producer(applicationProperties.getKafkaWhatsappAdoptionDataTopic(), mapData);
+
     }
 
 
