@@ -21,6 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 @Service
 public class PaymentService {
@@ -38,6 +41,9 @@ public class PaymentService {
     private PaymentRepository paymentRepository;
 
     private CollectionProducer producer;
+    
+    @Autowired
+	private ObjectMapper objectMapper;
 
 
     @Autowired
@@ -247,9 +253,18 @@ public class PaymentService {
     
     @Transactional(readOnly = true)
     public void generateTotalReport() {
-    	List<Map> adoptionData = paymentRepository.generateTotalReport();
-    	for (Map map : adoptionData) {
-    		producer.producer(applicationProperties.getKafkaWhatsappAdoptionDataTopic(), map);
+    	List<String> adoptionData = paymentRepository.generateTotalReport();
+    	
+    	Map data = null;
+    	for (String jsonData : adoptionData) {
+    		
+			try {
+				data = objectMapper.readValue(jsonData, Map.class);
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+			}
+
+    		producer.producer(applicationProperties.getKafkaWhatsappAdoptionDataTopic(), data);
 		}
     	
     }

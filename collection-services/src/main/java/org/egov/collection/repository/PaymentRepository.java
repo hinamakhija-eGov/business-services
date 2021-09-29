@@ -267,11 +267,11 @@ public class PaymentRepository {
         return namedParameterJdbcTemplate.query(query, preparedStatementValues, new SingleColumnRowMapper<>(String.class));
     }
     
-	public List<Map> generateTotalReport() {
+	public List<String> generateTotalReport() {
 		String query = PaymentQueryBuilder.WHATSAAP_ADOPTION_REPORT_QUERY;
 		log.info("generateTotalReport: " + query);
 		Map<String, Object> preparedStatementValues = new HashMap<>();
-		List<Map> result = namedParameterJdbcTemplate.queryForList(query, preparedStatementValues, Map.class);
+		List<String> result = namedParameterJdbcTemplate.queryForList(query, preparedStatementValues, String.class);
 		log.info("Result of whatsapp chatbot adoption data: " + result.toString());
 		return result;
 
