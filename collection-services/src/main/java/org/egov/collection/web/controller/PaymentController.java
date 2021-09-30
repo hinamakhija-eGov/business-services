@@ -176,5 +176,13 @@ public class PaymentController {
         return getSuccessResponse(Collections.singletonList(payment), paymentRequest.getRequestInfo());
 
     }
+    
+    @RequestMapping(value = "/_chatbotdailyreport", method = RequestMethod.POST)
+    @ResponseBody
+	public ResponseEntity<HttpStatus> chatbotdailyreport(@RequestParam(required = false) boolean isTotalReport) {
+
+		paymentService.chatbotdailyreport(isTotalReport);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 
 }

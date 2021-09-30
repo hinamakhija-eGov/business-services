@@ -21,6 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 @Service
 public class PaymentService {
@@ -38,6 +40,9 @@ public class PaymentService {
     private PaymentRepository paymentRepository;
 
     private CollectionProducer producer;
+    
+    @Autowired
+	private ObjectMapper objectMapper;
 
 
     @Autowired
@@ -234,6 +239,52 @@ public class PaymentService {
 
 
         return payment;
+    }
+    
+    public void chatbotdailyreport(boolean isTotalReport) {
+    	if(isTotalReport) {
+    		generateTotalReport();
+    	}else {
+    		
+    	}
+    	
+    }
+    
+    @Transactional(readOnly = true)
+    public void generateTotalReport() {
+    	int totalSize = paymentRepository.getTotalPropertiesCount();
+    	int limit = 500;
+    	int totalRecordsCount = totalSize;
+    	int offset=0;
+
+    	while (offset < totalRecordsCount) { 
+
+    		pushTotalDataTokafka(offset, limit);
+    		totalRecordsCount=totalRecordsCount-limit;
+    		offset=offset+limit;
+
+    		if(totalRecordsCount <= limit) {
+    			pushTotalDataTokafka(offset, limit);
+    			break;
+    		}
+    	}
+
+    }
+    
+    public void pushTotalDataTokafka(int offset, int limit) {
+    	List<String> adoptionData = paymentRepository.generateTotalReport(offset, limit);
+
+    	List<Map> mapData = new LinkedList<Map>();
+
+    	adoptionData.stream().forEach(data -> {
+    		try {
+    			mapData.add(objectMapper.readValue(data, Map.class));
+    		} catch (Exception e1) {
+    			e1.printStackTrace();
+    		}
+    	});
+
+    	producer.producer(applicationProperties.getKafkaWhatsappAdoptionDataTopic(), mapData);
     }
 
 
