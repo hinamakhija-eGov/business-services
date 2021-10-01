@@ -3,6 +3,8 @@ package org.egov.collection.service;
 import static java.util.Objects.isNull;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.egov.collection.config.ApplicationProperties;
@@ -245,34 +247,26 @@ public class PaymentService {
     	if(isTotalReport) {
     		generateTotalReport();
     	}else {
-    		
+    		generateTotalReport();
     	}
     	
     }
     
     @Transactional(readOnly = true)
     public void generateTotalReport() {
-    	int totalSize = paymentRepository.getTotalPropertiesCount();
+    	List<String> totalProperties = paymentRepository.getTotalPropertiesCount();
     	int limit = 500;
-    	int totalRecordsCount = totalSize;
-    	int offset=0;
+		Collection<List<String>> partitionConectionNoList = partitionBasedOnSize(totalProperties, limit);
 
-    	while (offset < totalRecordsCount) { 
-
-    		pushTotalDataTokafka(offset, limit);
-    		totalRecordsCount=totalRecordsCount-limit;
-    		offset=offset+limit;
-
-    		if(totalRecordsCount <= limit) {
-    			pushTotalDataTokafka(offset, limit);
-    			break;
-    		}
-    	}
+		for (List<String> propertiesList : partitionConectionNoList) {
+			pushTotalDataTokafka(propertiesList);
+			
+		}
 
     }
     
-    public void pushTotalDataTokafka(int offset, int limit) {
-    	List<String> adoptionData = paymentRepository.generateTotalReport(offset, limit);
+    public void pushTotalDataTokafka(List<String> propertiesList) {
+    	List<String> adoptionData = paymentRepository.generateTotalReport(propertiesList);
 
     	List<Map> mapData = new LinkedList<Map>();
 
@@ -288,4 +282,14 @@ public class PaymentService {
     }
 
 
+    static <T> Collection<List<T>> partitionBasedOnSize(List<T> inputList, int size) {
+        final AtomicInteger counter = new AtomicInteger(0);
+        return inputList.stream()
+                    .collect(Collectors.groupingBy(s -> counter.getAndIncrement()/size))
+                    .values();
+	}
+    
+    public void generateTodaysReport() {
+    	
+    }
 }
