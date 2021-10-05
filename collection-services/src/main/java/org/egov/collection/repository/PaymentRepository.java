@@ -283,7 +283,7 @@ public class PaymentRepository {
 		preparedStatementValues.put("propertyid", propertiesList);
 
 		List<String> result = namedParameterJdbcTemplate.queryForList(query, preparedStatementValues, String.class);
-		log.info("Result of whatsapp chatbot adoption data: " + result.toString());
+		log.info("Result of whatsapp chatbot adoption data: " + result.size());
 		return result;
 
 	}
