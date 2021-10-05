@@ -280,11 +280,20 @@ public class PaymentRepository {
 		String query = PaymentQueryBuilder.WHATSAAP_ADOPTION_REPORT_QUERY;
 		log.info("generateTotalReport: " + query);
 		Map<String, Object> preparedStatementValues = new HashMap<>();
-		preparedStatementValues.put("ids", propertiesList);
+		preparedStatementValues.put("propertyid", propertiesList);
 
 		List<String> result = namedParameterJdbcTemplate.queryForList(query, preparedStatementValues, String.class);
 		log.info("Result of whatsapp chatbot adoption data: " + result.toString());
 		return result;
 
 	}
+	
+	public List<String> getPropertiesFromAssessmentJob() {
+    	String query =  PaymentQueryBuilder.ASSESS_JOB_PROPERTIES_IDS_QUERY;
+		Map<String, Object> preparedStatementValues = new HashMap<>();
+    	List<String> properties = namedParameterJdbcTemplate.queryForList(query,preparedStatementValues, String.class);
+		log.info("Result of assessment job and payment properties count: " + properties.size());
+
+    	return properties;
+    }
 }

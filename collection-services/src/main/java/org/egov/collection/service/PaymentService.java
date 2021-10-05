@@ -244,12 +244,11 @@ public class PaymentService {
     }
     
     public void chatbotdailyreport(boolean isTotalReport) {
-    	if(isTotalReport) {
+    	if(isTotalReport) 
     		generateTotalReport();
-    	}else {
-    		generateTotalReport();
-    	}
-    	
+    	else 
+    		generateTodaysReport();
+
     }
     
     @Transactional(readOnly = true)
@@ -263,6 +262,18 @@ public class PaymentService {
 			
 		}
 
+    }
+    
+    @Transactional(readOnly = true)
+    public void generateTodaysReport() {
+    	List<String> propertiesData = paymentRepository.getPropertiesFromAssessmentJob();
+    	int limit = 500;
+		Collection<List<String>> partitionConectionNoList = partitionBasedOnSize(propertiesData, limit);
+
+		for (List<String> propertiesList : partitionConectionNoList) {
+			pushTotalDataTokafka(propertiesList);
+			
+		}
     }
     
     public void pushTotalDataTokafka(List<String> propertiesList) {
@@ -281,7 +292,6 @@ public class PaymentService {
     	producer.producer(applicationProperties.getKafkaWhatsappAdoptionDataTopic(), mapData);
     }
 
-
     static <T> Collection<List<T>> partitionBasedOnSize(List<T> inputList, int size) {
         final AtomicInteger counter = new AtomicInteger(0);
         return inputList.stream()
@@ -289,7 +299,4 @@ public class PaymentService {
                     .values();
 	}
     
-    public void generateTodaysReport() {
-    	
-    }
 }
