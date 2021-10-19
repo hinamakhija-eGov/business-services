@@ -25,7 +25,7 @@ config:
       - work-dir: "billing-service/src/main/resources/db"
         image-name: "billing-service-db"
 
-  - name: "builds/business-services/collection-services"
+  - name: "builds/digit-impel-builds/business-services/collection-services"
     build:
       - work-dir: "collection-services"
         image-name: "collection-services"
@@ -73,7 +73,7 @@ config:
       - work-dir: "finance-collections-voucher-consumer/src/main/resources/db"
         image-name: "finance-collections-voucher-consumer-db"
 
-  - name: "builds/business-services/dashboard-analytics"
+  - name: "builds/digit-impel-builds/business-services/dashboard-analytics"
     build:
       - work-dir: "dashboard-analytics"
         image-name: "dashboard-analytics"
