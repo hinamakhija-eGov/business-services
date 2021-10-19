@@ -1,6 +1,5 @@
 package com.tarento.analytics.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class InsightsConfiguration {
 	private String chartResponseMap; 
@@ -10,7 +9,6 @@ public class InsightsConfiguration {
 	private String textMessage; 
 	private String colorCode;
 	private String insightInterval;
-	@JsonIgnore
 	private Boolean isRoundOff;
 	
 	public String getInsightInterval() {
