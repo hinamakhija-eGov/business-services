@@ -267,33 +267,5 @@ public class PaymentRepository {
         return namedParameterJdbcTemplate.query(query, preparedStatementValues, new SingleColumnRowMapper<>(String.class));
     }
     
-    public List<String> getTotalPropertiesCount() {
-    	String query =  PaymentQueryBuilder.TOTAL_PROPERTIES_IDS_QUERY;
-		Map<String, Object> preparedStatementValues = new HashMap<>();
-		preparedStatementValues.put("status", "ACTIVE");
-    	List<String> properties = namedParameterJdbcTemplate.queryForList(query,preparedStatementValues, String.class);
-		log.info("Result of total properties count: " + properties.size());
-
-    	return properties;
-    }
-	public List<String> generateTotalReport(List<String> propertiesList) {
-		String query = PaymentQueryBuilder.WHATSAAP_ADOPTION_REPORT_QUERY;
-		log.info("generateTotalReport: " + query);
-		Map<String, Object> preparedStatementValues = new HashMap<>();
-		preparedStatementValues.put("propertyid", propertiesList);
-
-		List<String> result = namedParameterJdbcTemplate.queryForList(query, preparedStatementValues, String.class);
-		log.info("Result of whatsapp chatbot adoption data: " + result.size());
-		return result;
-
-	}
 	
-	public List<String> getPropertiesFromAssessmentJob() {
-    	String query =  PaymentQueryBuilder.ASSESS_JOB_PROPERTIES_IDS_QUERY;
-		Map<String, Object> preparedStatementValues = new HashMap<>();
-    	List<String> properties = namedParameterJdbcTemplate.queryForList(query,preparedStatementValues, String.class);
-		log.info("Result of assessment job and payment properties count: " + properties.size());
-
-    	return properties;
-    }
 }

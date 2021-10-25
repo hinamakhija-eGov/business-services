@@ -177,12 +177,4 @@ public class PaymentController {
 
     }
     
-    @RequestMapping(value = "/_chatbotdailyreport", method = RequestMethod.POST)
-    @ResponseBody
-	public ResponseEntity<HttpStatus> chatbotdailyreport(@RequestParam(required = true) boolean isTotalReport) {
-
-		paymentService.chatbotdailyreport(isTotalReport);
-		return new ResponseEntity<>(HttpStatus.OK);
-	}
-
 }
