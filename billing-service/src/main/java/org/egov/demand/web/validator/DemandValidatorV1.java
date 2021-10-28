@@ -409,10 +409,10 @@ public class DemandValidatorV1 {
 		List<String> errors = new ArrayList<>();
 
 		for (DemandDetail demandDetail : demandDetails) {
-
+			log.info("Demand Detail", demandDetail);
 			BigDecimal tax = demandDetail.getTaxAmount();
 			BigDecimal collection = demandDetail.getCollectionAmount();
-			
+			log.info("Collection:" + collection + "Tax :" + tax);
 			Boolean isTaxGtZeroAndCollectionGtTaxOrCollectionLtZero = tax.compareTo(BigDecimal.ZERO) >= 0
 					&& (tax.compareTo(collection) < 0 || collection.compareTo(BigDecimal.ZERO) < 0);
 			
