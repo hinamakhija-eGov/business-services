@@ -409,7 +409,7 @@ public class DemandValidatorV1 {
 		List<String> errors = new ArrayList<>();
 
 		for (DemandDetail demandDetail : demandDetails) {
-			log.info("Demand Detail", demandDetail);
+			log.info("Demand Detail", demandDetail.toString());
 			BigDecimal tax = demandDetail.getTaxAmount();
 			BigDecimal collection = demandDetail.getCollectionAmount();
 			log.info("Collection:" + collection + "Tax :" + tax);
