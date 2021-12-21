@@ -48,7 +48,8 @@ public class EnhanceDomainConfig implements DomainConfig {
     @Override
     public void loadDomains(){
         String enhanceConfigContent = configLoader.get(ENHANCE_DOMAIN_CONFIG);
-        //LOGGER.info("collectionConfigContent json string = "+collectionConfigContent);
+       // LOGGER.info("collectionConfigContent json string = "+collectionConfigContent);
+        LOGGER.info("collectionConfigContent json string = "+enhanceConfigContent);
 
         try{
 
