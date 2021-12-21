@@ -238,6 +238,9 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 			String businessTypeVal = copyNode.findValue(BUSINESS_SERVICE).asText();
 
 			DomainIndexConfig indexConfig = domainConfig.getIndexConfig(businessTypeVal.toString());
+			LOGGER.info("incoming Node ## "+copyNode);
+			LOGGER.info("Config ## "+domainConfig);
+			LOGGER.info("Config ## "+domainConfig);
 			LOGGER.info("indexConfig ## "+indexConfig);
 			if(indexConfig != null){
 				String indexName = indexConfig.getIndexName();
