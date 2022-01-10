@@ -234,18 +234,38 @@ public class PaymentRepository {
 
     public List<String> fetchPaymentIds(PaymentSearchCriteria paymentSearchCriteria) {
 
+    	StringBuilder query = new StringBuilder("SELECT id from egcl_payment ");
+    	boolean whereCluaseApplied= false ;
         Map<String, Object> preparedStatementValues = new HashMap<>();
         preparedStatementValues.put("offset", paymentSearchCriteria.getOffset());
         preparedStatementValues.put("limit", paymentSearchCriteria.getLimit());
+        
+        if(paymentSearchCriteria.getTenantId() != null) {
+        	query.append(" WHERE tenantid=:tenantid ");
+            preparedStatementValues.put("tenantid", paymentSearchCriteria.getTenantId());
+            whereCluaseApplied=true;
+        }
+        if(paymentSearchCriteria.getBusinessServices() != null) {
+        	if(whereCluaseApplied) {
+            	query.append(" AND id in (select paymentid from egcl_paymentdetail where tenantid=:tenantid AND businessservice=:businessservice) ");
+                preparedStatementValues.put("tenantid", paymentSearchCriteria.getTenantId());
+                preparedStatementValues.put("businessservice", paymentSearchCriteria.getBusinessServices());
 
-        return namedParameterJdbcTemplate.query("SELECT id from egcl_payment ORDER BY createdtime offset " + ":offset " + "limit :limit", preparedStatementValues, new SingleColumnRowMapper<>(String.class));
+        	}
+        }
+        
+        query.append(" ORDER BY createdtime offset " + ":offset " + "limit :limit"); 
+        
+        log.info("fetchPaymentIds query: " + query.toString() );
+        return namedParameterJdbcTemplate.query(query.toString(), preparedStatementValues, new SingleColumnRowMapper<>(String.class));
 
     }
 
     public List<String> fetchPaymentIdsByCriteria(PaymentSearchCriteria paymentSearchCriteria) {
         Map<String, Object> preparedStatementValues = new HashMap<>();
         String query = paymentQueryBuilder.getIdQuery(paymentSearchCriteria, preparedStatementValues);
-        log.info("query: "+query);
         return namedParameterJdbcTemplate.query(query, preparedStatementValues, new SingleColumnRowMapper<>(String.class));
     }
+    
+	
 }

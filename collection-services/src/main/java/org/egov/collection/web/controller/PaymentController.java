@@ -72,8 +72,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import lombok.extern.slf4j.Slf4j;
+
 @RestController
 @RequestMapping("/payments")
+@Slf4j
 public class PaymentController {
 
     @Autowired
@@ -163,5 +166,15 @@ public class PaymentController {
 
         return getSuccessResponse(payments, requestInfo);
     }
+    
+    @RequestMapping(value = "ws/migration/_create", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<PaymentResponse> migration(@RequestBody @Valid PaymentRequest paymentRequest) {
+    	log.info("paymentRequest: " + paymentRequest);
 
+        Payment payment = paymentService.createPaymentForWSMigration(paymentRequest);
+        return getSuccessResponse(Collections.singletonList(payment), paymentRequest.getRequestInfo());
+
+    }
+    
 }

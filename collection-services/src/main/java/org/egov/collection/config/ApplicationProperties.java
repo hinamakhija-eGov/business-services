@@ -251,6 +251,5 @@ public class ApplicationProperties {
 
     @Value("${collection.search.default.limit}")
     private Integer maxSearchLimit;
-
-
+    
 }

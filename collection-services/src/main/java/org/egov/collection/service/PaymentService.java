@@ -3,6 +3,8 @@ package org.egov.collection.service;
 import static java.util.Objects.isNull;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.egov.collection.config.ApplicationProperties;
@@ -21,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 @Service
 public class PaymentService {
@@ -38,6 +42,9 @@ public class PaymentService {
     private PaymentRepository paymentRepository;
 
     private CollectionProducer producer;
+    
+    @Autowired
+	private ObjectMapper objectMapper;
 
 
     @Autowired
@@ -96,7 +103,7 @@ public class PaymentService {
     @Transactional
     public Payment createPayment(PaymentRequest paymentRequest) {
     	
-        paymentEnricher.enrichPaymentPreValidate(paymentRequest);
+        paymentEnricher.enrichPaymentPreValidate(paymentRequest,false);
         paymentValidator.validatePaymentForCreate(paymentRequest);
         paymentEnricher.enrichPaymentPostValidate(paymentRequest);
 
@@ -180,7 +187,7 @@ public class PaymentService {
      */
     @Transactional
     public Payment vaidateProvisonalPayment(PaymentRequest paymentRequest) {
-        paymentEnricher.enrichPaymentPreValidate(paymentRequest);
+        paymentEnricher.enrichPaymentPreValidate(paymentRequest,false);
         paymentValidator.validatePaymentForCreate(paymentRequest);
         
         return paymentRequest.getPayment();
@@ -196,6 +203,14 @@ public class PaymentService {
             searchCriteria.setOffset(0);
             searchCriteria.setLimit(applicationProperties.getReceiptsSearchDefaultLimit());
         }
+        
+        if(paymentSearchCriteria.getTenantId() != null) {
+        	searchCriteria.setTenantId(paymentSearchCriteria.getTenantId());
+        }
+        
+        if(paymentSearchCriteria.getBusinessServices() != null) {
+        	searchCriteria.setBusinessServices(paymentSearchCriteria.getBusinessServices());
+        }
 
         List<String> ids = paymentRepository.fetchPaymentIds(searchCriteria);
         if (ids.isEmpty())
@@ -205,5 +220,27 @@ public class PaymentService {
         return paymentRepository.fetchPaymentsForPlainSearch(criteria);
     }
 
+    @Transactional
+    public Payment createPaymentForWSMigration(PaymentRequest paymentRequest) {
+    	
+        paymentEnricher.enrichPaymentPreValidate(paymentRequest,true);
+        paymentValidator.validatePaymentForCreateWSMigration(paymentRequest);
+        paymentEnricher.enrichPaymentPostValidate(paymentRequest);
 
+        Payment payment = paymentRequest.getPayment();
+        Map<String, Bill> billIdToApportionedBill = apportionerService.apportionBill(paymentRequest);
+        paymentEnricher.enrichAdvanceTaxHead(new LinkedList<>(billIdToApportionedBill.values()));
+        setApportionedBillsToPayment(billIdToApportionedBill,payment);
+
+        String payerId = createUser(paymentRequest);
+        if(!StringUtils.isEmpty(payerId))
+            payment.setPayerId(payerId);
+        paymentRepository.savePayment(payment);
+
+       // producer.producer(applicationProperties.getCreatePaymentTopicName(), paymentRequest);
+
+
+        return payment;
+    }
+    
 }
