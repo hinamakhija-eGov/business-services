@@ -57,11 +57,10 @@ public class UpdateConsumer {
             }
 
         } catch (final Exception e) {
-            StringBuilder str = new StringBuilder("Exception occurred while processing Message on Topic : ");
-        	str.append(topic).append("Exception: ");
-        	LOGGER.error(str.toString(), e);
+            e.printStackTrace();
             if(!esPushDirect)
-                ingestProducer.pushToPipeline(data, ERROR_INTENT, null);
+                ingestProducer.pushToPipeline(data, ERROR_INTENT, ERROR_INTENT);
+            LOGGER.error("Exception Encountered while processing the received message updating posted data for topic: "+ topic +"" + e.getMessage());
         }
     }
 

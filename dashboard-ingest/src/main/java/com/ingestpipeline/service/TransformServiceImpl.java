@@ -1,10 +1,8 @@
 package com.ingestpipeline.service;
 
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,19 +40,14 @@ public class TransformServiceImpl implements TransformService {
 		String dataContextVersion = incomingData.get(Constants.DATA_CONTEXT_VERSION).toString(); 
 		ObjectMapper mapper = new ObjectMapper(); 
 		List chainrSpecJSON = null ;
-		InputStream inputStream = null;
 		try {
-			String sourceUrl = CONFIGROOT.concat(OBJECTIVE.concat(SEPARATOR).concat(dataContext).concat(SEPARATOR).concat(dataContextVersion).concat(JSON_EXTENSION));
-			inputStream = this.getClass().getClassLoader().getResourceAsStream(sourceUrl);
-			chainrSpecJSON = JsonUtils.jsonToList(inputStream);
-
+			chainrSpecJSON = mapper.readValue(configLoader.get(OBJECTIVE.concat(SEPARATOR).concat(dataContext).concat(SEPARATOR).concat(dataContextVersion).concat(JSON_EXTENSION)), List.class);
+			
 		} catch (Exception e) {
 			LOGGER.error("Encountered an error : " + e.getMessage());
-		}
-		finally {
-			IOUtils.closeQuietly(inputStream);
-		}
-
+		} 
+		String sourceUrl = CONFIGROOT.concat(OBJECTIVE.concat(SEPARATOR).concat(dataContext).concat(SEPARATOR).concat(dataContextVersion).concat(JSON_EXTENSION));
+		chainrSpecJSON = JsonUtils.jsonToList(this.getClass().getClassLoader().getResourceAsStream(sourceUrl));
 
 		/*Map<String, Integer> deepRouteSpecSize = new HashMap<>();  
 		

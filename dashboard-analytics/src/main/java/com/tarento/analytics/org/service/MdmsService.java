@@ -15,9 +15,6 @@ import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.tarento.analytics.constant.Constants.MDMS_REQUESTINFO;
-import static com.tarento.analytics.constant.Constants.TENANTID_PLACEHOLDER;
-
 @Component
 public class MdmsService {
 
@@ -25,11 +22,8 @@ public class MdmsService {
 
     private Map<String, String> ddrTenantMapping = new HashMap<>();
 
-    @Value("${egov.mdms.host}")
-    private String mdmsServiceHost;
-    
-    @Value("${egov.mdms.search.endpoint}")
-    private String mdmsSearchEndpoint;
+    @Value("${egov.mdms-service.target.url}")
+    private String mdmsServiceSearchUri;
 
     @Autowired
     private RestService restService;
@@ -37,16 +31,16 @@ public class MdmsService {
     @Autowired
     private ObjectMapper mapper;
 
-    @Value("${egov.statelevel.tenantId}")
-    private  String stateLevelTenantId ;
+    @Value("${egov.mdms-service.request}")
+    private  String REQUEST_INFO_STR ;//="{\"RequestInfo\":{\"authToken\":\"\"},\"MdmsCriteria\":{\"tenantId\":\"pb\",\"moduleDetails\":[{\"moduleName\":\"tenant\",\"masterDetails\":[{\"name\":\"tenants\"}]}]}}";
+
 
     @PostConstruct
     public void loadMdmsService() throws Exception{
 
-        String REQUEST_INFO_STR = MDMS_REQUESTINFO.replace(TENANTID_PLACEHOLDER,stateLevelTenantId);
         JsonNode requestInfo = mapper.readTree(REQUEST_INFO_STR);
         try {
-            JsonNode response = restService.post(mdmsServiceHost + mdmsSearchEndpoint, "", requestInfo);
+            JsonNode response = restService.post(mdmsServiceSearchUri, "", requestInfo);
             ArrayNode tenants = (ArrayNode) response.findValues(Constants.MDMSKeys.TENANTS).get(0);
 
 

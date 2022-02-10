@@ -47,12 +47,11 @@ public class MetadataServiceImpl implements MetadataService {
 	 
 	 @Autowired
 	 private RestTemplate restTemplate;
+
 	 
-	@Value("${egov.mdms.host}")
-    private String mdmsServiceHost;
-    
-    @Value("${egov.mdms.search.endpoint}")
-    private String mdmsSearchEndpoint;
+	 @Value("${egov.mdms-service.target.url}")
+	 private String mdmsServiceTargetUrl;
+
 
 	@Override
 	public ArrayNode getDashboardConfiguration(String dashboardId, String catagory, List<RoleDto> roleIds) throws AINException, IOException {
@@ -159,7 +158,7 @@ public class MetadataServiceImpl implements MetadataService {
 	}*/
 
 	public JSONArray getTargetDistrict() throws Exception {
-		final String baseUrl = mdmsServiceHost + mdmsSearchEndpoint;
+		final String baseUrl = mdmsServiceTargetUrl;
 		URI uri = new URI(baseUrl);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
@@ -172,16 +171,8 @@ public class MetadataServiceImpl implements MetadataService {
 
 		File getFile = new File(
 				System.getProperty("user.dir") + System.getProperty("file.separator") + "data/tenants.json");
-		BufferedReader br = null;
-		Tenants sample = null;
-		try{
-			br = new BufferedReader(new FileReader(getFile));
-			sample = new Gson().fromJson(br, Tenants.class);
-		}catch (Exception e){
-			logger.info("Error occured while reading tenants file.");
-		}finally{
-			br.close();
-		}
+		BufferedReader br = new BufferedReader(new FileReader(getFile));
+		Tenants sample = new Gson().fromJson(br, Tenants.class);
 		JSONArray jsonArray = new JSONArray();
 		Map<String, List<Object>> mapDistrictUlb = new HashMap();
 		Map<String, Object> DistrictMap = new HashMap();

@@ -1,7 +1,15 @@
 package com.tarento.analytics.handler;
 
 import java.io.IOException;
+<<<<<<< HEAD
 import java.util.*;
+=======
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+>>>>>>> e43b2a74cc888578951f2eaea265691473f5974d
 import java.util.stream.Collectors;
 
 import com.tarento.analytics.helper.ComputedFieldHelper;
@@ -17,9 +25,12 @@ import com.tarento.analytics.dto.AggregateDto;
 import com.tarento.analytics.dto.AggregateRequestDto;
 import com.tarento.analytics.dto.Data;
 import com.tarento.analytics.dto.Plot;
+<<<<<<< HEAD
 
 import static com.tarento.analytics.constant.Constants.STRING_DATATYPE;
 
+=======
+>>>>>>> e43b2a74cc888578951f2eaea265691473f5974d
 /**
  * This handles ES response for single index, multiple index to compute performance
  * Creates plots by performing ordered (ex: top n performance or last n performance)
@@ -56,6 +67,7 @@ public class TableChartResponseHandler implements IResponseHandler {
 
                 aggrsPaths.forEach(headerPath -> {
                     JsonNode datatype = pathDataTypeMap.findValue(headerPath.asText());
+<<<<<<< HEAD
 
                     if(datatype.asText().equalsIgnoreCase(STRING_DATATYPE)){
                         addPlotFromBucketForString(headerPath.asText(),bucket,plotMap);
@@ -77,13 +89,35 @@ public class TableChartResponseHandler implements IResponseHandler {
                         }
                     }
 
+=======
+                    JsonNode valueNode = bucket.findValue(headerPath.asText());
+                    //Double value = (null == valueNode || null == valueNode.get(VALUE)) ? 0.0 : valueNode.get(VALUE).asDouble();
+                    Double doc_value = 0.0;
+                    if(valueNode!=null)
+                        doc_value = (null == valueNode.findValue(DOC_COUNT)) ? 0.0 : valueNode.findValue(DOC_COUNT).asDouble();
+                    Double value = (null == valueNode || null == valueNode.findValue(VALUE)) ? doc_value : valueNode.findValue(VALUE).asDouble();
+                    Plot plot = new Plot(headerPath.asText(), value, datatype.asText());
+                    if (mappings.containsKey(key)) {
+                        double newval = mappings.get(key).get(headerPath.asText()) == null ? value : (mappings.get(key).get(headerPath.asText()).getValue() + value);
+                        plot.setValue(newval);
+                        mappings.get(key).put(headerPath.asText(), plot);
+                    } else {
+                        plotMap.put(headerPath.asText(), plot);
+                    }
+>>>>>>> e43b2a74cc888578951f2eaea265691473f5974d
                 });
 
                 if (plotMap.size() > 0) {
                     Map<String, Plot> plots = new LinkedHashMap<>();
+<<<<<<< HEAD
                     Plot sno = new Plot(SERIAL_NUMBER, TABLE_TEXT);
                     sno.setLabel("" + idx[0]++);
                     Plot plotkey = new Plot(plotLabel.isEmpty() ? TABLE_KEY : plotLabel, TABLE_TEXT);
+=======
+                    Plot sno = new Plot(SERIAL_NUMBER, null, TABLE_TEXT);
+                    sno.setLabel("" + idx[0]++);
+                    Plot plotkey = new Plot(plotLabel.isEmpty() ? TABLE_KEY : plotLabel, null, TABLE_TEXT);
+>>>>>>> e43b2a74cc888578951f2eaea265691473f5974d
                     plotkey.setLabel(key);
 
                     plots.put(SERIAL_NUMBER, sno);
@@ -100,10 +134,14 @@ public class TableChartResponseHandler implements IResponseHandler {
         mappings.entrySet().stream().parallel().forEach(plotMap -> {
             List<Plot> plotList = plotMap.getValue().values().stream().parallel().collect(Collectors.toList());
             List<Plot> filterPlot = plotList.stream().filter(c -> (!c.getName().equalsIgnoreCase(SERIAL_NUMBER) && !c.getName().equalsIgnoreCase(plotLabel) && c.getValue() != 0.0)).collect(Collectors.toList());
+<<<<<<< HEAD
 
             // FIX ME: For all aggragation oath with string the above condition will fail and no data will be retunred
 
             if(filterPlot.size()>=0){
+=======
+            if(filterPlot.size()>0){
+>>>>>>> e43b2a74cc888578951f2eaea265691473f5974d
                 Data data = new Data(plotMap.getKey(), Integer.parseInt(String.valueOf(plotMap.getValue().get(SERIAL_NUMBER).getLabel())), null);
                 data.setPlots(plotList);
 
@@ -121,6 +159,7 @@ public class TableChartResponseHandler implements IResponseHandler {
         return getAggregatedDto(chartNode, dataList, requestDto.getVisualizationCode());
     }
 
+<<<<<<< HEAD
     /**
      * Creates plot object for aggragation paths with datatype as string
      * @param headerPath
@@ -141,4 +180,6 @@ public class TableChartResponseHandler implements IResponseHandler {
         }
     }
 
+=======
+>>>>>>> e43b2a74cc888578951f2eaea265691473f5974d
 }

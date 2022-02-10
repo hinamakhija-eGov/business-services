@@ -47,14 +47,15 @@ public class ValidatorConsumer implements KafkaConsumer {
 					nextTopic = applicationProperties.getTransactionTransformationTopic();
 					nextKey = applicationProperties.getTransactionTransformationKey();
 				}
-				ingestProducer.pushToPipeline(consumerRecord, nextTopic, null);
+				ingestProducer.pushToPipeline(consumerRecord, nextTopic, nextKey);
 			} else {
-				ingestProducer.pushToPipeline(consumerRecord, Constants.KafkaTopics.ERROR_INTENT, null);
+				ingestProducer.pushToPipeline(consumerRecord, Constants.KafkaTopics.ERROR_INTENT, Constants.KafkaTopics.ERROR_INTENT);
 			}
 			LOGGER.info("Next Topic: " + nextTopic);
 			LOGGER.info("Next Key: " + nextKey);
 
 		} catch (final Exception e) {
+			e.printStackTrace();
 			LOGGER.error("Exception Encountered while processing the received message : " + e.getMessage());
 		}
     	

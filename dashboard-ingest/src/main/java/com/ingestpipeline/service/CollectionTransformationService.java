@@ -56,15 +56,16 @@ public class CollectionTransformationService implements TransformService {
         try {
 
             JsonNode incomingNode = mapper.convertValue(incomingDataCopy, JsonNode.class);
-            //LOGGER.info("incoming data: "+incomingNode);
+            LOGGER.info("incoming data: "+incomingNode);
             //JsonNode identifier = incomingNode.get(Constants.DATA_OBJECT).get(TRANSACTION_ID);
 
 
             //To change: for loading the file from config root
             String trsFile = OBJECTIVE.concat(SEPARATOR).concat(dataContext).concat(SEPARATOR).concat(dataContextVersion).concat(JSON_EXTENSION);
             String strFile = configLoader.get(trsFile);
+            LOGGER.info("strFile:## "+strFile);
             JsonNode specNode = mapper.readTree(strFile);
-            // LOGGER.info("specNode:## "+specNode);
+            LOGGER.info("specNode:## "+specNode);
 
 
             /*LOGGER.info("sourceUrl## "+strFile);
@@ -79,8 +80,11 @@ public class CollectionTransformationService implements TransformService {
 
             //String sourceUrl = (OBJECTIVE.concat(SEPARATOR).concat(dataContext).concat(SEPARATOR).concat(dataContextVersion).concat(JSON_EXTENSION));
             //JsonNode specNode = mapper.readTree(configLoader.get(sourceUrl));
+            JsonNode specData = specNode.findPath(JOLT_SPEC);
+            LOGGER.info("specData## " + specData);
 
             String previousField = findParentKey(specNode.findPath(JOLT_SPEC), "$i", "");
+            LOGGER.info("previousField## " + previousField);
             int parentNodeSize = incomingNode.findValues(previousField).get(0).size();
 
             for(int i=0; (i<parentNodeSize); i++){
@@ -121,6 +125,7 @@ public class CollectionTransformationService implements TransformService {
             return Boolean.TRUE;
 
         } catch (Exception e) {
+            e.printStackTrace();
             LOGGER.error("Encountered an error : " + e.getMessage());
             return Boolean.FALSE;
 
@@ -216,7 +221,6 @@ public class CollectionTransformationService implements TransformService {
 
 
 }
-
 
 
 

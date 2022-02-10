@@ -107,11 +107,11 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 			LOGGER.info("indexConfig ## "+indexConfig);
 			if(indexConfig != null){
 				String indexName = indexConfig.getIndexName();
-
 				String query = indexConfig.getQuery();					
 
 				try {
 					ObjectNode queryNode = new ObjectMapper().readValue(query, ObjectNode.class);
+					LOGGER.info("queryNode 114 ## "+queryNode.toString());
 
 					Map<String, Object> expValMap = new HashMap<>();
 					// Source references to be prepare a map of fieldName & value
@@ -119,11 +119,10 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 						String arg = ref.getFieldName();
 						String argVal = copyNode.findValue(arg).asText();
 						String[] values = argVal.split(ref.getSeperator());
-
 						String[] exps = ref.getExpression().split(ref.getSeperator());		
 
 						for(int i=0; i<exps.length; i++){
-							if(values[i] != null)
+							if(i < values.length && values[i] != null)
 								expValMap.put(exps[i], values[i]);
 						}
 					}
@@ -153,6 +152,7 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 					LOGGER.info("Data Transformed");
 
 				} catch (Exception e) {
+					e.printStackTrace();
 					LOGGER.error("Pre-processing enrichment - failed  :: {}" , e.getMessage());
 				}
 			} else {
@@ -174,7 +174,7 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 				try{
 					elasticService.push(targetData);
 				}catch (Exception e ){
-					LOGGER.error("Exception occurred while pushing data to ES: " + e.getMessage());
+					e.printStackTrace();
 				}
 
 			});
@@ -238,6 +238,9 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 			String businessTypeVal = copyNode.findValue(BUSINESS_SERVICE).asText();
 
 			DomainIndexConfig indexConfig = domainConfig.getIndexConfig(businessTypeVal.toString());
+			LOGGER.info("incoming Node ## "+copyNode);
+			LOGGER.info("Config ## "+domainConfig);
+			LOGGER.info("Config ## "+domainConfig);
 			LOGGER.info("indexConfig ## "+indexConfig);
 			if(indexConfig != null){
 				String indexName = indexConfig.getIndexName();
@@ -289,6 +292,7 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 					LOGGER.info("Enhance Data Transformed");
 
 				} catch (Exception e) {
+					e.printStackTrace();
 					LOGGER.error("Pre-processing Enhance data - failed  :: {}" , e.getMessage());
 				}
 			} else {

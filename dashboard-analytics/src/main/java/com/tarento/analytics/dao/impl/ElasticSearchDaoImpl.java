@@ -147,7 +147,7 @@ public class ElasticSearchDaoImpl implements ElasticSearchDao {
 				client.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				logger.error("Error while closing ES client");
+				e.printStackTrace();
 			}
 		}
 		return null;
@@ -265,7 +265,7 @@ public class ElasticSearchDaoImpl implements ElasticSearchDao {
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			logger.info("Error occured while searching");
+			e.printStackTrace();
 		}
 		return null;
 
@@ -577,12 +577,6 @@ public class ElasticSearchDaoImpl implements ElasticSearchDao {
 
 	}
 */
-
-	/**
-	 * Performs request marshalling using elastic search client API
-	 * @param dictator
-	 * @return
-	 */
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -1184,18 +1178,6 @@ public class ElasticSearchDaoImpl implements ElasticSearchDao {
 		dictator.setQueryMap(queryMap);
 		return dictator;
 	}*/
-
-	/**
-	 * Creates a ElasticSearchDictator object creates a query map
-	 * eg: if RequestDate is present the below map is added:
-	 * {"RANGE": {"Data.dateOfComplaint" : [1585679400000,1617215399000]}}
-	 * @param dto
-	 * @param indexName
-	 * @param documentType
-	 * @param filterDateField
-	 * @return
-	 * @throws Exception
-	 */
 	
 	@Override
 	public ElasticSearchDictator createSearchDictatorV2(AggregateRequestDto dto, String indexName, String documentType,
@@ -1207,9 +1189,7 @@ public class ElasticSearchDaoImpl implements ElasticSearchDao {
 
 		Map<String, Map<String, List<Object>>> queryMap = new HashMap<>();
 		if (dto.getEsFilters() != null && !dto.getEsFilters().isEmpty()) {
-
 			for (Map.Entry<String, Object> entry : dto.getEsFilters().entrySet()) {
-
 				if (StringUtils.isNotBlank(entry.getKey()) && entry.getValue() != null) {
 					List<Object> valueList = new ArrayList<>();
 
