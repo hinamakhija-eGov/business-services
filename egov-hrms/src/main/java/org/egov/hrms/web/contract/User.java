@@ -138,8 +138,8 @@ public class User {
     @JsonProperty("fatherOrHusbandName")
     private String fatherOrHusbandName;
 
-    @JsonProperty("relationship")
-    private GuardianRelation relationship;
+    @JsonProperty("guardianrelation")
+    private GuardianRelation guardianrelation;
 
     @Size(max=32)
     @JsonProperty("bloodGroup")
