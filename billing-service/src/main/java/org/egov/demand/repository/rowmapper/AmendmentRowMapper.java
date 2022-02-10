@@ -123,9 +123,6 @@ public class AmendmentRowMapper implements ResultSetExtractor<List<Amendment>> {
 		List<Document> docs = amendment.getDocuments();
 		String docId = rs.getString("docid");
 
-		if (docId == null)
-			return;
-		
 		if (!CollectionUtils.isEmpty(docs))
 			for (Document doc : docs) {
 				if (doc.getId().equals(docId))

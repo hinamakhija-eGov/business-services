@@ -45,6 +45,8 @@ import org.egov.demand.model.enums.DemandStatus;
 import org.springframework.util.StringUtils;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 import org.egov.demand.model.BillV2.BillStatus;
 import org.hibernate.validator.constraints.Email;
@@ -55,6 +57,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.validator.constraints.SafeHtml;
 
 @Setter
 @Getter
@@ -63,20 +66,27 @@ import lombok.ToString;
 @Builder
 @ToString
 public class GenerateBillCriteria {
-	
+
+	@SafeHtml
 	@NotNull
+	@Size(max = 256)
 	private String tenantId;
-	
+
+	@SafeHtml
+	@Size(max = 64)
 	private String demandId;
 	
 	private Set<String> consumerCode;
-	
+
+	@SafeHtml
 	@NotNull
+	@Size(max = 256)
 	private String businessService;
 	
 	@Email
 	private String email;
-	
+
+	@Pattern(regexp = "^[0-9]{10}$", message = "MobileNumber should be 10 digit number")
 	private String mobileNumber;
 	
 	private Long periodFrom;

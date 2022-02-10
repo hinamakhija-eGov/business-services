@@ -94,6 +94,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Service
 public class VoucherServiceImpl implements VoucherService {
 	
+	private static final String ADVANCE = "advance";
 	@Autowired
 	private PropertiesManager propertiesManager;
 	@Autowired
@@ -252,7 +253,7 @@ public class VoucherServiceImpl implements VoucherService {
 		voucher.setModuleId(Long.valueOf(egModules != null ? egModules.getId().toString() : COLLECTIONS_EG_MODULES_ID));
 
 		voucher.setSource(
-				propertiesManager.getReceiptViewSourceUrl() + "?selectedReceipts=" + receiptNumber);
+				propertiesManager.getReceiptViewSourceUrl() + "?selectedReceipts=" + receiptNumber + "&serviceTypeId=" + bsCode);
 
 		voucher.setLedgers(new ArrayList<>());
 		final String serviceAttribute = getServiceAttributeByBusinessService(tenantId, requestInfo, businessService, consumerCode);
@@ -260,7 +261,11 @@ public class VoucherServiceImpl implements VoucherService {
 		amountMapwithGlcode = new LinkedHashMap<>();
 		// Setting glcode and amount in Map as key value pair.
 		for (BillAccountDetail bad : billDetail.getBillAccountDetails()) {
-			if (bad.getAdjustedAmount().compareTo(new BigDecimal(0)) != 0) {
+			BigDecimal adjustedAmount = bad.getAdjustedAmount();
+		    if (bad.getTaxHeadCode().toLowerCase().contains(ADVANCE))
+		    	adjustedAmount = bad.getAmount().abs();
+			if (bad.getTaxHeadCode().toLowerCase().contains(ADVANCE)
+					|| adjustedAmount.compareTo(new BigDecimal(0)) != 0) {
 				String taxHeadCode = bad.getTaxHeadCode();
 				List<TaxHeadMaster> findFirst = taxHeadMasterByBusinessServiceCode.stream()
 						.filter(tx -> serviceAttribute != null
@@ -278,9 +283,9 @@ public class VoucherServiceImpl implements VoucherService {
 				}
 				String glcode = findFirst.get(0).getGlcode();
 				if (amountMapwithGlcode.get(glcode) != null) {
-					amountMapwithGlcode.put(glcode, amountMapwithGlcode.get(glcode).add(bad.getAdjustedAmount()));
+					amountMapwithGlcode.put(glcode, amountMapwithGlcode.get(glcode).add(adjustedAmount));
 				} else {
-					amountMapwithGlcode.put(glcode, bad.getAdjustedAmount());
+					amountMapwithGlcode.put(glcode, adjustedAmount);
 				}
 			}
 		}
@@ -516,6 +521,7 @@ public class VoucherServiceImpl implements VoucherService {
 		VoucherSearchRequest request = new VoucherSearchRequest();
 		request.setRequestInfo(requestInfo);
 		request.setTenantId(tenantId);
+		criteria.setTenantId(tenantId);
 		StringBuilder url = new StringBuilder(propertiesManager.getErpURLBytenantId(tenantId)).append(propertiesManager.getVoucherSearchUrl()).append("?");
 		prepareQueryString(url, criteria);
 		try {
@@ -553,15 +559,18 @@ public class VoucherServiceImpl implements VoucherService {
 		return reversalVoucherResponse;
 	}
 
-	private void prepareQueryString(StringBuilder url, VoucherSearchCriteria criteria) {
-		if(criteria.getIds() != null && !criteria.getIds().isEmpty()){
-			String collect = criteria.getIds().stream().map(id -> id.toString()).collect(Collectors.joining(", "));
-			url.append("&ids=").append(collect);
-		}
-		if(criteria.getVoucherNumbers() != null && !criteria.getVoucherNumbers().isEmpty()){
-			url.append("&voucherNumbers=").append(String.join(", ", criteria.getVoucherNumbers()));
-		}
-	}
+    private void prepareQueryString(StringBuilder url, VoucherSearchCriteria criteria) {
+        if (criteria.getTenantId() != null && !criteria.getTenantId().isEmpty()) {
+            url.append("tenantId=").append(criteria.getTenantId());
+        }
+        if (criteria.getIds() != null && !criteria.getIds().isEmpty()) {
+            String collect = criteria.getIds().stream().map(id -> id.toString()).collect(Collectors.joining(", "));
+            url.append("&ids=").append(collect);
+        }
+        if (criteria.getVoucherNumbers() != null && !criteria.getVoucherNumbers().isEmpty()) {
+            url.append("&voucherNumbers=").append(String.join(", ", criteria.getVoucherNumbers()));
+        }
+    }
 	
 	private List<AccountDetail> prepareLedgerForReversalVoucher(Map<String, AccountDetail> rvGlcodeMap,
 			Map<String, AccountDetail> pisGlCodeMap) {

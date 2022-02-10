@@ -70,7 +70,7 @@ public class BillControllerv2 {
 	
 	@PostMapping("_create")
 	@ResponseBody
-	public ResponseEntity<?> create(@RequestBody BillRequestV2 billRequest, BindingResult bindingResult){
+	public ResponseEntity<?> create(@RequestBody @Valid BillRequestV2 billRequest, BindingResult bindingResult){
 
 		billHelper.getBillRequestWithIds(billRequest);
 		BillResponseV2 billResponse = billService.sendBillToKafka(billRequest);

@@ -14,14 +14,14 @@ import javax.validation.constraints.NotNull;
 @Setter
 @ToString
 @Builder
-public class DeactivationDetails {
+public class ReactivationDetails {
 
 	@SafeHtml
 	private String id;
 
 	@SafeHtml
 	@NotNull
-	private String reasonForDeactivation;
+	private String reasonForReactivation;
 
 	@SafeHtml
 	private String orderNo;

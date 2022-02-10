@@ -1,11 +1,20 @@
 
 All notable changes to this module will be documented in this file.
 
+## 1.3.2 - 2021-05-11
+- apportion fix
+- Added size validations
+- VUL-WEB-L008: added @SafeHtml annotaion on string fields
+- VUL-WEB-L008: updated POM to add safeHtml validator libraries
+- Fixed demand search queries with preparestatements
+
+## 1.3.1 - 2021-02-26
+- Updated domain name in application.properties
+
 ## 1.3.0 - 2021-01-31
 
 - Amenment APIs created and enabled
 
-## 1.3.0
 
 ## 1.2.2
 

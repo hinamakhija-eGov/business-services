@@ -146,10 +146,8 @@ public class DemandService {
 		RequestInfo requestInfo = demandRequest.getRequestInfo();
 		List<Demand> demands = demandRequest.getDemands();
 		AuditDetails auditDetail = util.getAuditDetail(requestInfo);
-		log.info("requestInfo: {} and AuditDetails: {}", requestInfo, auditDetail);
-		log.info("AuditDetails tostring: {}", auditDetail.toString());
 		
-		List<AmendmentUpdate> amendmentUpdates = consumeAmendmentIfExists(demands,auditDetail);
+		List<AmendmentUpdate> amendmentUpdates = consumeAmendmentIfExists(demands, auditDetail);
 		generateAndSetIdsForNewDemands(demands, auditDetail);
 
 		List<Demand> demandsToBeCreated = new ArrayList<>();
@@ -164,8 +162,6 @@ public class DemandService {
 		else {
 			demandsToBeCreated.addAll(demandRequest.getDemands());
 		}
-		
-		log.info("demandsToBeCreated: {}", demandsToBeCreated.toString());
 
 		save(new DemandRequest(requestInfo,demandsToBeCreated));
 		if (!CollectionUtils.isEmpty(amendmentUpdates))
@@ -174,7 +170,7 @@ public class DemandService {
 		if(!CollectionUtils.isEmpty(demandToBeUpdated))
 			update(new DemandRequest(requestInfo,demandToBeUpdated), null);
 		
-		billRepoV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()),businessService, BillStatus.EXPIRED);
+		billRepoV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()), BillStatus.EXPIRED);
 		
 		return new DemandResponse(responseInfoFactory.getResponseInfo(requestInfo, HttpStatus.CREATED), demands);
 	}
@@ -263,13 +259,12 @@ public class DemandService {
 		generateAndSetIdsForNewDemands(newDemands, auditDetail);
 
 		update(demandRequest, paymentBackUpdateAudit);
-		String businessService = demands.get(0).getBusinessService();
 		if (ObjectUtils.isEmpty(paymentBackUpdateAudit))
 			billRepoV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()),
-					businessService,BillStatus.EXPIRED);
+					BillStatus.EXPIRED);
 		else
 			billRepoV2.updateBillStatus(demands.stream().map(Demand::getConsumerCode).collect(Collectors.toList()),
-					businessService,BillStatus.PAID);
+					BillStatus.PAID);
 		// producer.push(applicationProperties.getDemandIndexTopic(), demandRequest);
 		return new DemandResponse(responseInfoFactory.getResponseInfo(requestInfo, HttpStatus.CREATED), demands);
 	}
@@ -391,18 +386,10 @@ public class DemandService {
 			demandsToBeApportioned.add(demand);
 
 			DemandApportionRequest apportionRequest = DemandApportionRequest.builder().requestInfo(requestInfo).demands(demandsToBeApportioned).tenantId(tenantId).build();
-			try {
-				String apportionRequestStr = mapper.writeValueAsString(apportionRequest);
-				log.info("apportionRequest: {} and ApportionURL: {}", apportionRequestStr, util.getApportionURL());
-			}catch (Exception e) {e.printStackTrace();}
-			
+
 			Object response = serviceRequestRepository.fetchResult(util.getApportionURL(), apportionRequest);
 			ApportionDemandResponse apportionDemandResponse = mapper.convertValue(response, ApportionDemandResponse.class);
-			try {
-				String apportionDemandResponseStr = mapper.writeValueAsString(apportionDemandResponse);
-				log.info("apportionDemandResponse: {} and ApportionURL: {}", apportionDemandResponseStr, util.getApportionURL());
-			}catch (Exception e) {e.printStackTrace();}
-			
+
 			// Only the current demand is to be created rest all are to be updated
 			apportionDemandResponse.getDemands().forEach(demandFromResponse -> {
 				if(demandFromResponse.getId().equalsIgnoreCase(demand.getId()))
