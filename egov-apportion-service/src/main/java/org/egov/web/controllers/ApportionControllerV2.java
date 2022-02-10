@@ -5,6 +5,9 @@ import org.egov.service.ApportionServiceV2;
 import org.egov.util.ResponseInfoFactory;
 import org.egov.web.models.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.egov.web.models.enums.DemandApportionRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,6 +25,7 @@ import javax.validation.Valid;
 
 @Controller
 @RequestMapping("/v2")
+@Slf4j
 public class ApportionControllerV2 {
 
     private final ObjectMapper objectMapper;
@@ -48,7 +52,15 @@ public class ApportionControllerV2 {
      */
     @RequestMapping(value="/bill/_apportion", method = RequestMethod.POST)
     public ResponseEntity<ApportionResponse> apportionPost(@Valid @RequestBody ApportionRequest apportionRequest){
-        List<Bill> billInfos = apportionService.apportionBills(apportionRequest);
+    
+    	List<Bill> billInfos = null;
+    	try {
+    		billInfos = apportionService.apportionBills(apportionRequest);
+
+    	}catch (Exception e) {
+    		e.printStackTrace();
+    		log.error("Exception occurred in the bill apportions {}", e);
+    	}
         ApportionResponse response = ApportionResponse.builder()
                 .tenantId(apportionRequest.getTenantId())
                 .bills(billInfos)
