@@ -2,6 +2,10 @@
 
 All notable changes to this module will be documented in this file.
 
+## 1.1.6- 2022-02-10
+- v2.5 Log4j vulnerability fixes patch
+
+
 ## 1.1.5 - 2021-07-23
 - Code changes related to new properties.
 - Here are the properties which are added 
