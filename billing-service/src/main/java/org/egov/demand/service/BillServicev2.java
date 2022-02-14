@@ -40,18 +40,19 @@
 
 package org.egov.demand.service;
 
+import static org.egov.demand.util.Constants.BUSINESS_SERVICE_URL_PARAMETER;
 import static org.egov.demand.util.Constants.CONSUMERCODES_REPLACE_TEXT;
-import static org.egov.demand.util.Constants.EG_BS_BILL_NO_DEMANDS_FOUND_KEY;
-import static org.egov.demand.util.Constants.EG_BS_BILL_NO_DEMANDS_FOUND_MSG;
 import static org.egov.demand.util.Constants.TENANTID_REPLACE_TEXT;
 import static org.egov.demand.util.Constants.URL_NOT_CONFIGURED_FOR_DEMAND_UPDATE_KEY;
 import static org.egov.demand.util.Constants.URL_NOT_CONFIGURED_FOR_DEMAND_UPDATE_MSG;
 import static org.egov.demand.util.Constants.URL_NOT_CONFIGURED_REPLACE_TEXT;
 import static org.egov.demand.util.Constants.URL_PARAMS_FOR_SERVICE_BASED_DEMAND_APIS;
+import static org.egov.demand.util.Constants.URL_PARAM_SEPERATOR;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -76,6 +77,8 @@ import org.egov.demand.model.DemandDetail;
 import org.egov.demand.model.GenerateBillCriteria;
 import org.egov.demand.model.TaxHeadMaster;
 import org.egov.demand.model.TaxHeadMasterCriteria;
+import org.egov.demand.model.UpdateBillCriteria;
+import org.egov.demand.model.UpdateBillRequest;
 import org.egov.demand.repository.BillRepositoryV2;
 import org.egov.demand.repository.IdGenRepo;
 import org.egov.demand.repository.ServiceRequestRepository;
@@ -140,6 +143,30 @@ public class BillServicev2 {
 	private String notifTopicName;
 	
 	/**
+	 * Cancell bill operation can be carried by this method, based on consumerCodes
+	 * and businessService.
+	 * 
+	 * Only ACTIVE bills will be cancelled as of now
+	 * 
+	 * @param cancelBillCriteria
+	 * @param requestInfoWrapper
+	 */
+	public Integer cancelBill(UpdateBillRequest updateBillRequest) {
+		
+		UpdateBillCriteria cancelBillCriteria = updateBillRequest.getUpdateBillCriteria();
+		Set<String> consumerCodes = cancelBillCriteria.getConsumerCodes();
+		cancelBillCriteria.setStatusToBeUpdated(BillStatus.CANCELLED);
+
+		if (!CollectionUtils.isEmpty(consumerCodes) && consumerCodes.size() > 1) {
+			
+			throw new CustomException("EG_BS_CANCEL_BILL_ERROR", "Only one consumer code can be provided in the Cancel request");
+		} else {
+
+			return billRepository.updateBillStatus(cancelBillCriteria);
+		}
+	}
+
+	/**
 	 * Fetches the bill for given parameters
 	 * 
 	 * Searches the respective bill
@@ -167,6 +194,17 @@ public class BillServicev2 {
 		if (CollectionUtils.isEmpty(bills))
 			return generateBill(billCriteria, requestInfo);
 		
+		/*
+		 * Adding consumer-codes of unbilled demands to generate criteria
+		 */
+		if (!(StringUtils.isEmpty(billCriteria.getMobileNumber()) && StringUtils.isEmpty(billCriteria.getEmail()))) {
+
+			List<Demand> demands = demandService.getDemands(billCriteria.toDemandCriteria(), requestInfo);
+			billCriteria.getConsumerCode().addAll(
+					demands.stream().map(Demand::getConsumerCode).collect(Collectors.toSet()));
+		}
+
+		log.debug("fetchBill--------going to generate new bill-------------------");
 		Map<String, BillV2> consumerCodeAndBillMap = bills.stream().collect(Collectors.toMap(BillV2::getConsumerCode, Function.identity()));
 		billCriteria.getConsumerCode().addAll(consumerCodeAndBillMap.keySet());
 		/*
@@ -177,7 +215,7 @@ public class BillServicev2 {
 		 * consumerCodes against the service code
 		 */
  		List<String> cosnumerCodesNotFoundInBill = new ArrayList<>(billCriteria.getConsumerCode());
-		List<String> cosnumerCodesToBeExpired = new ArrayList<>();
+		Set<String> cosnumerCodesToBeExpired = new HashSet<>();
 		List<BillV2> billsToBeReturned = new ArrayList<>();
 		Boolean isBillExpired = false;
 		
@@ -208,9 +246,19 @@ public class BillServicev2 {
 			billCriteria.getConsumerCode().retainAll(cosnumerCodesToBeExpired);
 			billCriteria.getConsumerCode().addAll(cosnumerCodesNotFoundInBill);
 			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), billCriteria.getConsumerCode(), billCriteria.getTenantId(), requestInfoWrapper);
-			billRepository.updateBillStatus(cosnumerCodesToBeExpired, BillStatus.EXPIRED);
+			
+			billRepository.updateBillStatus(
+					UpdateBillCriteria.builder()
+					.statusToBeUpdated(BillStatus.EXPIRED)
+					.businessService(billCriteria.getBusinessService())
+					.consumerCodes(cosnumerCodesToBeExpired)
+					.tenantId(billCriteria.getTenantId())
+					.build()
+					);
 			BillResponseV2 finalResponse = generateBill(billCriteria, requestInfo);
-			finalResponse.getBill().addAll(billsToBeReturned);
+			// gen bill returns immutable empty list incase of zero bills
+			billsToBeReturned.addAll(finalResponse.getBill());
+			finalResponse.setBill(billsToBeReturned);
 			return finalResponse;
 		}
 	}
@@ -239,6 +287,7 @@ public class BillServicev2 {
 					.append(URL_PARAMS_FOR_SERVICE_BASED_DEMAND_APIS.replace(TENANTID_REPLACE_TEXT, tenantId).replace(
 							CONSUMERCODES_REPLACE_TEXT, consumerCodesTobeUpdated.toString().replace("[", "").replace("]", "")));
 
+			completeUrl.append(URL_PARAM_SEPERATOR).append(BUSINESS_SERVICE_URL_PARAMETER).append(businessService);
 			log.info("the url : " + completeUrl);
 			restRepository.fetchResult(completeUrl.toString(), requestInfoWrapper);
 	}
@@ -297,7 +346,7 @@ public class BillServicev2 {
 		if (!demands.isEmpty())
 			bills = prepareBill(demands, requestInfo);
 		else
-			throw new CustomException(EG_BS_BILL_NO_DEMANDS_FOUND_KEY, EG_BS_BILL_NO_DEMANDS_FOUND_MSG);
+			return getBillResponse(Collections.emptyList());
 
 		BillRequestV2 billRequest = BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
 		//kafkaTemplate.send(notifTopicName, null, billRequest);
@@ -316,76 +365,82 @@ public class BillServicev2 {
 		
 		List<BillV2> bills = new ArrayList<>();
 		User payer = null != demands.get(0).getPayer() ?  demands.get(0).getPayer() : new User();
-		
-		/*
-		 * Fetching Required master data
-		 */
-		String tenantId = demands.get(0).getTenantId();
-		Set<String> businessCodes = new HashSet<>();
-		Set<String> taxHeadCodes = new HashSet<>();
 
-		for (Demand demand : demands) {
+		Map<String, List<Demand>> tenatIdDemandsList = demands.stream().collect(Collectors.groupingBy(Demand::getTenantId));
+		for (Entry<String, List<Demand>> demandTenantEntry : tenatIdDemandsList.entrySet()) {
 
-			businessCodes.add(demand.getBusinessService());
-			demand.getDemandDetails().forEach(detail -> taxHeadCodes.add(detail.getTaxHeadMasterCode()));
-		}
-		
-		Map<String, TaxHeadMaster> taxHeadMap = getTaxHeadMaster(taxHeadCodes, tenantId, requestInfo);
-		Map<String, BusinessServiceDetail> businessMap = getBusinessService(businessCodes, tenantId, requestInfo);
-		
-		
-		/*
-		 * Grouping the demands by their consumer code and generating a bill for each consumer code
-		 */
-		Map<String, List<Demand>> consumerCodeAndDemandsMap = demands.stream().collect(Collectors.groupingBy(Demand::getConsumerCode));
-		
-		for (Entry<String, List<Demand>> consumerCodeAndDemands : consumerCodeAndDemandsMap.entrySet()) {
-			
-			BigDecimal billAmount = BigDecimal.ZERO;
-			List<BillDetailV2> billDetails = new ArrayList<>();
-			
-			String consumerCode = consumerCodeAndDemands.getKey();
-			BigDecimal minimumAmtPayableForBill = BigDecimal.ZERO;
-			List<Demand> demandsForSingleCode = consumerCodeAndDemands.getValue();
-			BusinessServiceDetail business = businessMap.get(demandsForSingleCode.get(0).getBusinessService());
-			
-			String billId = UUID.randomUUID().toString();
-			String billNumber = getBillNumbers(requestInfo, tenantId, demands.get(0).getBusinessService(), 1).get(0);
-			
-			for (Demand demand : demandsForSingleCode) {
+			/*
+			 * Fetching Required master data
+			 */
+			String tenantId = demandTenantEntry.getKey();
+			List<Demand> demandForOneTenant = demandTenantEntry.getValue();
+			Set<String> businessCodes = new HashSet<>();
+			Set<String> taxHeadCodes = new HashSet<>();
 
-				minimumAmtPayableForBill = minimumAmtPayableForBill.add(demand.getMinimumAmountPayable());
-				String billDetailId = UUID.randomUUID().toString();
-				BillDetailV2 billDetail = getBillDetailForDemand(demand, taxHeadMap, billDetailId);
-				billDetail.setBillId(billId);
-				billDetail.setId(billDetailId);
-				billDetails.add(billDetail);
-				billAmount = billAmount.add(billDetail.getAmount());
+			for (Demand demand : demandForOneTenant) {
+
+				businessCodes.add(demand.getBusinessService());
+				demand.getDemandDetails().forEach(detail -> taxHeadCodes.add(detail.getTaxHeadMasterCode()));
 			}
 			
-			if (billAmount.compareTo(BigDecimal.ZERO) >= 0) {
-
-				BillV2 bill = BillV2.builder()
-					.auditDetails(util.getAuditDetail(requestInfo))
-					.payerAddress(payer.getPermanentAddress())
-					.mobileNumber(payer.getMobileNumber())
-					.billDate(System.currentTimeMillis())
-					.businessService(business.getCode())
-					.payerName(payer.getName())
-					.consumerCode(consumerCode)
-					.status(BillStatus.ACTIVE)
-					.billDetails(billDetails)
-					.totalAmount(billAmount)
-					.billNumber(billNumber)
-					.tenantId(tenantId)
-					.id(billId)
-					.build();
+			Map<String, TaxHeadMaster> taxHeadMap = getTaxHeadMaster(taxHeadCodes, tenantId, requestInfo);
+			Map<String, BusinessServiceDetail> businessMap = getBusinessService(businessCodes, tenantId, requestInfo);
 			
-			bills.add(bill);
+			
+			/*
+			 * Grouping the demands by their consumer code and generating a bill for each consumer code
+			 */
+			Map<String, List<Demand>> consumerCodeAndDemandsMap = demandForOneTenant.stream().collect(Collectors.groupingBy(Demand::getConsumerCode));
+			
+			for (Entry<String, List<Demand>> consumerCodeAndDemands : consumerCodeAndDemandsMap.entrySet()) {
+				
+				BigDecimal billAmount = BigDecimal.ZERO;
+				List<BillDetailV2> billDetails = new ArrayList<>();
+				
+				String consumerCode = consumerCodeAndDemands.getKey();
+				BigDecimal minimumAmtPayableForBill = BigDecimal.ZERO;
+				List<Demand> demandsForSingleCode = consumerCodeAndDemands.getValue();
+				BusinessServiceDetail business = businessMap.get(demandsForSingleCode.get(0).getBusinessService());
+				
+				String billId = UUID.randomUUID().toString();
+				String billNumber = getBillNumbers(requestInfo, tenantId, demandForOneTenant.get(0).getBusinessService(), 1).get(0);
+				
+				for (Demand demand : demandsForSingleCode) {
+
+					minimumAmtPayableForBill = minimumAmtPayableForBill.add(demand.getMinimumAmountPayable());
+					String billDetailId = UUID.randomUUID().toString();
+					BillDetailV2 billDetail = getBillDetailForDemand(demand, taxHeadMap, billDetailId);
+					billDetail.setBillId(billId);
+					billDetail.setId(billDetailId);
+					billDetails.add(billDetail);
+					billAmount = billAmount.add(billDetail.getAmount());
+				}
+				
+				if (billAmount.compareTo(BigDecimal.ZERO) >= 0) {
+
+					BillV2 bill = BillV2.builder()
+						.auditDetails(util.getAuditDetail(requestInfo))
+						.payerAddress(payer.getPermanentAddress())
+						.mobileNumber(payer.getMobileNumber())
+						.billDate(System.currentTimeMillis())
+						.businessService(business.getCode())
+						.payerName(payer.getName())
+						.consumerCode(consumerCode)
+						.status(BillStatus.ACTIVE)
+						.billDetails(billDetails)
+						.totalAmount(billAmount)
+						.billNumber(billNumber)
+						.tenantId(tenantId)
+						.id(billId)
+						.build();
+				
+					bills.add(bill);
+				}
+			}
+
 		}
+		return bills;
 	}
-	return bills;
-}
 
 	private List<String> getBillNumbers(RequestInfo requestInfo, String tenantId, String module, int count) {
 
