@@ -204,13 +204,15 @@ public class BillServicev2 {
 		if(CollectionUtils.isEmpty(cosnumerCodesToBeExpired) && CollectionUtils.isEmpty(cosnumerCodesNotFoundInBill))
 			return res;
 		else {
-			
+			System.out.println("bill criteria before update-----------------------"+billCriteria);
 			billCriteria.getConsumerCode().retainAll(cosnumerCodesToBeExpired);
 			billCriteria.getConsumerCode().addAll(cosnumerCodesNotFoundInBill);
 			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), billCriteria.getConsumerCode(), billCriteria.getTenantId(), requestInfoWrapper);
 			billRepository.updateBillStatus(cosnumerCodesToBeExpired, BillStatus.EXPIRED);
+			System.out.println("bill criteria after update-----------------------"+billCriteria);
 			BillResponseV2 finalResponse = generateBill(billCriteria, requestInfo);
 			finalResponse.getBill().addAll(billsToBeReturned);
+			System.out.println("bill final response-----------------------"+finalResponse);
 			return finalResponse;
 		}
 	}
@@ -270,7 +272,8 @@ public class BillServicev2 {
 
 		Set<String> demandIds = new HashSet<>();
 		Set<String> consumerCodes = new HashSet<>();
-
+		System.out.println("new bill -----------------------"+billCriteria);
+		System.out.println("new bill request info -----------------------"+requestInfo);
 		if (billCriteria.getDemandId() != null)
 			demandIds.add(billCriteria.getDemandId());
 
@@ -291,7 +294,7 @@ public class BillServicev2 {
 
 		/* Fetching demands for the given bill search criteria */
 		List<Demand> demands = demandService.getDemands(demandCriteria, requestInfo);
-
+		
 		List<BillV2> bills;
 
 		if (!demands.isEmpty())
@@ -301,6 +304,8 @@ public class BillServicev2 {
 
 		BillRequestV2 billRequest = BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
 		//kafkaTemplate.send(notifTopicName, null, billRequest);
+		System.out.println("new bill request -----------------------"+billRequest);
+		
 		return create(billRequest);
 	}
 
