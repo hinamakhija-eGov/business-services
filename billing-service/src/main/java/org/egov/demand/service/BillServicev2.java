@@ -181,6 +181,7 @@ public class BillServicev2 {
 			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), billCriteria.getConsumerCode(), billCriteria.getTenantId(), requestInfoWrapper);
 			return generateBill(billCriteria, requestInfo);
 		}
+		
 		/*
 		 * Adding consumer-codes of unbilled demands to generate criteria
 		 */
@@ -322,7 +323,7 @@ public class BillServicev2 {
 		/* Fetching demands for the given bill search criteria */
 		List<Demand> demandsWithMultipleActive = demandService.getDemands(demandCriteria, requestInfo);
 
-		if (demandsWithMultipleActive.isEmpty()) {
+ 		if (demandsWithMultipleActive.isEmpty()) {
 			throw new CustomException(EG_BS_BILL_NO_DEMANDS_FOUND_KEY, EG_BS_BILL_NO_DEMANDS_FOUND_MSG);
 		}
 		

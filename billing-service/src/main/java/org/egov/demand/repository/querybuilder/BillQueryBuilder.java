@@ -104,7 +104,7 @@ public class BillQueryBuilder {
 		if (searchBill.getBillId() != null && !searchBill.getBillId().isEmpty())
 			selectQuery.append(" AND b.id in (" + getIdQuery(searchBill.getBillId()));
 
-		if (!searchBill.getRetrieveOldest()) {
+		if (searchBill.getRetrieveOldest()!=null && !searchBill.getRetrieveOldest()) {
 			if (searchBill.getStatus() != null) {
 				selectQuery.append(" AND b.status = ?");
 				preparedStatementValues.add(searchBill.getStatus().toString());
@@ -146,7 +146,7 @@ public class BillQueryBuilder {
 
 		StringBuilder finalQuery;
 
-		if (searchBillCriteria.getRetrieveOldest())
+		if (searchBillCriteria.getRetrieveOldest()!=null && !searchBillCriteria.getRetrieveOldest())
 			finalQuery = new StringBuilder(BILL_MIN_QUERY.replace(REPLACE_STRING, selectQuery));
 		else
 			finalQuery = new StringBuilder(BILL_MAX_QUERY.replace(REPLACE_STRING, selectQuery));
