@@ -79,7 +79,7 @@ config:
         image-name: "dashboard-analytics"
         dockerfile: "build/maven/Dockerfile"
 
-  - name: "builds/digit-impel-builds/business-services/dashboard-ingest"
+  - name: "builds/business-services/dashboard-ingest"
     build:
       - work-dir: "dashboard-ingest"
         image-name: "dashboard-ingest"
