@@ -10,6 +10,7 @@ import java.util.Map;
 import com.ingestpipeline.model.SourceReferences;
 import com.ingestpipeline.model.TargetReferences;
 import org.apache.tomcat.util.codec.binary.Base64;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +62,8 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 	private static final String DATA_OBJECT = "dataObject";
 	private static final String DATA_CONTEXT = "dataContext";
 	private static final String DATA_ENHANCEMENT = "dataEnhancement";
+	private static final String TENANTID = "tenantId";
+	private static final String MCOLLECT = "MCOLLECT";
 
 	@Autowired
 	private ElasticSearchRepository elasticRepository;
@@ -79,21 +82,31 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 
 	@Autowired
 	private EnrichTransform enrichTransform;
+	
+	@Autowired
+	private JSONUtil util;
 
 	public EnrichmentServiceImpl(@Value("${services.esindexer.host}") String indexServiceHost,
 			@Value("${services.esindexer.username}") String userName,
 			@Value("${services.esindexer.password}") String password,
 			@Value("${es.index.name}") String elasticSearchIndexName,
-			@Value("${es.document.type}") String elasticSearchDocumentType) {
+			@Value("${es.document.type}") String elasticSearchDocumentType, JSONUtil util) {
 		this.indexServiceHost = indexServiceHost;
 		this.userName = userName;
 		this.password = password;
 		this.elasticSearchIndexName = elasticSearchIndexName;
 		this.elasticSearchDocumentType = elasticSearchDocumentType;
+		this.util=util;
 	}
 
 	@Override
 	public Map enrichData(Map incomingData) {
+		
+		Map<String,Object> dataObject = new ObjectMapper().convertValue(incomingData.get(DATA_OBJECT), Map.class);
+		String tenantId = dataObject.get(TENANTID).toString();
+		
+		List<String> mCollectCategories = util.fetchMCollectCategories(tenantId);
+
 		DomainConfig domainConfig = domainConfigFactory.getConfiguration(incomingData.get(DATA_CONTEXT).toString());
 		LOGGER.info("domainConfig ## "+domainConfig);
 
@@ -102,16 +115,23 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 			ObjectNode incomingNode = new ObjectMapper().convertValue(incomingData.get(DATA_OBJECT), ObjectNode.class);
 			ObjectNode copyNode = incomingNode.deepCopy();
 			String businessTypeVal = copyNode.findValue(BUSINESS_SERVICE).asText();
+			
+			for(String category : mCollectCategories) {
+				if(category.equalsIgnoreCase(businessTypeVal)) {
+					businessTypeVal = MCOLLECT;
+					break;
+				}
+			}
 
 			DomainIndexConfig indexConfig = domainConfig.getIndexConfig(businessTypeVal.toString());
 			LOGGER.info("indexConfig ## "+indexConfig);
 			if(indexConfig != null){
 				String indexName = indexConfig.getIndexName();
+
 				String query = indexConfig.getQuery();					
 
 				try {
 					ObjectNode queryNode = new ObjectMapper().readValue(query, ObjectNode.class);
-					LOGGER.info("queryNode 114 ## "+queryNode.toString());
 
 					Map<String, Object> expValMap = new HashMap<>();
 					// Source references to be prepare a map of fieldName & value
@@ -119,10 +139,11 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 						String arg = ref.getFieldName();
 						String argVal = copyNode.findValue(arg).asText();
 						String[] values = argVal.split(ref.getSeperator());
+
 						String[] exps = ref.getExpression().split(ref.getSeperator());		
 
 						for(int i=0; i<exps.length; i++){
-							if(i < values.length && values[i] != null)
+							if(values[i] != null)
 								expValMap.put(exps[i], values[i]);
 						}
 					}
@@ -152,7 +173,6 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 					LOGGER.info("Data Transformed");
 
 				} catch (Exception e) {
-					e.printStackTrace();
 					LOGGER.error("Pre-processing enrichment - failed  :: {}" , e.getMessage());
 				}
 			} else {
@@ -174,7 +194,7 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 				try{
 					elasticService.push(targetData);
 				}catch (Exception e ){
-					e.printStackTrace();
+					LOGGER.error("Exception occurred while pushing data to ES: " + e.getMessage());
 				}
 
 			});
@@ -238,9 +258,6 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 			String businessTypeVal = copyNode.findValue(BUSINESS_SERVICE).asText();
 
 			DomainIndexConfig indexConfig = domainConfig.getIndexConfig(businessTypeVal.toString());
-			LOGGER.info("incoming Node ## "+copyNode);
-			LOGGER.info("Config ## "+domainConfig);
-			LOGGER.info("Config ## "+domainConfig);
 			LOGGER.info("indexConfig ## "+indexConfig);
 			if(indexConfig != null){
 				String indexName = indexConfig.getIndexName();
@@ -292,7 +309,6 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 					LOGGER.info("Enhance Data Transformed");
 
 				} catch (Exception e) {
-					e.printStackTrace();
 					LOGGER.error("Pre-processing Enhance data - failed  :: {}" , e.getMessage());
 				}
 			} else {
