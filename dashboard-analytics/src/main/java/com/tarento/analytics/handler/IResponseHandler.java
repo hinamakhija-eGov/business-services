@@ -76,6 +76,8 @@ public interface IResponseHandler {
     
     public static final String POST_AGGREGATION_THEORY = "postAggregationTheory";
 
+	public static final String IS_ROUND_OFF = "isRoundOff";
+
 	public static Double BOUNDARY_VALUE = 50.0;
 
 	/**
