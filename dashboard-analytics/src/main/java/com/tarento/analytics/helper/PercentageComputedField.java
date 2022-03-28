@@ -37,7 +37,7 @@ public class PercentageComputedField implements IComputedField<Data>{
     public void add(Data data, List<String> fields, String newField, JsonNode chartNode ) {
         try {
             Map<String, Plot> plotMap = data.getPlots().stream().collect(Collectors.toMap(Plot::getName, Function.identity()));
-
+            Map<String, Plot> plotMap = data.getPlots().stream().parallel().collect(Collectors.toMap(Plot::getName, Function.identity()));
             if (plotMap.get(fields.get(0)).getValue() == 0.0 || plotMap.get(fields.get(1)).getValue() == 0.0) {
 
                 data.getPlots().add(new Plot(newField, 0.0, "percentage"));
