@@ -301,7 +301,7 @@ public class BillServicev2 {
 	 * @return
 	 */
 	public BillResponseV2 searchBill(BillSearchCriteria billCriteria, RequestInfo requestInfo) {
-
+		log.info("********billCriteria****"+billCriteria.toString());
 		List<BillV2> bills = billRepository.findBill(billCriteria);
 
 		return BillResponseV2.builder().resposneInfo(responseFactory.getResponseInfo(requestInfo, HttpStatus.OK))
@@ -337,7 +337,7 @@ public class BillServicev2 {
 				.receiptRequired(false)
 				.demandId(demandIds)
 				.build();
-
+		log.info("******demandCriteria*******"+demandCriteria.toString());
 		/* Fetching demands for the given bill search criteria */
 		List<Demand> demands = demandService.getDemands(demandCriteria, requestInfo);
 

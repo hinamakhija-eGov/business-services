@@ -88,6 +88,7 @@ public class DemandRepository {
 
 		List<Object> preparedStatementValues = new ArrayList<>();
 		String searchDemandQuery = demandQueryBuilder.getDemandQuery(demandCriteria, preparedStatementValues);
+		log.info("##########Demand query:::"+searchDemandQuery+" ### :: preparedStatementValues::"+preparedStatementValues);
 		return jdbcTemplate.query(searchDemandQuery, preparedStatementValues.toArray(), demandRowMapper);
 	}
 	

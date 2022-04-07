@@ -50,7 +50,7 @@ public class BillRepositoryV2 {
 		
 		List<Object> preparedStatementValues = new ArrayList<>();
 		String queryStr = billQueryBuilder.getBillQuery(billCriteria, preparedStatementValues);
-		log.debug("query:::"+queryStr+"  preparedStatementValues::"+preparedStatementValues);
+		log.info("query:::"+queryStr+"  :: preparedStatementValues::"+preparedStatementValues);
 		return jdbcTemplate.query(queryStr, preparedStatementValues.toArray(), searchBillRowMapper);
 	}
 	
