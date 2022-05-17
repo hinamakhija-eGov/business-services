@@ -339,8 +339,15 @@ public class DemandService {
 		
 		if (!CollectionUtils.isEmpty(demands) && !CollectionUtils.isEmpty(payers))
 			demands = demandEnrichmentUtil.enrichPayer(demands, payers);
+		
+		List<Demand> activeDemands=null;
+		List<Demand> inactiveDemands=null;
 
-		return demands;
+		for (Demand d : demands) {
+			if(d.getStatus().toString().equalsIgnoreCase("ACTIVE"))
+				activeDemands.add(d); 
+		}
+		return activeDemands;
 	}
 
 	public void save(DemandRequest demandRequest) {
