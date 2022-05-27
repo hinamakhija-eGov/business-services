@@ -171,10 +171,16 @@ public class DemandValidatorV1 {
 						taxHeadsNotFound.add(detail.getTaxHeadMasterCode());
 				});
 
+			if(demandRequest.getDemands().get(0).getBusinessService().equalsIgnoreCase("WS") && demandRequest.getDemands().get(0).getAdditionalDetails() !=null && demandRequest.getDemands().get(0).getAdditionalDetails().toString().contains("connectionType"))
+			{
+				
+			}
+			else
 			validateTaxPeriod(taxPeriodBusinessMap, demand, errorMap, businessServicesWithNoTaxPeriods);
 			
 			// by default demands are being set to active during create but validation should be done for inactive/ cancelled demand in another logic
-			if(demand.getStatus() == null) demand.setStatus(StatusEnum.ACTIVE);
+			if(demand.getStatus() == null) 
+				demand.setStatus(StatusEnum.ACTIVE);
 		}
 
 		/*
