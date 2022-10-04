@@ -182,6 +182,13 @@ public class BillServicev2 {
 			return generateBill(billCriteria, requestInfo);
 		}
 		
+		if (!CollectionUtils.isEmpty(bills) && billCriteria.getBusinessService().equalsIgnoreCase("PT") && !(bills.get(0).getTotalAmount().remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) == 0))
+		{
+			if(!billCriteria.getBusinessService().equalsIgnoreCase("WS") && !billCriteria.getBusinessService().equalsIgnoreCase("SW"))
+			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), billCriteria.getConsumerCode(), billCriteria.getTenantId(), requestInfoWrapper);
+			return generateBill(billCriteria, requestInfo);
+		}
+		
 		/*
 		 * Adding consumer-codes of unbilled demands to generate criteria
 		 */
