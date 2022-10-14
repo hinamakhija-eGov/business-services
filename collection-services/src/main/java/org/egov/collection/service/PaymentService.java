@@ -192,7 +192,14 @@ public class PaymentService {
         
         return paymentRequest.getPayment();
     }
+    
+    @Transactional
+    public Payment updatePaymentForFilestore(Payment payment) {
 
+       paymentRepository.updateFileStoreIdToNull(payment);
+        return payment;
+    }
+    
     public List<Payment> plainSearch(PaymentSearchCriteria paymentSearchCriteria) {
         PaymentSearchCriteria searchCriteria = new PaymentSearchCriteria();
 
@@ -220,6 +227,8 @@ public class PaymentService {
         return paymentRepository.fetchPaymentsForPlainSearch(criteria);
     }
 
+    
+    
     @Transactional
     public Payment createPaymentForWSMigration(PaymentRequest paymentRequest) {
     	

@@ -231,6 +231,19 @@ public class PaymentRepository {
         namedParameterJdbcTemplate.batchUpdate(FILESTOREID_UPDATE_PAYMENT_SQL,fileStoreIdSource.toArray(new MapSqlParameterSource[0]));
 
     }
+    
+    public void updateFileStoreIdToNull(Payment payment){
+
+     
+      List<MapSqlParameterSource> fileStoreIdSource = new ArrayList<>();
+	  
+      MapSqlParameterSource sqlParameterSource = new MapSqlParameterSource();
+      sqlParameterSource.addValue("id",payment.getId());
+      fileStoreIdSource.add(sqlParameterSource);
+
+      namedParameterJdbcTemplate.batchUpdate(FILESTOREID_UPDATE_NULL_PAYMENT_SQL,fileStoreIdSource.toArray(new MapSqlParameterSource[0]));
+
+    }
 
     public List<String> fetchPaymentIds(PaymentSearchCriteria paymentSearchCriteria) {
 

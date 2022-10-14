@@ -40,6 +40,7 @@
 
 package org.egov.collection.web.controller;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -174,6 +175,23 @@ public class PaymentController {
 
         Payment payment = paymentService.createPaymentForWSMigration(paymentRequest);
         return getSuccessResponse(Collections.singletonList(payment), paymentRequest.getRequestInfo());
+
+    }
+    
+    @RequestMapping(value = "/_update", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<PaymentResponse> update(@RequestBody @Valid PaymentSearchCriteria paymentSearchCriteria,
+    		  @RequestBody @Valid final RequestInfoWrapper requestInfoWrapper) {
+    	log.info("PaymentSearchCriteria: " + paymentSearchCriteria);
+    	
+    	List<Payment> payment=paymentService.plainSearch(paymentSearchCriteria);
+
+        Payment paymentUpdated = paymentService.updatePaymentForFilestore(payment.get(0));
+        final RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
+
+        List<Payment> updatedPayments=new ArrayList<Payment>();
+        updatedPayments.add(paymentUpdated);
+        return getSuccessResponse(updatedPayments, requestInfo);
 
     }
     
