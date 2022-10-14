@@ -25,7 +25,7 @@ import org.springframework.util.CollectionUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-
+@Slf4j
 @Service
 public class PaymentService {
 
@@ -202,7 +202,10 @@ public class PaymentService {
     
     public List<Payment> plainSearch(PaymentSearchCriteria paymentSearchCriteria) {
         PaymentSearchCriteria searchCriteria = new PaymentSearchCriteria();
-
+        
+	log.info("plainSearch Service BusinessServices"+paymentSearchCriteria.getBusinessServices() +"plainSearch Service Date "+
+        		 paymentSearchCriteria.getFromDate() +" to "+paymentSearchCriteria.getToDate() +"Teant IT "+paymentSearchCriteria.getTenantId());    
+	    
         if (applicationProperties.isPaymentsSearchPaginationEnabled()) {
             searchCriteria.setOffset(isNull(paymentSearchCriteria.getOffset()) ? 0 : paymentSearchCriteria.getOffset());
             searchCriteria.setLimit(isNull(paymentSearchCriteria.getLimit()) ? applicationProperties.getReceiptsSearchDefaultLimit() : paymentSearchCriteria.getLimit());
