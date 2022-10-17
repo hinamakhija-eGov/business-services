@@ -170,7 +170,7 @@ public class PaymentController {
 		{
 			HashSet<String> businessservices=new HashSet<>();
 			businessservices.add(businessservice);
-             paymentSearchCriteria.addAll(paymentSearchCriteria);
+                        paymentSearchCriteria.setBusinessServices(businessservices);
 		}
         final RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
 
