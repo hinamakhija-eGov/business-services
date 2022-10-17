@@ -219,6 +219,7 @@ public class PaymentService {
         }
         
         if(paymentSearchCriteria.getBusinessServices() != null) {
+		 log.info("in PaymentService.java paymentSearchCriteria.getBusinessServices(): " + paymentSearchCriteria.getBusinessServices());
         	searchCriteria.setBusinessServices(paymentSearchCriteria.getBusinessServices());
         }
 
