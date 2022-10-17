@@ -43,6 +43,7 @@ package org.egov.collection.web.controller;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.HashSet;
 
 import javax.validation.Valid;
 
@@ -70,6 +71,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -159,8 +162,16 @@ public class PaymentController {
     @RequestMapping(value = "/_plainsearch", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<PaymentResponse> plainSearch(@ModelAttribute PaymentSearchCriteria paymentSearchCriteria,
-                                                       @RequestBody @Valid final RequestInfoWrapper requestInfoWrapper) {
+                                                       @RequestBody @Valid final RequestInfoWrapper requestInfoWrapper,@RequestParam(value = "businessservice", required = false) String businessservice) {
 
+        log.info("businessservice: " + businessservice);
+        log.info("paymentRequest: " + paymentRequest);
+         if(!StringUtils.isEmpty(businessservice))
+		{
+			HashSet<String> businessservices=new HashSet<>();
+			businessservices.add(businessservice);
+             paymentSearchCriteria.addAll(paymentSearchCriteria);
+		}
         final RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
 
         List<Payment> payments = paymentService.plainSearch(paymentSearchCriteria);
