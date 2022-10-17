@@ -165,7 +165,7 @@ public class PaymentController {
                                                        @RequestBody @Valid final RequestInfoWrapper requestInfoWrapper,@RequestParam(value = "businessservice", required = false) String businessservice) {
 
         log.info("businessservice: " + businessservice);
-        log.info("paymentRequest: " + paymentRequest);
+        log.info("paymentSearchCriteria: " + paymentSearchCriteria);
          if(!StringUtils.isEmpty(businessservice))
 		{
 			HashSet<String> businessservices=new HashSet<>();
