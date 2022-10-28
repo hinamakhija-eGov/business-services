@@ -204,7 +204,7 @@ public class PaymentService {
         PaymentSearchCriteria searchCriteria = new PaymentSearchCriteria();
         
 	log.info("plainSearch Service BusinessServices"+paymentSearchCriteria.getBusinessServices() +"plainSearch Service Date "+
-        		 paymentSearchCriteria.getFromDate() +" to "+paymentSearchCriteria.getToDate() +"Teant IT "+paymentSearchCriteria.getTenantId());    
+        		 paymentSearchCriteria.getFromDate() +" to "+paymentSearchCriteria.getToDate() +"Teant IT "+paymentSearchCriteria.getTenantId()+" \"plainSearch Service BusinessServices\"+paymentSearchCriteria.getBusinessService():"+paymentSearchCriteria.getBusinessService());    
 	    
         if (applicationProperties.isPaymentsSearchPaginationEnabled()) {
             searchCriteria.setOffset(isNull(paymentSearchCriteria.getOffset()) ? 0 : paymentSearchCriteria.getOffset());
@@ -222,6 +222,14 @@ public class PaymentService {
 		 log.info("in PaymentService.java paymentSearchCriteria.getBusinessServices(): " + paymentSearchCriteria.getBusinessServices());
         	searchCriteria.setBusinessServices(paymentSearchCriteria.getBusinessServices());
         }
+        
+        if(paymentSearchCriteria.getBusinessService() != null) {
+   		 log.info("in PaymentService.java paymentSearchCriteria.getBusinessService(): " + paymentSearchCriteria.getBusinessService());
+           	searchCriteria.setBusinessService(paymentSearchCriteria.getBusinessService());
+          }
+           
+
+        
         
         if((paymentSearchCriteria.getFromDate() !=null && paymentSearchCriteria.getFromDate()>0 )&& (paymentSearchCriteria.getToDate() !=null && paymentSearchCriteria.getToDate()>0 ) )
         {
