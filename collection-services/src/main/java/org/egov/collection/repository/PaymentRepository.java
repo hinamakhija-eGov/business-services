@@ -260,12 +260,26 @@ public class PaymentRepository {
         }
         if(paymentSearchCriteria.getBusinessServices() != null) {
         	if(whereCluaseApplied) {
-            	query.append(" AND id in (select paymentid from egcl_paymentdetail where tenantid=:tenantid AND businessservice=:businessservice) ");
-                preparedStatementValues.put("tenantid", paymentSearchCriteria.getTenantId());
-                preparedStatementValues.put("businessservice", paymentSearchCriteria.getBusinessServices());
+        		if((paymentSearchCriteria.getFromDate() != null && paymentSearchCriteria.getFromDate() >0) && (paymentSearchCriteria.getToDate() != null && paymentSearchCriteria.getToDate() >0) ) {
+            		  query.append(" AND id in (select paymentid from egcl_paymentdetail where tenantid=:tenantid AND businessservice IN :businessservices AND createdtime between :fromDate and :toDate ) ");
+            		  preparedStatementValues.put("fromDate", paymentSearchCriteria.getFromDate());
+            		  preparedStatementValues.put("toDate", paymentSearchCriteria.getToDate());
+                      preparedStatementValues.put("businessservices", paymentSearchCriteria.getBusinessServices());
+                      preparedStatementValues.put("tenantid", paymentSearchCriteria.getTenantId());
 
+
+        		}else {
+                	query.append(" AND id in (select paymentid from egcl_paymentdetail where tenantid=:tenantid AND businessservice IN :businessservices) ");
+                
+          //  	query.append(" AND id in (select paymentid from egcl_paymentdetail where tenantid=:tenantid AND businessservice=:businessservice) ");
+                preparedStatementValues.put("tenantid", paymentSearchCriteria.getTenantId());
+                preparedStatementValues.put("businessservices", paymentSearchCriteria.getBusinessServices());
+
+        	}  
         	}
         }
+        
+     
         
         query.append(" ORDER BY createdtime offset " + ":offset " + "limit :limit"); 
         

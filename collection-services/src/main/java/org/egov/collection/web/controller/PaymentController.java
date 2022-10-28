@@ -162,7 +162,7 @@ public class PaymentController {
     @RequestMapping(value = "/_plainsearch", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<PaymentResponse> plainSearch(@ModelAttribute PaymentSearchCriteria paymentSearchCriteria,
-                                                       @RequestBody @Valid final RequestInfoWrapper requestInfoWrapper,@RequestParam(value = "businessservice", required = false) String businessservice) {
+                                                       @RequestBody @Valid final RequestInfoWrapper requestInfoWrapper,@RequestParam(value = "businessservice", required = false) String businessservice,@RequestParam(value = "fromDate", required = false) Long fromDate,@RequestParam(value = "toDate", required = false) Long toDate) {
 
         log.info("businessservice: " + businessservice);
         log.info("paymentSearchCriteria: " + paymentSearchCriteria);
@@ -170,8 +170,20 @@ public class PaymentController {
 		{
 			HashSet<String> businessservices=new HashSet<>();
 			businessservices.add(businessservice);
-                        paymentSearchCriteria.setBusinessServices(businessservices);
+            paymentSearchCriteria.setBusinessServices(businessservices);
 		}
+        
+         if(fromDate!=null) {
+        	 paymentSearchCriteria.setFromDate(fromDate);
+         }
+         
+         if(toDate!=null) {
+        	 paymentSearchCriteria.setFromDate(toDate);
+         }
+         
+         log.info("after added  paymentSearchCriteria: " + paymentSearchCriteria);
+
+         
         final RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
 
         List<Payment> payments = paymentService.plainSearch(paymentSearchCriteria);
