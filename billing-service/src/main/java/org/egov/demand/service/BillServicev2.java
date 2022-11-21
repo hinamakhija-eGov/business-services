@@ -177,6 +177,7 @@ public class BillServicev2 {
 		 */
 		if (CollectionUtils.isEmpty(bills))
 		{
+			System.out.println( "isEmpty " );
 			if(!billCriteria.getBusinessService().equalsIgnoreCase("WS") && !billCriteria.getBusinessService().equalsIgnoreCase("SW"))
 			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), billCriteria.getConsumerCode(), billCriteria.getTenantId(), requestInfoWrapper);
 			return generateBill(billCriteria, requestInfo);
@@ -184,6 +185,7 @@ public class BillServicev2 {
 		
 		if (!CollectionUtils.isEmpty(bills) && billCriteria.getBusinessService().equalsIgnoreCase("PT") && !(bills.get(0).getTotalAmount().remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) == 0))
 		{
+			System.out.println( "isEmpty not" );
 			if(!billCriteria.getBusinessService().equalsIgnoreCase("WS") && !billCriteria.getBusinessService().equalsIgnoreCase("SW"))
 			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), billCriteria.getConsumerCode(), billCriteria.getTenantId(), requestInfoWrapper);
 			return generateBill(billCriteria, requestInfo);
@@ -347,7 +349,8 @@ public class BillServicev2 {
 			return getBillResponse(Collections.emptyList());
 
 		BillRequestV2 billRequest = BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
-		//kafkaTemplate.send(notifTopicName, null, billRequest);
+		System.out.println("notifTopicName" + notifTopicName);
+		kafkaTemplate.send(notifTopicName, null, billRequest);
 		return create(billRequest);
 	}
 
