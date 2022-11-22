@@ -87,6 +87,7 @@ public class NotificationConsumer {
 	public void listen(Map<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
 		try {
+			System.out.println(" listen :: kafka.topics.billgen.topic.name "+topic );
 			BillRequest req = objectMapper.convertValue(record, BillRequest.class);
 			sendNotification(req);
 		} catch (Exception e) {

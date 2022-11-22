@@ -98,6 +98,7 @@ import org.egov.demand.web.contract.User;
 import org.egov.demand.web.contract.factory.ResponseFactory;
 import org.egov.demand.web.validator.BillValidator;
 import org.egov.tracer.model.CustomException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -349,7 +350,9 @@ public class BillServicev2 {
 			return getBillResponse(Collections.emptyList());
 
 		BillRequestV2 billRequest = BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
-		System.out.println("notifTopicName" + notifTopicName);
+		System.out.println("notifTopicName " + notifTopicName);
+		String ojb = new JSONObject(billRequest).toString();
+		System.out.println(" respon pbj "+ ojb);
 		kafkaTemplate.send(notifTopicName, null, billRequest);
 		return create(billRequest);
 	}
