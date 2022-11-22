@@ -107,7 +107,7 @@ public class NotificationConsumer {
 
 			String phNo = bill.getMobileNumber();
 			String message = buildSmsBody(bill, billReq.getRequestInfo());
-			System.out.println("sendNotification :: phone:: "+phNo +" message "+message);
+			System.out.println("sendNotification :: phone:: "+phNo +" message "+message + "bill ::"+bill);
 			if (!StringUtils.isEmpty(message)) {
 
 				Map<String, Object> request = new HashMap<>();
@@ -158,6 +158,7 @@ public class NotificationConsumer {
 			content = content.replace(TAX_REPLACE_STRING, detail.getTotalAmount().toString());
 			
 		}
+		System.out.println("content "+content);
 		return content;
 	}
 

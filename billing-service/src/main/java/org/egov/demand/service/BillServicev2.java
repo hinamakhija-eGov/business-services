@@ -351,8 +351,8 @@ public class BillServicev2 {
 
 		BillRequestV2 billRequest = BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
 		System.out.println("notifTopicName " + notifTopicName);
-		String ojb = new JSONObject(billRequest).toString();
-		System.out.println(" respon pbj "+ ojb);
+		//String ojb = new JSONObject(billRequest).toString();
+		//System.out.println(" respon pbj "+ ojb);
 		kafkaTemplate.send(notifTopicName, null, billRequest);
 		return create(billRequest);
 	}
