@@ -135,12 +135,15 @@ public class NotificationConsumer {
 		BillDetail detail = bill.getBillDetails().get(0);
 
 		// notification is enabled only for PT 
-	//	if (bill.getMobileNumber() == null || !detail.getBusinessService().equals("PT"))
-		//	return null;
+	 //	if (bill.getMobileNumber() == null || !detail.getBusinessService().equals("PT") ||( bill.getMobileNumber() == null  !detail.getBusinessService().equals("WS") )
+	 	if (bill.getMobileNumber() == null || !(detail.getBusinessService().equals("PT") || detail.getBusinessService().equals("WS") ))
+			return null;
 
 		String tenantId = bill.getTenantId();
+		String content = null;
 
-		String content = fetchContentFromLocalization(requestInfo, tenantId, BILLING_LOCALIZATION_MODULE,
+		if(detail.getBusinessService().equals("PT")) {
+		content = fetchContentFromLocalization(requestInfo, tenantId, BILLING_LOCALIZATION_MODULE,
 				PAYMENT_MSG_LOCALIZATION_CODE);
 
 		if (!StringUtils.isEmpty(content)) {
@@ -156,11 +159,29 @@ public class NotificationConsumer {
 			content = content.replace(MODULE_REPLACE_STRING, MODULE_REPLACE_STRING_VALUE);
 			content = content.replace(MODULE_PRIMARYKEY_REPLACE_STRING, MODULE_PRIMARYKEY_REPLACE_STRING_VALUE);
 			content = content.replace(TAX_REPLACE_STRING, detail.getTotalAmount().toString());
-			
+			System.out.println("content PT"+content);
 		}
-		System.out.println("content "+content);
+		}
+		
+		if(detail.getBusinessService().equals("WS")) {
+		content = fetchContentFromLocalization(requestInfo, tenantId,"rainmaker-ws","WATER_CONNECTION_BILL_GENERATION_SMS_MESSAGE");
+			if (!StringUtils.isEmpty(content)) {
+
+				Calendar cal = Calendar.getInstance();
+				cal.setTimeInMillis(detail.getExpiryDate());
+				
+				content = content.replace("<Owner Name>", bill.getPayerName());
+				content = content.replace("<Service>",detail.getBusinessService());
+				content = content.replace("<bill amount>",detail.getTotalAmount().toString());
+				content = content.replace("<Due Date>",detail.getExpiryDate().toString());
+				System.out.println("content WS"+content);
+				
+			}
+			}
 		return content;
-	}
+		}
+	
+	
 
 	private String getPeriod(Long fromPeriod, Long toPeriod) {
 
