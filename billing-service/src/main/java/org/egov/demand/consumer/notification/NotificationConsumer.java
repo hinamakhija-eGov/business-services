@@ -104,10 +104,13 @@ public class NotificationConsumer {
 	 */
 	private void sendNotification(BillRequest billReq) {
 
+		String billReqObj = new JSONObject(billReq).toString();
+		System.out.println("object1::"+billReqObj);
+	
 		billReq.getBills().forEach(bill -> {
 
 			String phNo = bill.getMobileNumber();
-			String message = buildSmsBody(bill, billReq.getRequestInfo());
+			String message = buildSmsBody(bill, billReq.getRequestInfo(),billReq );
 			System.out.println("sendNotification :: phone:: "+phNo +" message "+message + "bill ::"+bill);
 			if (!StringUtils.isEmpty(message)) {
 
@@ -131,9 +134,13 @@ public class NotificationConsumer {
 	 * @param requestInfo
 	 * @return
 	 */
-	private String buildSmsBody(Bill bill, RequestInfo requestInfo) {
+	private String buildSmsBody(Bill bill, RequestInfo requestInfo,BillRequest billReq) {
 
 		System.out.println("buildSmsBody ::");
+		
+		String object1 = new JSONObject(bill).toString();
+		System.out.println("object1::"+object1);
+		
 		
 		BillDetail detail = bill.getBillDetails().get(0);
 		
