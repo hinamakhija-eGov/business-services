@@ -178,7 +178,7 @@ public class BillServicev2 {
 		 */
 		if (CollectionUtils.isEmpty(bills))
 		{
-			System.out.println( "isEmpty " );
+			System.out.println( "isEmpty " +bills.size());
 			if(!billCriteria.getBusinessService().equalsIgnoreCase("WS") && !billCriteria.getBusinessService().equalsIgnoreCase("SW"))
 			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), billCriteria.getConsumerCode(), billCriteria.getTenantId(), requestInfoWrapper);
 			return generateBill(billCriteria, requestInfo);

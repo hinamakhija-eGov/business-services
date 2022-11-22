@@ -107,6 +107,7 @@ public class NotificationConsumer {
 
 			String phNo = bill.getMobileNumber();
 			String message = buildSmsBody(bill, billReq.getRequestInfo());
+			System.out.println("sendNotification :: phone:: "+phNo +" message "+message);
 			if (!StringUtils.isEmpty(message)) {
 
 				Map<String, Object> request = new HashMap<>();
@@ -134,8 +135,8 @@ public class NotificationConsumer {
 		BillDetail detail = bill.getBillDetails().get(0);
 
 		// notification is enabled only for PT 
-		if (bill.getMobileNumber() == null || !detail.getBusinessService().equals("PT"))
-			return null;
+	//	if (bill.getMobileNumber() == null || !detail.getBusinessService().equals("PT"))
+		//	return null;
 
 		String tenantId = bill.getTenantId();
 
