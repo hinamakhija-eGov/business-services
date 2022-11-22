@@ -11,6 +11,7 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.demand.model.Bill;
 import org.egov.demand.model.BillDetail;
 import org.egov.demand.web.contract.BillRequest;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -132,7 +133,13 @@ public class NotificationConsumer {
 	 */
 	private String buildSmsBody(Bill bill, RequestInfo requestInfo) {
 
+		System.out.println("buildSmsBody ::");
+		
 		BillDetail detail = bill.getBillDetails().get(0);
+		
+		String object = new JSONObject(detail).toString();
+		System.out.println("object::"+object);
+		
 
 		// notification is enabled only for PT 
 	 //	if (bill.getMobileNumber() == null || !detail.getBusinessService().equals("PT") ||( bill.getMobileNumber() == null  !detail.getBusinessService().equals("WS") )
@@ -150,35 +157,38 @@ public class NotificationConsumer {
 
 			Calendar cal = Calendar.getInstance();
 			cal.setTimeInMillis(detail.getExpiryDate());
-			
+
 			content = content.replace(USERNAME_REPLACE_STRING, bill.getPayerName());
-			content = content.replace(EXPIRY_DATE_REPLACE_STRING,
-					" "+ cal.get(Calendar.DATE) + "/" + cal.get(Calendar.MONTH) + "/" + cal.get(Calendar.YEAR)+ " ".toUpperCase());
+			content = content.replace(EXPIRY_DATE_REPLACE_STRING, " " + cal.get(Calendar.DATE) + "/"
+					+ cal.get(Calendar.MONTH) + "/" + cal.get(Calendar.YEAR) + " ".toUpperCase());
 			content = content.replace(PERIOD_REPLACE_STRING, getPeriod(detail.getFromPeriod(), detail.getToPeriod()));
 			content = content.replace(SERVICENUMBER_OF_MODULE_REPLACE_STRING, detail.getConsumerCode().split(":")[0]);
 			content = content.replace(MODULE_REPLACE_STRING, MODULE_REPLACE_STRING_VALUE);
 			content = content.replace(MODULE_PRIMARYKEY_REPLACE_STRING, MODULE_PRIMARYKEY_REPLACE_STRING_VALUE);
 			content = content.replace(TAX_REPLACE_STRING, detail.getTotalAmount().toString());
-			System.out.println("content PT"+content);
+			System.out.println("content PT" + content);
+			}
 		}
-		}
-		
-		if(detail.getBusinessService().equals("WS")) {
-		content = fetchContentFromLocalization(requestInfo, tenantId,"rainmaker-ws","WATER_CONNECTION_BILL_GENERATION_SMS_MESSAGE");
-			if (!StringUtils.isEmpty(content)) {
 
-				Calendar cal = Calendar.getInstance();
-				cal.setTimeInMillis(detail.getExpiryDate());
+			if (detail.getBusinessService().equals("WS")) {
+				content = fetchContentFromLocalization(requestInfo, tenantId, "rainmaker-ws",
+						"WATER_CONNECTION_BILL_GENERATION_SMS_MESSAGE");
 				
-				content = content.replace("<Owner Name>", bill.getPayerName());
-				content = content.replace("<Service>",detail.getBusinessService());
-				content = content.replace("<bill amount>",detail.getTotalAmount().toString());
-				content = content.replace("<Due Date>",detail.getExpiryDate().toString());
-				System.out.println("content WS"+content);
-				
+				System.out.println("content"+content);
+		
+				if (!StringUtils.isEmpty(content)) {
+					Calendar cal = Calendar.getInstance();
+					cal.setTimeInMillis(detail.getExpiryDate());
+		
+					content = content.replace("<Owner Name>", bill.getPayerName());
+					content = content.replace("<Service>", detail.getBusinessService());
+					content = content.replace("<bill amount>", detail.getTotalAmount().toString());
+					content = content.replace("<Due Date>", detail.getExpiryDate().toString());
+					System.out.println("content WS" + content);
+		
+				}
 			}
-			}
-		return content;
+			return content;
 		}
 	
 	
