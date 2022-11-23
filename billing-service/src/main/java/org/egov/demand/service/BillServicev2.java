@@ -340,6 +340,7 @@ public class BillServicev2 {
 		/* Fetching demands for the given bill search criteria */
 		List<Demand> demandsWithMultipleActive = demandService.getDemands(demandCriteria, requestInfo);
 
+		System.out.println("demandsWithMultipleActive::"+demandsWithMultipleActive.size());
  		if (demandsWithMultipleActive.isEmpty()) {
 			throw new CustomException(EG_BS_BILL_NO_DEMANDS_FOUND_KEY, EG_BS_BILL_NO_DEMANDS_FOUND_MSG);
 		}
@@ -357,13 +358,13 @@ public class BillServicev2 {
 			return getBillResponse(Collections.emptyList());
 
 		BillRequestV2 billRequest = BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
-		System.out.println("notifTopicName " + notifTopicName);
+		System.out.println("notifTopicName start " + notifTopicName);
 		
-		String ob = new JSONObject(billRequest).toString();
-		System.out.println(" billRequest ::"+ ob);
+		//String ob = new JSONObject(billRequest).toString();
+		//System.out.println(" billRequest ::"+ ob);
 		
 		kafkaTemplate.send(notifTopicName, null, billRequest);
-		System.out.println(" notifTopicName After ::"+ ob);
+		System.out.println(" notifTopicName end ::");
 		
 		return create(billRequest);
 	}
@@ -391,6 +392,7 @@ public class BillServicev2 {
 	 */
 	private List<BillV2> prepareBill(List<Demand> demands, RequestInfo requestInfo) {
 
+		System.out.println("prepareBill start::"+demands.size());
 		
 		List<BillV2> bills = new ArrayList<>();
 		User payer = null != demands.get(0).getPayer() ?  demands.get(0).getPayer() : new User();
@@ -467,8 +469,10 @@ public class BillServicev2 {
 					bills.add(bill);
 				}
 			}
-
+			
 		}
+		String ojb = new JSONObject(bills).toString();
+		System.out.println("prepar bills::"+ ojb);
 		return bills;
 	}
 	
@@ -660,6 +664,8 @@ public class BillServicev2 {
 	public BillResponseV2 getBillResponse(List<BillV2> bills) {
 		BillResponseV2 billResponse = new BillResponseV2();
 		billResponse.setBill(bills);
+		String ojb = new JSONObject(bills).toString();
+		System.out.println("getBillResponse::"+ ojb);
 		return billResponse;
 	}
 
