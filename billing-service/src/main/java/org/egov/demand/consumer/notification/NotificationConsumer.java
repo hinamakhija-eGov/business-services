@@ -119,6 +119,7 @@ public class NotificationConsumer {
 				request.put("message", message);
 				log.info("Msg sent to user : " + message);
 				producer.send(smsTopic, smsTopickey, request);
+				System.out.println("*****************************");
 			} else {
 				log.error("No message configured! Notification will not be sent.");
 			}
@@ -150,34 +151,38 @@ public class NotificationConsumer {
 
 		// notification is enabled only for PT 
 	 //	if (bill.getMobileNumber() == null || !detail.getBusinessService().equals("PT") ||( bill.getMobileNumber() == null  !detail.getBusinessService().equals("WS") )
-	 	if (bill.getMobileNumber() == null || !(detail.getBusinessService().equals("PT") || detail.getBusinessService().equals("WS") ))
-			return null;
+	// 	if (bill.getMobileNumber() == null || !(detail.getBusinessService().equals("PT") || detail.getBusinessService().equals("WS") ))
+//			return null;
 
 		String tenantId = bill.getTenantId();
 		String content = null;
 
-		if(detail.getBusinessService().equals("PT")) {
-		content = fetchContentFromLocalization(requestInfo, tenantId, BILLING_LOCALIZATION_MODULE,
-				PAYMENT_MSG_LOCALIZATION_CODE);
+		/*
+		 * if(detail.getBusinessService().equals("PT")) { content =
+		 * fetchContentFromLocalization(requestInfo, tenantId,
+		 * BILLING_LOCALIZATION_MODULE, PAYMENT_MSG_LOCALIZATION_CODE);
+		 * 
+		 * if (!StringUtils.isEmpty(content)) {
+		 * 
+		 * Calendar cal = Calendar.getInstance();
+		 * cal.setTimeInMillis(detail.getExpiryDate());
+		 * 
+		 * content = content.replace(USERNAME_REPLACE_STRING, bill.getPayerName());
+		 * content = content.replace(EXPIRY_DATE_REPLACE_STRING, " " +
+		 * cal.get(Calendar.DATE) + "/" + cal.get(Calendar.MONTH) + "/" +
+		 * cal.get(Calendar.YEAR) + " ".toUpperCase()); content =
+		 * content.replace(PERIOD_REPLACE_STRING, getPeriod(detail.getFromPeriod(),
+		 * detail.getToPeriod())); content =
+		 * content.replace(SERVICENUMBER_OF_MODULE_REPLACE_STRING,
+		 * detail.getConsumerCode().split(":")[0]); content =
+		 * content.replace(MODULE_REPLACE_STRING, MODULE_REPLACE_STRING_VALUE); content
+		 * = content.replace(MODULE_PRIMARYKEY_REPLACE_STRING,
+		 * MODULE_PRIMARYKEY_REPLACE_STRING_VALUE); content =
+		 * content.replace(TAX_REPLACE_STRING, detail.getTotalAmount().toString());
+		 * System.out.println("content PT" + content); } }
+		 */
 
-		if (!StringUtils.isEmpty(content)) {
-
-			Calendar cal = Calendar.getInstance();
-			cal.setTimeInMillis(detail.getExpiryDate());
-
-			content = content.replace(USERNAME_REPLACE_STRING, bill.getPayerName());
-			content = content.replace(EXPIRY_DATE_REPLACE_STRING, " " + cal.get(Calendar.DATE) + "/"
-					+ cal.get(Calendar.MONTH) + "/" + cal.get(Calendar.YEAR) + " ".toUpperCase());
-			content = content.replace(PERIOD_REPLACE_STRING, getPeriod(detail.getFromPeriod(), detail.getToPeriod()));
-			content = content.replace(SERVICENUMBER_OF_MODULE_REPLACE_STRING, detail.getConsumerCode().split(":")[0]);
-			content = content.replace(MODULE_REPLACE_STRING, MODULE_REPLACE_STRING_VALUE);
-			content = content.replace(MODULE_PRIMARYKEY_REPLACE_STRING, MODULE_PRIMARYKEY_REPLACE_STRING_VALUE);
-			content = content.replace(TAX_REPLACE_STRING, detail.getTotalAmount().toString());
-			System.out.println("content PT" + content);
-			}
-		}
-
-			if (detail.getBusinessService().equals("WS")) {
+		//	if (detail.getBusinessService().equals("WS")) {
 				content = fetchContentFromLocalization(requestInfo, tenantId, "rainmaker-ws",
 						"WATER_CONNECTION_BILL_GENERATION_SMS_MESSAGE");
 				
@@ -192,9 +197,8 @@ public class NotificationConsumer {
 					content = content.replace("<bill amount>", detail.getTotalAmount().toString());
 					content = content.replace("<Due Date>", detail.getExpiryDate().toString());
 					System.out.println("content WS" + content);
-		
 				}
-			}
+		//	}
 			return content;
 		}
 	

@@ -13,6 +13,7 @@ import org.egov.demand.web.contract.CancelBillCriteria;
 import org.egov.demand.web.contract.RequestInfoWrapper;
 import org.egov.demand.web.validator.BillValidator;
 import org.egov.tracer.model.CustomException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,6 +55,9 @@ public class BillControllerv2 {
 	@ResponseBody
 	public ResponseEntity<?> fetchBill(@RequestBody RequestInfoWrapper requestInfoWrapper, 
 			@ModelAttribute @Valid GenerateBillCriteria generateBillCriteria){
+		
+		String ojb = new JSONObject(generateBillCriteria).toString();
+		System.out.println(" generateBillCriteria ::"+ ojb);
 		
 		BillResponseV2 billResponse = billService.fetchBill(generateBillCriteria, requestInfoWrapper);
 		return new ResponseEntity<>(billResponse, HttpStatus.CREATED);
