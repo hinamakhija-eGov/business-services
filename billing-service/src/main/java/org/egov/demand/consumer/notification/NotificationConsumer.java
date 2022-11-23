@@ -105,8 +105,8 @@ public class NotificationConsumer {
 	 */
 	private void sendNotification(BillRequestV2 billReq) {
 
-		String billReqObj = new JSONObject(billReq).toString();
-		System.out.println("object1 bill request::"+billReqObj);
+		//String billReqObj = new JSONObject(billReq).toString();
+		System.out.println("sendNotification request::"+billReq);
 	
 		billReq.getBills().forEach(bill -> {
 

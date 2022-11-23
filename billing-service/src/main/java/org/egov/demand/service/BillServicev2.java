@@ -174,8 +174,8 @@ public class BillServicev2 {
 		
 		List<BillV2> bills = res.getBill();
 		log.info("fetchBill--> bills-->" + bills.size());
-		String ojb = new JSONObject(bills).toString();
-		System.out.println(" bills ::"+ ojb);
+//		String ojb = new JSONObject(bills).toString();
+//		System.out.println(" bills ::"+ ojb);
 		/* 
 		 * If no existing bills found then Generate new bill 
 		 */
@@ -334,8 +334,8 @@ public class BillServicev2 {
 				.periodTo(billCriteria.getPeriodTo())
 				.build();
 		
-		String ojb = new JSONObject(demandCriteria).toString();
-		System.out.println(" demandCriteria ::"+ ojb);
+//		String ojb = new JSONObject(demandCriteria).toString();
+//		System.out.println(" demandCriteria ::"+ ojb);
 
 		/* Fetching demands for the given bill search criteria */
 		List<Demand> demandsWithMultipleActive = demandService.getDemands(demandCriteria, requestInfo);
@@ -362,9 +362,7 @@ public class BillServicev2 {
 		BillRequestV2 billRequest = BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
 		System.out.println("notifTopicName start " + notifTopicName);
 		
-		//String ob = new JSONObject(billRequest).toString();
-		//System.out.println(" billRequest ::"+ ob);
-		
+			
 		kafkaTemplate.send(notifTopicName, null, billRequest);
 		System.out.println(" notifTopicName end ::");
 		
@@ -666,8 +664,8 @@ public class BillServicev2 {
 	public BillResponseV2 getBillResponse(List<BillV2> bills) {
 		BillResponseV2 billResponse = new BillResponseV2();
 		billResponse.setBill(bills);
-		String ojb = new JSONObject(bills).toString();
-		System.out.println("getBillResponse::"+ ojb);
+//		String ojb = new JSONObject(bills).toString();
+//		System.out.println("getBillResponse::"+ ojb);
 		return billResponse;
 	}
 
@@ -695,8 +693,8 @@ public class BillServicev2 {
 			billRepository.saveBill(billRequest);
 		
 		BillResponseV2 billResponseV2 = getBillResponse(billRequest.getBills());
-		String ojb = new JSONObject(billResponseV2).toString();
-		System.out.println(" create BillResponseV2 ::"+ ojb);
+		
+		System.out.println(" create BillResponseV2 ::"+ billResponseV2.toString());
 		
 		return billResponseV2;
 	}
