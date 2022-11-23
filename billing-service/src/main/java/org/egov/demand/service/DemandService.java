@@ -284,6 +284,7 @@ public class DemandService {
 	 */
 	public List<Demand> getDemands(DemandCriteria demandCriteria, RequestInfo requestInfo) {
 
+		System.out.println("in getDemands");
 		demandValidatorV1.validateDemandCriteria(demandCriteria, requestInfo);
 
 		UserSearchRequest userSearchRequest = null;

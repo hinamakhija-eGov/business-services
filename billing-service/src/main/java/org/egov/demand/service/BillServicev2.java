@@ -308,6 +308,7 @@ public class BillServicev2 {
 	 */
 	public BillResponseV2 generateBill(GenerateBillCriteria billCriteria, RequestInfo requestInfo) {
 
+		System.out.println("generateBill ::"+billCriteria);
 		Set<String> demandIds = new HashSet<>();
 		Set<String> consumerCodes = new HashSet<>();
 
@@ -329,6 +330,9 @@ public class BillServicev2 {
 				.periodFrom(billCriteria.getPeriodFrom())
 				.periodTo(billCriteria.getPeriodTo())
 				.build();
+		
+		String ojb = new JSONObject(demandCriteria).toString();
+		System.out.println(" demandCriteria ::"+ ojb);
 
 		/* Fetching demands for the given bill search criteria */
 		List<Demand> demandsWithMultipleActive = demandService.getDemands(demandCriteria, requestInfo);
