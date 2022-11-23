@@ -193,7 +193,7 @@ public class NotificationConsumer {
 					cal.setTimeInMillis(detail.getExpiryDate());
 		
 					content = content.replace("<Owner Name>", bill.getPayerName());
-					content = content.replace("<Service>", detail.getBusinessService());
+					content = content.replace("<Service>", "WS");
 					content = content.replace("<bill amount>", detail.getTotalAmount().toString());
 					content = content.replace("<Due Date>", detail.getExpiryDate().toString());
 					System.out.println("content WS" + content);

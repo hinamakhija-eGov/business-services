@@ -171,8 +171,11 @@ public class BillServicev2 {
 		if (CollectionUtils.isEmpty(billCriteria.getConsumerCode()))
 			billCriteria.setConsumerCode(new HashSet<>());
 		BillResponseV2 res = searchBill(billCriteria.toBillSearchCriteria(), requestInfo);
+		
 		List<BillV2> bills = res.getBill();
 		log.info("fetchBill--> bills-->" + bills.size());
+		String ojb = new JSONObject(bills).toString();
+		System.out.println(" bills ::"+ ojb);
 		/* 
 		 * If no existing bills found then Generate new bill 
 		 */
@@ -355,8 +358,13 @@ public class BillServicev2 {
 
 		BillRequestV2 billRequest = BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
 		System.out.println("notifTopicName " + notifTopicName);
-
+		
+		String ob = new JSONObject(billRequest).toString();
+		System.out.println(" billRequest ::"+ ob);
+		
 		kafkaTemplate.send(notifTopicName, null, billRequest);
+		System.out.println(" notifTopicName After ::"+ ob);
+		
 		return create(billRequest);
 	}
 
@@ -677,7 +685,12 @@ public class BillServicev2 {
 
 		if (!CollectionUtils.isEmpty(billRequest.getBills()))
 			billRepository.saveBill(billRequest);
-		return getBillResponse(billRequest.getBills());
+		
+		BillResponseV2 billResponseV2 = getBillResponse(billRequest.getBills());
+		String ojb = new JSONObject(billResponseV2).toString();
+		System.out.println(" create BillResponseV2 ::"+ ojb);
+		
+		return billResponseV2;
 	}
 
 	public void cancelBill( CancelBillCriteria cancelBillCriteria) {
