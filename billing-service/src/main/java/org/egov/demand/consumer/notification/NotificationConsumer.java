@@ -140,15 +140,15 @@ public class NotificationConsumer {
 
 		System.out.println("buildSmsBody ::");
 		
-		String object1 = new JSONObject(bill).toString();
-		System.out.println("object of bill in notification ::"+object1);
-		
+//		String object1 = new JSONObject(bill).toString();
+//		System.out.println("object of bill in notification ::"+object1);
+//		
 		
 		BillDetailV2 detail = bill.getBillDetails().get(0);
 		
-		String object = new JSONObject(detail).toString();
-		System.out.println("object::"+object);
-		
+//		String object = new JSONObject(detail).toString();
+//		System.out.println("object::"+object);
+//		
 
 		// notification is enabled only for PT 
 	 //	if (bill.getMobileNumber() == null || !detail.getBusinessService().equals("PT") ||( bill.getMobileNumber() == null  !detail.getBusinessService().equals("WS") )
