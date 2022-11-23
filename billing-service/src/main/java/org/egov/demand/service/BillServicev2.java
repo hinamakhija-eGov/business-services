@@ -352,6 +352,8 @@ public class BillServicev2 {
 
 		List<BillV2> bills;
 
+		
+		//if dema is not empty 
 		if (!demands.isEmpty())
 			bills = prepareBill(demands, requestInfo);
 		else

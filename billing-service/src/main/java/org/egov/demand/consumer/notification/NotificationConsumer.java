@@ -8,9 +8,10 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.demand.model.Bill;
 import org.egov.demand.model.BillDetail;
-import org.egov.demand.web.contract.BillRequest;
+import org.egov.demand.model.BillDetailV2;
+import org.egov.demand.model.BillV2;
+import org.egov.demand.web.contract.BillRequestV2;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -89,7 +90,7 @@ public class NotificationConsumer {
 
 		try {
 			System.out.println(" listen :: kafka.topics.billgen.topic.name "+topic );
-			BillRequest req = objectMapper.convertValue(record, BillRequest.class);
+			BillRequestV2 req = objectMapper.convertValue(record, BillRequestV2.class);
 			sendNotification(req);
 		} catch (Exception e) {
 			log.error("Exception while reading from the queue: ", e);
@@ -102,10 +103,10 @@ public class NotificationConsumer {
 	 * @param billReq
 	 * @throws Exception 
 	 */
-	private void sendNotification(BillRequest billReq) {
+	private void sendNotification(BillRequestV2 billReq) {
 
 		String billReqObj = new JSONObject(billReq).toString();
-		System.out.println("object1::"+billReqObj);
+		System.out.println("object1 bill request::"+billReqObj);
 	
 		billReq.getBills().forEach(bill -> {
 
@@ -135,15 +136,15 @@ public class NotificationConsumer {
 	 * @param requestInfo
 	 * @return
 	 */
-	private String buildSmsBody(Bill bill, RequestInfo requestInfo,BillRequest billReq) {
+	private String buildSmsBody(BillV2 bill, RequestInfo requestInfo,BillRequestV2 billReq) {
 
 		System.out.println("buildSmsBody ::");
 		
 		String object1 = new JSONObject(bill).toString();
-		System.out.println("object1::"+object1);
+		System.out.println("object of bill in notification ::"+object1);
 		
 		
-		BillDetail detail = bill.getBillDetails().get(0);
+		BillDetailV2 detail = bill.getBillDetails().get(0);
 		
 		String object = new JSONObject(detail).toString();
 		System.out.println("object::"+object);
@@ -194,7 +195,7 @@ public class NotificationConsumer {
 		
 					content = content.replace("<Owner Name>", bill.getPayerName());
 					content = content.replace("<Service>", "WS");
-					content = content.replace("<bill amount>", detail.getTotalAmount().toString());
+					content = content.replace("<bill amount>", detail.getAmount().toString());
 					content = content.replace("<Due Date>", detail.getExpiryDate().toString());
 					System.out.println("content WS" + content);
 				}
