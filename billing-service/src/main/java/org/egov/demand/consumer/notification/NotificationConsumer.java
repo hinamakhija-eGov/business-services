@@ -111,7 +111,7 @@ public class NotificationConsumer {
 		billReq.getBills().forEach(bill -> {
 
 			String phNo = bill.getMobileNumber();
-			String message = buildSmsBody(bill, billReq.getRequestInfo(),billReq );
+			String message = buildSmsBody(bill, billReq.getRequestInfo());
 			System.out.println("sendNotification :: phone:: "+phNo +" message "+message + "bill ::"+bill);
 			if (!StringUtils.isEmpty(message)) {
 
@@ -136,7 +136,7 @@ public class NotificationConsumer {
 	 * @param requestInfo
 	 * @return
 	 */
-	private String buildSmsBody(BillV2 bill, RequestInfo requestInfo,BillRequestV2 billReq) {
+	private String buildSmsBody(BillV2 bill, RequestInfo requestInfo) {
 
 		System.out.println("buildSmsBody ::");
 		
