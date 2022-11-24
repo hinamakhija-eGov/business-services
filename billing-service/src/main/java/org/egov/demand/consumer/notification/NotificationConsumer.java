@@ -65,6 +65,7 @@ public class NotificationConsumer {
 	
 	
 	private static final String WS_LOCALIZATION_MODULE = "rainmaker-ws";
+	private static final String WS_CONNECTION_BILL_GENERATION = "WATER_CONNECTION_BILL_GENERATION_SMS_MESSAGE";
 	
     private static final String BILLING_LOCALIZATION_MODULE = "billing-services";
 	public static final String PAYMENT_MSG_LOCALIZATION_CODE = "BILLINGSERVICE_BUSINESSSERVICE_BILL_GEN_NOTIF_MSG";
@@ -195,11 +196,13 @@ public class NotificationConsumer {
 					content = content.replace("<Due Date>", " " + cal.get(Calendar.DATE) + "/" + cal.get(Calendar.MONTH)
 							+ "/" + cal.get(Calendar.YEAR) + " ".toUpperCase());
 					content = content.replace("<Owner Name>", bill.getPayerName());
-					content = content.replace("<Service>", "WS");
+					content = content.replace("<Service>", "Water Charges");
+					System.out.println("::append content ::" + content);
 					String actionLink = config.getSmsNotificationLink().replace("$consumerCode", bill.getConsumerCode())
 							.replace("$tenantId", bill.getTenantId());
 					actionLink = config.getNotificationUrl() + actionLink;
 					actionLink = getShortnerURL(actionLink);
+					System.out.println("Action link "+actionLink);
 					content = content.replace("<Link to Bill>", actionLink);
 
 					content = content.replace("<bill amount>", detail.getAmount().toString());
@@ -214,6 +217,7 @@ public class NotificationConsumer {
 			net.minidev.json.JSONObject obj = new net.minidev.json.JSONObject();
 			obj.put("url", actualURL);
 			String url = config.getNotificationUrl() + config.getEgovShortenerUrl();
+			
 			Object response = serviceRequestRepository.fetchResult(new StringBuilder(url).toString(), obj);
 			return response.toString();
 		}
