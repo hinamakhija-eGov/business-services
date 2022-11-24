@@ -8,9 +8,11 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
+import org.egov.demand.config.ApplicationProperties;
 import org.egov.demand.model.BillDetail;
 import org.egov.demand.model.BillDetailV2;
 import org.egov.demand.model.BillV2;
+import org.egov.demand.repository.ServiceRequestRepository;
 import org.egov.demand.web.contract.BillRequestV2;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,12 +50,21 @@ public class NotificationConsumer {
 	
     @Autowired
     private ObjectMapper objectMapper;
+    
+    @Autowired
+    private ApplicationProperties config;
 		
 	@Autowired
 	private KafkaTemplate<String, Object> producer;
 	
 	@Autowired
 	private RestTemplate restTemplate;
+	
+	@Autowired
+	private ServiceRequestRepository serviceRequestRepository;
+	
+	
+	private static final String WS_LOCALIZATION_MODULE = "rainmaker-ws";
 	
     private static final String BILLING_LOCALIZATION_MODULE = "billing-services";
 	public static final String PAYMENT_MSG_LOCALIZATION_CODE = "BILLINGSERVICE_BUSINESSSERVICE_BILL_GEN_NOTIF_MSG";
@@ -110,6 +121,8 @@ public class NotificationConsumer {
 	
 		billReq.getBills().forEach(bill -> {
 
+			if (bill.getMobileNumber() != null && bill.getBusinessService().equals("WS")) {
+			
 			String phNo = bill.getMobileNumber();
 			String message = buildSmsBody(bill, billReq.getRequestInfo());
 			System.out.println("sendNotification :: phone:: "+phNo +" message "+message + "bill ::"+bill);
@@ -123,6 +136,7 @@ public class NotificationConsumer {
 				System.out.println("*****************************");
 			} else {
 				log.error("No message configured! Notification will not be sent.");
+			}
 			}
 		});
 	}
@@ -140,20 +154,7 @@ public class NotificationConsumer {
 
 		System.out.println("buildSmsBody ::");
 		
-//		String object1 = new JSONObject(bill).toString();
-//		System.out.println("object of bill in notification ::"+object1);
-//		
-		
 		BillDetailV2 detail = bill.getBillDetails().get(0);
-		
-//		String object = new JSONObject(detail).toString();
-//		System.out.println("object::"+object);
-//		
-
-		// notification is enabled only for PT 
-	 //	if (bill.getMobileNumber() == null || !detail.getBusinessService().equals("PT") ||( bill.getMobileNumber() == null  !detail.getBusinessService().equals("WS") )
-	// 	if (bill.getMobileNumber() == null || !(detail.getBusinessService().equals("PT") || detail.getBusinessService().equals("WS") ))
-//			return null;
 
 		String tenantId = bill.getTenantId();
 		String content = null;
@@ -183,8 +184,7 @@ public class NotificationConsumer {
 		 * System.out.println("content PT" + content); } }
 		 */
 
-		//	if (detail.getBusinessService().equals("WS")) {
-				content = fetchContentFromLocalization(requestInfo, tenantId, "rainmaker-ws",
+				content = fetchContentFromLocalization(requestInfo, tenantId, WS_LOCALIZATION_MODULE,
 						"WATER_CONNECTION_BILL_GENERATION_SMS_MESSAGE");
 				
 				System.out.println("content"+content);
@@ -192,17 +192,31 @@ public class NotificationConsumer {
 				if (!StringUtils.isEmpty(content)) {
 					Calendar cal = Calendar.getInstance();
 					cal.setTimeInMillis(detail.getExpiryDate());
-		
+					content = content.replace("<Due Date>", " " + cal.get(Calendar.DATE) + "/" + cal.get(Calendar.MONTH)
+							+ "/" + cal.get(Calendar.YEAR) + " ".toUpperCase());
 					content = content.replace("<Owner Name>", bill.getPayerName());
 					content = content.replace("<Service>", "WS");
+					String actionLink = config.getSmsNotificationLink().replace("$consumerCode", bill.getConsumerCode())
+							.replace("$tenantId", bill.getTenantId());
+					actionLink = config.getNotificationUrl() + actionLink;
+					actionLink = getShortnerURL(actionLink);
+					content = content.replace("<Link to Bill>", actionLink);
+
 					content = content.replace("<bill amount>", detail.getAmount().toString());
-					content = content.replace("<Due Date>", detail.getExpiryDate().toString());
+
 					System.out.println("content WS" + content);
 				}
 		//	}
 			return content;
 		}
 	
+		public String getShortnerURL(String actualURL) {
+			net.minidev.json.JSONObject obj = new net.minidev.json.JSONObject();
+			obj.put("url", actualURL);
+			String url = config.getNotificationUrl() + config.getEgovShortenerUrl();
+			Object response = serviceRequestRepository.fetchResult(new StringBuilder(url).toString(), obj);
+			return response.toString();
+		}
 	
 
 	private String getPeriod(Long fromPeriod, Long toPeriod) {

@@ -362,7 +362,6 @@ public class BillServicev2 {
 		BillRequestV2 billRequest = BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
 		System.out.println("notifTopicName start " + notifTopicName);
 		
-			
 		kafkaTemplate.send(notifTopicName, null, billRequest);
 		System.out.println(" notifTopicName end ::");
 		
