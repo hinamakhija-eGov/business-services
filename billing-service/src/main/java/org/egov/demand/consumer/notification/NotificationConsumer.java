@@ -198,15 +198,17 @@ public class NotificationConsumer {
 					content = content.replace("<Owner Name>", bill.getPayerName());
 					content = content.replace("<Service>", "Water Charges");
 					System.out.println("::append content ::" + content);
-					String actionLink = config.getSmsNotificationLink().replace("$consumerCode", bill.getConsumerCode())
+					
+					String actionLink = config.getSmsNotificationLink().
+							replace("$consumerCode", bill.getConsumerCode())
 							.replace("$tenantId", bill.getTenantId());
 					actionLink = config.getNotificationUrl() + actionLink;
 					actionLink = getShortnerURL(actionLink);
 					System.out.println("Action link "+actionLink);
 					content = content.replace("<Link to Bill>", actionLink);
-
+					
+					
 					content = content.replace("<bill amount>", detail.getAmount().toString());
-
 					System.out.println("content WS" + content);
 				}
 		//	}
@@ -216,8 +218,7 @@ public class NotificationConsumer {
 		public String getShortnerURL(String actualURL) {
 			net.minidev.json.JSONObject obj = new net.minidev.json.JSONObject();
 			obj.put("url", actualURL);
-			String url = config.getNotificationUrl() + config.getEgovShortenerUrl();
-			
+			String url = config.getShortenerHost() + config.getEgovShortenerUrl();
 			Object response = serviceRequestRepository.fetchResult(new StringBuilder(url).toString(), obj);
 			return response.toString();
 		}

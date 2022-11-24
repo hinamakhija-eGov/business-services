@@ -196,11 +196,13 @@ public class ApplicationProperties {
     @Value("${egov.shortener.url}")
     private String egovShortenerUrl;
     
-    @Value("${shortener.host}")
+    @Value("${notification.url}")
 	private String notificationUrl;
     
     @Value("${notification.sms.link}")
 	private String smsNotificationLink;
 
+    @Value("${egov.shortener.host}")
+   	private String shortenerHost;
     
 }

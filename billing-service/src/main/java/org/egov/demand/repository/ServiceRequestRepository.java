@@ -42,7 +42,7 @@ public class ServiceRequestRepository {
 		
 		mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 		Map response = null;
-		log.info("URI: "+ uri);
+		log.info("fetchResult URI: "+ uri);
 		
 		try {
 			log.info("Request: "+mapper.writeValueAsString(request));
