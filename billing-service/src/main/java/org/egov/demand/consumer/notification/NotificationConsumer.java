@@ -219,8 +219,8 @@ public class NotificationConsumer {
 			net.minidev.json.JSONObject obj = new net.minidev.json.JSONObject();
 			obj.put("url", actualURL);
 			String url = config.getShortenerHost() + config.getEgovShortenerUrl();
-			Object response = serviceRequestRepository.fetchResult(new StringBuilder(url).toString(), obj);
-			return response.toString();
+			//Object response = serviceRequestRepository.getShorteningURL(new StringBuilder(url).toString(), obj);
+			return serviceRequestRepository.getShorteningURL(new StringBuilder(url), obj);
 		}
 	
 
