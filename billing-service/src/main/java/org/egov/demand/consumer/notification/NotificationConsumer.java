@@ -161,11 +161,11 @@ public class NotificationConsumer {
 		String tenantId = bill.getTenantId();
 		String content = null;
 		
-		String billInof = new JSONObject(bill).toString();
-		log.info("billInfo ::"+billInof);
-		
-		String detailInfo = new JSONObject(detail).toString();
-		log.info("detailInfo ::"+detailInfo);
+//		String billInof = new JSONObject(bill).toString();
+//		log.info("billInfo ::"+billInof);
+//		
+//		String detailInfo = new JSONObject(detail).toString();
+//		log.info("detailInfo ::"+detailInfo);
 		
 		
 		/*
