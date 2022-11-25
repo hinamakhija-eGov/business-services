@@ -61,6 +61,7 @@ public class ServiceRequestRepository {
 	public String getShorteningURL(StringBuilder uri, Object request) {
 		mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 		String response = null;
+		log.info("getShorteningURL :"+uri);
 		StringBuilder str = new StringBuilder(this.getClass().getCanonicalName()).append(".fetchResult:")
 				.append(System.lineSeparator());
 		str.append("URI: ").append(uri.toString()).append(System.lineSeparator());

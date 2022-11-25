@@ -118,11 +118,11 @@ public class NotificationConsumer {
 	private void sendNotification(BillRequestV2 billReq) {
 
 		//String billReqObj = new JSONObject(billReq).toString();
-		System.out.println("sendNotification request::"+billReq);
+		System.out.println("sendNotification request start::"+billReq);
 	
 		billReq.getBills().forEach(bill -> {
 
-			if (bill.getMobileNumber() != null && bill.getBusinessService().equals("WS")) {
+			if (bill.getMobileNumber() != null && bill.getBusinessService().contains("WS")) {
 			
 			String phNo = bill.getMobileNumber();
 			String message = buildSmsBody(bill, billReq.getRequestInfo());
@@ -140,6 +140,7 @@ public class NotificationConsumer {
 			}
 			}
 		});
+		log.info("skipping sendNotification loop  end::"+billReq);
 	}
 
 	/**
@@ -159,7 +160,14 @@ public class NotificationConsumer {
 
 		String tenantId = bill.getTenantId();
 		String content = null;
-
+		
+		String billInof = new JSONObject(bill).toString();
+		log.info("billInfo ::"+billInof);
+		
+		String detailInfo = new JSONObject(detail).toString();
+		log.info("detailInfo ::"+detailInfo);
+		
+		
 		/*
 		 * if(detail.getBusinessService().equals("PT")) { content =
 		 * fetchContentFromLocalization(requestInfo, tenantId,
@@ -188,7 +196,7 @@ public class NotificationConsumer {
 				content = fetchContentFromLocalization(requestInfo, tenantId, WS_LOCALIZATION_MODULE,
 						"WATER_CONNECTION_BILL_GENERATION_SMS_MESSAGE");
 				
-				System.out.println("content"+content);
+				
 		
 				if (!StringUtils.isEmpty(content)) {
 					Calendar cal = Calendar.getInstance();
