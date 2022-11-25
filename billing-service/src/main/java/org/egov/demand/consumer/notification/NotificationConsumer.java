@@ -1,5 +1,6 @@
 package org.egov.demand.consumer.notification;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -119,16 +120,12 @@ public class NotificationConsumer {
 
 		//String billReqObj = new JSONObject(billReq).toString();
 		System.out.println("sendNotification request start::"+billReq);
-	
 		billReq.getBills().forEach(bill -> {
-
-			if (bill.getMobileNumber() != null && (bill.getBusinessService().contains("WS")|| bill.getBusinessService().contains("SW"))) {
-			
+			if (bill.getMobileNumber() != null && bill.getTotalAmount().compareTo(BigDecimal.ZERO)>0 && (bill.getBusinessService().contains("WS")|| bill.getBusinessService().contains("SW"))) {
 			String phNo = bill.getMobileNumber();
 			String message = buildSmsBody(bill, billReq.getRequestInfo());
 			System.out.println("sendNotification :: phone:: "+phNo +" message "+message + "bill ::"+bill);
 			if (!StringUtils.isEmpty(message)) {
-
 				Map<String, Object> request = new HashMap<>();
 				request.put("mobileNumber", phNo);
 				request.put("message", message);
@@ -161,13 +158,7 @@ public class NotificationConsumer {
 		String tenantId = bill.getTenantId();
 		String content = null;
 		
-//		String billInof = new JSONObject(bill).toString();
-//		log.info("billInfo ::"+billInof);
-//		
-//		String detailInfo = new JSONObject(detail).toString();
-//		log.info("detailInfo ::"+detailInfo);
-		
-		
+	
 		/*
 		 * if(detail.getBusinessService().equals("PT")) { content =
 		 * fetchContentFromLocalization(requestInfo, tenantId,
