@@ -190,7 +190,7 @@ public class NotificationConsumer {
 					Calendar cal = Calendar.getInstance();
 					log.info("detail.getExpiryDate()1 "+detail.getExpiryDate());
 					cal.setTimeInMillis(detail.getExpiryDate());
-					content = content.replace("<Due Date>", " " + cal.get(Calendar.DATE) + "/" + cal.get(Calendar.MONTH)
+					content = content.replace("<Due Date>", " " + cal.get(Calendar.DATE) + "/" + cal.get(Calendar.MONTH)+1
 							+ "/" + cal.get(Calendar.YEAR) + " ".toUpperCase());
 					content = content.replace("<Owner Name>", bill.getPayerName());
 					if(bill.getBusinessService().contains("WS")) {
