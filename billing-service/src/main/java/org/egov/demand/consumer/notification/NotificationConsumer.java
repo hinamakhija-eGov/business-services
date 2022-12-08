@@ -102,7 +102,7 @@ public class NotificationConsumer {
 	public void listen(Map<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
 		try {
-			System.out.println(" listen :: kafka.topics.billgen.topic.name "+topic );
+			log.info(" listen :: kafka.topics.billgen.topic.name "+topic );
 			BillRequestV2 req = objectMapper.convertValue(record, BillRequestV2.class);
 			sendNotification(req);
 		} catch (Exception e) {
@@ -118,20 +118,17 @@ public class NotificationConsumer {
 	 */
 	private void sendNotification(BillRequestV2 billReq) {
 
-		//String billReqObj = new JSONObject(billReq).toString();
-		System.out.println("sendNotification request start::"+billReq);
 		billReq.getBills().forEach(bill -> {
-			if (bill.getMobileNumber() != null && bill.getTotalAmount().compareTo(BigDecimal.ZERO)>0 && (bill.getBusinessService().contains("WS")|| bill.getBusinessService().contains("SW"))) {
+			if (bill.getMobileNumber() != null && bill.getTotalAmount().compareTo(BigDecimal.ZERO)>0 && (bill.getBusinessService().equalsIgnoreCase("WS")|| bill.getBusinessService().equalsIgnoreCase("SW"))) {
 			String phNo = bill.getMobileNumber();
 			String message = buildSmsBody(bill, billReq.getRequestInfo());
-			System.out.println("sendNotification :: phone:: "+phNo +" message "+message + "bill ::"+bill);
+			log.info("sendNotification :: phone:: "+phNo +" message "+message + "bill ::"+bill);
 			if (!StringUtils.isEmpty(message)) {
 				Map<String, Object> request = new HashMap<>();
 				request.put("mobileNumber", phNo);
 				request.put("message", message);
-				log.info("Msg sent to user : " + message);
 				producer.send(smsTopic, smsTopickey, request);
-				System.out.println("*****************************");
+				log.info("******Notification sent Successfully*******");
 			} else {
 				log.error("No message configured! Notification will not be sent.");
 			}
@@ -151,7 +148,7 @@ public class NotificationConsumer {
 	 */
 	private String buildSmsBody(BillV2 bill, RequestInfo requestInfo) {
 
-		System.out.println("buildSmsBody ::");
+		log.info("build Sms Body ::");
 		
 		BillDetailV2 detail = bill.getBillDetails().get(0);
 

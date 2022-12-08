@@ -181,7 +181,7 @@ public class BillServicev2 {
 		 */
 		if (CollectionUtils.isEmpty(bills))
 		{
-			System.out.println( "isEmpty " +bills.size());
+			log.info( "If bills are empty" +bills.size());
 			if(!billCriteria.getBusinessService().equalsIgnoreCase("WS") && !billCriteria.getBusinessService().equalsIgnoreCase("SW"))
 			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), billCriteria.getConsumerCode(), billCriteria.getTenantId(), requestInfoWrapper);
 			return generateBill(billCriteria, requestInfo);
@@ -189,7 +189,7 @@ public class BillServicev2 {
 		
 		if (!CollectionUtils.isEmpty(bills) && billCriteria.getBusinessService().equalsIgnoreCase("PT") && !(bills.get(0).getTotalAmount().remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) == 0))
 		{
-			System.out.println( "isEmpty not" );
+			log.info( "If bills are not empty" );
 			if(!billCriteria.getBusinessService().equalsIgnoreCase("WS") && !billCriteria.getBusinessService().equalsIgnoreCase("SW"))
 			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), billCriteria.getConsumerCode(), billCriteria.getTenantId(), requestInfoWrapper);
 			return generateBill(billCriteria, requestInfo);
@@ -363,7 +363,7 @@ public class BillServicev2 {
 		System.out.println("notifTopicName start " + notifTopicName);
 		
 		kafkaTemplate.send(notifTopicName, null, billRequest);
-		System.out.println(" notifTopicName end ::");
+		log.info(" notifTopicName end ::");
 		
 		return create(billRequest);
 	}
@@ -391,7 +391,7 @@ public class BillServicev2 {
 	 */
 	private List<BillV2> prepareBill(List<Demand> demands, RequestInfo requestInfo) {
 
-		System.out.println("prepareBill start::"+demands.size());
+		log.info("prepareBill start::"+demands.size());
 		
 		List<BillV2> bills = new ArrayList<>();
 		User payer = null != demands.get(0).getPayer() ?  demands.get(0).getPayer() : new User();
@@ -471,7 +471,7 @@ public class BillServicev2 {
 			
 		}
 		String ojb = new JSONObject(bills).toString();
-		System.out.println("prepar bills::"+ ojb);
+		log.info("prepar bills::"+ ojb);
 		return bills;
 	}
 	
@@ -664,7 +664,7 @@ public class BillServicev2 {
 		BillResponseV2 billResponse = new BillResponseV2();
 		billResponse.setBill(bills);
 //		String ojb = new JSONObject(bills).toString();
-//		System.out.println("getBillResponse::"+ ojb);
+//		log.info("getBillResponse::"+ ojb);
 		return billResponse;
 	}
 
@@ -693,7 +693,7 @@ public class BillServicev2 {
 		
 		BillResponseV2 billResponseV2 = getBillResponse(billRequest.getBills());
 		
-		System.out.println(" create BillResponseV2 ::"+ billResponseV2.toString());
+		log.info(" create BillResponseV2 ::"+ billResponseV2.toString());
 		
 		return billResponseV2;
 	}
