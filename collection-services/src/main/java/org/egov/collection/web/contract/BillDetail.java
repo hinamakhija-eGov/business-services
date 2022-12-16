@@ -145,7 +145,7 @@ public class BillDetail {
 
 	public Boolean addBillAccountDetail(BillAccountDetail billAccountDetail) {
 		
-		if(billAccountDetail.getAmount().compareTo(BigDecimal.ZERO)>0 && billAccountDetail.getAdjustedAmount().compareTo(BigDecimal.ZERO)>0){
+		if(billAccountDetail.getAmount().compareTo(BigDecimal.ZERO)!=0 && billAccountDetail.getAdjustedAmount().compareTo(BigDecimal.ZERO)!=0){
 			return billAccountDetails.add(billAccountDetail);
 		}else {
 			return false;
