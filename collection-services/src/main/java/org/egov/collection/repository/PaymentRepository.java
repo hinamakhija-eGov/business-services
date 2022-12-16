@@ -274,6 +274,15 @@ public class PaymentRepository {
             preparedStatementValues.put("tenantid", paymentSearchCriteria.getTenantId());
             preparedStatementValues.put("businessservice", paymentSearchCriteria.getBusinessService());
         }
+        
+        if(paymentSearchCriteria.getFromDate() != null ) {
+        	if(whereCluaseApplied) {
+       	    log.info("In side the repo before query: " + paymentSearchCriteria.getBusinessService() );
+          	query.append("  AND  createdtime between :fromDate and :toDate");
+            preparedStatementValues.put("fromDate", paymentSearchCriteria.getFromDate());
+            preparedStatementValues.put("toDate", paymentSearchCriteria.getToDate());
+        	}
+       }
      
         
         query.append(" ORDER BY createdtime offset " + ":offset " + "limit :limit"); 

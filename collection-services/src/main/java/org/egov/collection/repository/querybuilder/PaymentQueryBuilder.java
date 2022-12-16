@@ -791,17 +791,7 @@ public class PaymentQueryBuilder {
     		selectQuery.append(" py.payerid IN (:payerid)  ");
     		preparedStatementValues.put("payerid", searchCriteria.getPayerIds());
     	}
-    	if(searchCriteria.getFromDate()!=null && searchCriteria.getFromDate()>0 ) {
-    		addClauseIfRequired(preparedStatementValues, selectQuery);
-    		selectQuery.append(" py.createdtime>= :fromDate");
-    		preparedStatementValues.put("fromDate", searchCriteria.getFromDate());
-    	}
-
-    	if(searchCriteria.getToDate()!=null && searchCriteria.getToDate()>0 ) {
-    		addClauseIfRequired(preparedStatementValues, selectQuery);
-    		selectQuery.append(" py.createdtime <= :toDate");
-    		preparedStatementValues.put("toDate", searchCriteria.getToDate());
-    	}
+    	 
     	addPaymentDetailWhereClause(selectQuery, preparedStatementValues, searchCriteria);
     	addBillWhereCluase(selectQuery, preparedStatementValues, searchCriteria);
 

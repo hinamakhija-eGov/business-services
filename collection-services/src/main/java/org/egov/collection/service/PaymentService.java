@@ -231,12 +231,13 @@ public class PaymentService {
 
         
         
-        if((paymentSearchCriteria.getFromDate() !=null && paymentSearchCriteria.getFromDate()>0 )&& (paymentSearchCriteria.getToDate() !=null && paymentSearchCriteria.getToDate()>0 ) )
+        if((paymentSearchCriteria.getFromDate() !=null && paymentSearchCriteria.getFromDate()>0 ) && (paymentSearchCriteria.getToDate() !=null && paymentSearchCriteria.getToDate()>0 ) )
         {
         	searchCriteria.setToDate(paymentSearchCriteria.getToDate());
         	searchCriteria.setFromDate(paymentSearchCriteria.getFromDate());
 
         }
+        
         List<String> ids = paymentRepository.fetchPaymentIds(searchCriteria);
         if (ids.isEmpty())
             return Collections.emptyList();
