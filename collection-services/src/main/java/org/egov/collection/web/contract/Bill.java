@@ -157,11 +157,9 @@ public class Bill {
 			billDetails = new ArrayList<>();
 			return billDetails.add(billDetail);
 		} else {
-
-			if (!billDetails.contains(billDetail))
-				return billDetails.add(billDetail);
-			else
-				return false;
+	 
+	          return billDetails.add(billDetail);
+			 
 		}
 	}
 
