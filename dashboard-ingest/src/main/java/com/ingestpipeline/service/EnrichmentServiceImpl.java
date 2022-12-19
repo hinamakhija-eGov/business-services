@@ -103,6 +103,7 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 	public Map enrichData(Map incomingData) {
 		
 		Map<String,Object> dataObject = new ObjectMapper().convertValue(incomingData.get(DATA_OBJECT), Map.class);
+	LOGGER.info("data object at enrichData"+dataObject.toString());
 		String tenantId = dataObject.get(TENANTID).toString();
 		
 		List<String> mCollectCategories = util.fetchMCollectCategories(tenantId);
