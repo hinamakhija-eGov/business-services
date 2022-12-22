@@ -249,17 +249,23 @@ public class PaymentRepository {
 
     	StringBuilder query = new StringBuilder("SELECT id from egcl_payment ");
     	boolean whereCluaseApplied= false ;
+    	boolean isTenantPresent= true ;
         Map<String, Object> preparedStatementValues = new HashMap<>();
         preparedStatementValues.put("offset", paymentSearchCriteria.getOffset());
         preparedStatementValues.put("limit", paymentSearchCriteria.getLimit());
         
-        if(paymentSearchCriteria.getTenantId() != null) {
+        if(paymentSearchCriteria.getTenantId().equalsIgnoreCase("pb")){
+        	isTenantPresent = false;
+        	query.append(" WHERE id in (select paymentid from egcl_paymentdetail WHERE createdtime between :fromDate and :toDate) ");
+        	preparedStatementValues.put("fromDate", paymentSearchCriteria.getFromDate());
+            preparedStatementValues.put("toDate", paymentSearchCriteria.getToDate());
+        }else if(paymentSearchCriteria.getTenantId() != null) {
         	query.append(" WHERE tenantid=:tenantid ");
             preparedStatementValues.put("tenantid", paymentSearchCriteria.getTenantId());
             whereCluaseApplied=true;
         }
         
-        if(paymentSearchCriteria.getBusinessServices() != null) {
+        if(paymentSearchCriteria.getBusinessServices() != null && isTenantPresent) {
         	if(whereCluaseApplied) {
             	query.append(" AND id in (select paymentid from egcl_paymentdetail where tenantid=:tenantid AND businessservice=:businessservice) ");
                 preparedStatementValues.put("tenantid", paymentSearchCriteria.getTenantId());
@@ -268,14 +274,14 @@ public class PaymentRepository {
         	}
         }
         
-        if(paymentSearchCriteria.getBusinessService() != null) {
+        if(paymentSearchCriteria.getBusinessService() != null && isTenantPresent) {
         	 log.info("In side the repo before query: " + paymentSearchCriteria.getBusinessService() );
         	query.append(" AND id in (select paymentid from egcl_paymentdetail where tenantid=:tenantid AND businessservice=:businessservice) ");
             preparedStatementValues.put("tenantid", paymentSearchCriteria.getTenantId());
             preparedStatementValues.put("businessservice", paymentSearchCriteria.getBusinessService());
         }
         
-        if(paymentSearchCriteria.getFromDate() != null ) {
+        if(paymentSearchCriteria.getFromDate() != null && isTenantPresent) {
         	if(whereCluaseApplied) {
        	    log.info("In side the repo before query: " + paymentSearchCriteria.getBusinessService() );
           	query.append("  AND  createdtime between :fromDate and :toDate");
