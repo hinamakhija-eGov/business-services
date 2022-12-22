@@ -253,19 +253,19 @@ public class PaymentRepository {
         Map<String, Object> preparedStatementValues = new HashMap<>();
         preparedStatementValues.put("offset", paymentSearchCriteria.getOffset());
         preparedStatementValues.put("limit", paymentSearchCriteria.getLimit());
-        
-        if(paymentSearchCriteria.getTenantId().equalsIgnoreCase("pb")){
-        	isTenantPresent = false;
-        	query.append(" WHERE id in (select paymentid from egcl_paymentdetail WHERE createdtime between :fromDate and :toDate) ");
-        	preparedStatementValues.put("fromDate", paymentSearchCriteria.getFromDate());
-            preparedStatementValues.put("toDate", paymentSearchCriteria.getToDate());
-        }else if(paymentSearchCriteria.getTenantId() != null) {
-        	query.append(" WHERE tenantid=:tenantid ");
+        if(paymentSearchCriteria.getTenantId() != null && !paymentSearchCriteria.getTenantId().equals("pb")) {
+            query.append(" WHERE tenantid=:tenantid ");
             preparedStatementValues.put("tenantid", paymentSearchCriteria.getTenantId());
             whereCluaseApplied=true;
-        }
+        }else {
+        	isTenantPresent = false;
+		whereCluaseApplied=false;
+        	query.append(" WHERE id in (select paymentid from egcl_paymentdetail WHERE createdtime between :fromDate and :toDate) ");
+        	preparedStatementValues.put("fromDate", paymentSearchCriteria.getFromDate());
+                preparedStatementValues.put("toDate", paymentSearchCriteria.getToDate());
+        } 
         
-        if(paymentSearchCriteria.getBusinessServices() != null && isTenantPresent) {
+        if(paymentSearchCriteria.getBusinessServices() != null && isTenantPresent && whereCluaseApplied) {
         	if(whereCluaseApplied) {
             	query.append(" AND id in (select paymentid from egcl_paymentdetail where tenantid=:tenantid AND businessservice=:businessservice) ");
                 preparedStatementValues.put("tenantid", paymentSearchCriteria.getTenantId());
@@ -274,20 +274,19 @@ public class PaymentRepository {
         	}
         }
         
-        if(paymentSearchCriteria.getBusinessService() != null && isTenantPresent) {
-        	 log.info("In side the repo before query: " + paymentSearchCriteria.getBusinessService() );
-        	query.append(" AND id in (select paymentid from egcl_paymentdetail where tenantid=:tenantid AND businessservice=:businessservice) ");
+        if(paymentSearchCriteria.getBusinessService() != null && isTenantPresent && whereCluaseApplied) {
+            log.info("In side the repo before query: " + paymentSearchCriteria.getBusinessService() );
+           query.append(" AND id in (select paymentid from egcl_paymentdetail where tenantid=:tenantid AND businessservice=:businessservice) ");
             preparedStatementValues.put("tenantid", paymentSearchCriteria.getTenantId());
             preparedStatementValues.put("businessservice", paymentSearchCriteria.getBusinessService());
         }
         
-        if(paymentSearchCriteria.getFromDate() != null && isTenantPresent) {
-        	if(whereCluaseApplied) {
-       	    log.info("In side the repo before query: " + paymentSearchCriteria.getBusinessService() );
-          	query.append("  AND  createdtime between :fromDate and :toDate");
-            preparedStatementValues.put("fromDate", paymentSearchCriteria.getFromDate());
-            preparedStatementValues.put("toDate", paymentSearchCriteria.getToDate());
-        	}
+        if(paymentSearchCriteria.getFromDate() != null && isTenantPresent && whereCluaseApplied) {
+          log.info("In side the repo before query: " + paymentSearchCriteria.getBusinessService() );
+           query.append("  AND  createdtime between :fromDate and :toDate");
+           preparedStatementValues.put("fromDate", paymentSearchCriteria.getFromDate());
+           preparedStatementValues.put("toDate", paymentSearchCriteria.getToDate());
+        
        }
      
         
