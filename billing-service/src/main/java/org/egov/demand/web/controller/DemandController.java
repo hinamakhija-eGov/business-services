@@ -93,15 +93,16 @@ public class DemandController {
 	@ResponseBody
 	public ResponseEntity<?> create(@RequestHeader HttpHeaders headers, @RequestBody @Valid DemandRequest demandRequest) {
 
-		log.info("the demand request object : " + demandRequest);
-
+		log.info("the _create demand request object : " + demandRequest);
 		DemandResponse demandResponse = demandService.create(demandRequest);
-
+		log.info("the _create demand redsponse : "+demandResponse); //  added logger
+		
 		return new ResponseEntity<>(demandResponse, HttpStatus.CREATED);
 	}
 
 	@PostMapping("_update")
 	public ResponseEntity<?> update(@RequestHeader HttpHeaders headers, @RequestBody @Valid DemandRequest demandRequest) {
+		log.info("_update demand request : "+demandRequest); //added logger
 
 		return new ResponseEntity<>(demandService.updateAsync(demandRequest, null), HttpStatus.CREATED);
 	}
@@ -111,10 +112,14 @@ public class DemandController {
 			@ModelAttribute @Valid DemandCriteria demandCriteria) {
 
 		RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
-
+		log.info("_search demandcriteria: "+demandCriteria); //  added logger
+		log.info("_requestinfo demandcriteria: "+requestInfo); //  added logger
 		List<Demand> demands = demandService.getDemands(demandCriteria, requestInfo);
 		DemandResponse response = DemandResponse.builder().demands(demands)
 				.responseInfo(responseFactory.getResponseInfo(requestInfo, HttpStatus.OK)).build();
+		
+		log.info("_search response: "+response); //  added logger
+		
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	

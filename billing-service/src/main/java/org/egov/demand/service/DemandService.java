@@ -150,12 +150,14 @@ public class DemandService {
 		log.info("AuditDetails tostring: {}", auditDetail.toString());
 		
 		List<AmendmentUpdate> amendmentUpdates = consumeAmendmentIfExists(demands,auditDetail);
+		
 		generateAndSetIdsForNewDemands(demands, auditDetail);
 
 		List<Demand> demandsToBeCreated = new ArrayList<>();
 		List<Demand> demandToBeUpdated = new ArrayList<>();
 
 		String businessService = demandRequest.getDemands().get(0).getBusinessService();
+		
 		Boolean isAdvanceAllowed = util.getIsAdvanceAllowed(businessService, mdmsData);
 
 		if(isAdvanceAllowed){
@@ -168,9 +170,9 @@ public class DemandService {
 		log.info("demandsToBeCreated: {}", demandsToBeCreated.toString());
 
 		save(new DemandRequest(requestInfo,demandsToBeCreated));
+		
 		if (!CollectionUtils.isEmpty(amendmentUpdates))
 			amendmentRepository.updateAmendment(amendmentUpdates);
-
 		if(!CollectionUtils.isEmpty(demandToBeUpdated))
 			update(new DemandRequest(requestInfo,demandToBeUpdated), null);
 		

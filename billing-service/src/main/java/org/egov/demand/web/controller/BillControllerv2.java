@@ -1,6 +1,8 @@
 package org.egov.demand.web.controller;
 
 import javax.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.demand.helper.BillHelperV2;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.egov.demand.util.Constants;
 
 @RestController
+@Slf4j
 @RequestMapping("bill/v2/")
 public class BillControllerv2 {
 	
@@ -46,6 +49,7 @@ public class BillControllerv2 {
 			@ModelAttribute @Valid final BillSearchCriteria billCriteria) {
 
 		RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
+		log.info("bill _search billcriteria : "+billCriteria); // added logger
 		billValidator.validateBillSearchCriteria(billCriteria, requestInfo);
 		return new ResponseEntity<>(billService.searchBill(billCriteria,requestInfo), HttpStatus.OK);
 	}
@@ -60,6 +64,9 @@ public class BillControllerv2 {
 		System.out.println(" fetchBill GenerateBillCriteria::"+ ojb);
 		
 		BillResponseV2 billResponse = billService.fetchBill(generateBillCriteria, requestInfoWrapper);
+		log.info("_fetchbill generateBillCriteria :"+generateBillCriteria ); //added logger
+		log.info("_fetchbill response :"+billResponse ); //added logger
+		
 		return new ResponseEntity<>(billResponse, HttpStatus.CREATED);
 	}
 	
@@ -77,7 +84,9 @@ public class BillControllerv2 {
 	public ResponseEntity<?> create(@RequestBody BillRequestV2 billRequest, BindingResult bindingResult){
 
 		billHelper.getBillRequestWithIds(billRequest);
+		log.info("_create bill request sent to kafka : "+billRequest); //added logger
 		BillResponseV2 billResponse = billService.sendBillToKafka(billRequest);
+		log.info("_create bill response : "+billResponse); //added logger
 		return new ResponseEntity<>(billResponse,HttpStatus.CREATED);
 	}
 	
@@ -85,7 +94,7 @@ public class BillControllerv2 {
 	@ResponseBody
 	public ResponseEntity<?> cancelBill(@RequestBody RequestInfoWrapper requestInfoWrapper, 
 			@ModelAttribute @Valid CancelBillCriteria cancelBillCriteria){
-		
+		log.info("_cancelbill criteria : "+cancelBillCriteria);
 		billService.cancelBill(cancelBillCriteria);
 		return new ResponseEntity<>(Constants.SUCCESS_CANCEL_BILL, HttpStatus.CREATED);
 	}

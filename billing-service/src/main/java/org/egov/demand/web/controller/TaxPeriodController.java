@@ -73,6 +73,7 @@ public class TaxPeriodController {
         log.info("taxPeriodCriteria -> " + taxPeriodCriteria + "requestInfoWrapper -> " + requestInfoWrapper);
 
         final TaxPeriodResponse taxPeriodResponse = taxPeriodService.searchTaxPeriods(taxPeriodCriteria, requestInfoWrapper.getRequestInfo());
+        log.info ("taxPeriod Response : "+taxPeriodResponse);  // added logger
         return new ResponseEntity<>(taxPeriodResponse, HttpStatus.OK);
     }
     
