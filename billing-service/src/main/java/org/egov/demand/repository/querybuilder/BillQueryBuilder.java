@@ -16,33 +16,31 @@ import org.egov.demand.util.Constants;
 
 @Component
 public class BillQueryBuilder {
-	
+
 	@Autowired
 	private ApplicationProperties applicationProperties;
-	
+
 	public static final String REPLACE_STRING = "{replace}";
-	
+
 	public static final String BILL_STATUS_UPDATE_QUERY = "UPDATE egbs_bill_v1 SET status=? WHERE status='ACTIVE' ";
-	
+
 	public static final String BILL_STATUS_UPDATE_BATCH_QUERY = "UPDATE egbs_bill_v1 SET status=? WHERE id = ?";
-	
+
 	public static final String INSERT_BILL_QUERY = "INSERT into egbs_bill_v1 "
-			+"(id, tenantid, payername, payeraddress, payeremail, isactive, iscancelled, createdby, createddate, lastmodifiedby, lastmodifieddate, mobilenumber, status, additionaldetails)"
-			+"values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-	
+			+ "(id, tenantid, payername, payeraddress, payeremail, isactive, iscancelled, createdby, createddate, lastmodifiedby, lastmodifieddate, mobilenumber, status, additionaldetails)"
+			+ "values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
 	public static final String INSERT_BILLDETAILS_QUERY = "INSERT into egbs_billdetail_v1 "
-			+"(id, tenantid, billid, demandid, fromperiod, toperiod, businessservice, billno, billdate, consumercode, consumertype, billdescription, displaymessage, "
+			+ "(id, tenantid, billid, demandid, fromperiod, toperiod, businessservice, billno, billdate, consumercode, consumertype, billdescription, displaymessage, "
 			+ "minimumamount, totalamount, callbackforapportioning, partpaymentallowed, collectionmodesnotallowed, "
 			+ "createdby, createddate, lastmodifiedby, lastmodifieddate, isadvanceallowed, expirydate,additionaldetails)"
-			+"values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-	
+			+ "values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
 	public static final String INSERT_BILLACCOUNTDETAILS_QUERY = "INSERT into egbs_billaccountdetail_v1 "
-			+"(id, tenantid, billdetail, demanddetailid, orderno, amount, adjustedamount, isactualdemand, purpose, "
+			+ "(id, tenantid, billdetail, demanddetailid, orderno, amount, adjustedamount, isactualdemand, purpose, "
 			+ "createdby, createddate, lastmodifiedby, lastmodifieddate, taxheadcode)"
-			+"values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-	
-	
-	
+			+ "values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
 	public static final String BILL_MAX_QUERY = "WITH billresult AS ({replace}) SELECT * FROM billresult "
 			+ " INNER JOIN (SELECT bd_consumercode, max(b_createddate) as maxdate FROM billresult GROUP BY bd_consumercode) as uniqbill"
 			+ " ON uniqbill.bd_consumercode=billresult.bd_consumercode AND uniqbill.maxdate=billresult.b_createddate ";
@@ -77,10 +75,10 @@ public class BillQueryBuilder {
 		StringBuilder billQuery = new StringBuilder(BILL_BASE_QUERY);
 		String tenantId = billSearchCriteria.getTenantId();
 		String[] tenantIdChunks = tenantId.split("\\.");
-		if(tenantIdChunks.length == 1){
+		if (tenantIdChunks.length == 1) {
 			billQuery.append(" WHERE b.tenantid LIKE ? ");
 			preparedStatementValues.add(billSearchCriteria.getTenantId() + '%');
-		}else{
+		} else {
 			billQuery.append(" WHERE b.tenantid = ? ");
 			preparedStatementValues.add(billSearchCriteria.getTenantId());
 		}
@@ -95,15 +93,15 @@ public class BillQueryBuilder {
 
 		addWhereClause(billQuery, preparedStatementValues, billSearchCriteria);
 		StringBuilder maxQuery = addPagingClause(billQuery, preparedStatementValues, billSearchCriteria);
-		
+
 		return maxQuery.toString();
 	}
-	
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void addWhereClause(final StringBuilder selectQuery, final List preparedStatementValues,
 			final BillSearchCriteria searchBill) {
-		
-		if(searchBill.getBillId() != null && !searchBill.getBillId().isEmpty())
+
+		if (searchBill.getBillId() != null && !searchBill.getBillId().isEmpty())
 			selectQuery.append(" AND b.id in (" + getIdQuery(searchBill.getBillId()));
 
 		if (searchBill.getRetrieveOldest()!=null && !searchBill.getRetrieveOldest()) {
@@ -121,7 +119,7 @@ public class BillQueryBuilder {
 			preparedStatementValues.add(searchBill.getEmail());
 		}
 
-		if (searchBill.getMobileNumber()!= null) {
+		if (searchBill.getMobileNumber() != null) {
 			selectQuery.append(" AND b.mobileNumber = ?");
 			preparedStatementValues.add(searchBill.getMobileNumber());
 		}
@@ -130,7 +128,7 @@ public class BillQueryBuilder {
 			selectQuery.append(" AND bd.businessservice = ?");
 			preparedStatementValues.add(searchBill.getService());
 		}
-		
+
 		if (searchBill.getBillNumber() != null) {
 			selectQuery.append(" AND bd.billno = ?");
 			preparedStatementValues.add(searchBill.getBillNumber());
@@ -141,7 +139,7 @@ public class BillQueryBuilder {
 			appendListToQuery(new ArrayList<>(searchBill.getConsumerCode()), preparedStatementValues, selectQuery);
 		}
 	}
-	
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private StringBuilder addPagingClause(final StringBuilder selectQuery, final List preparedStatementValues,
 			final BillSearchCriteria searchBillCriteria) {
@@ -172,7 +170,7 @@ public class BillQueryBuilder {
 //															// pageNo * pageSize
 		return finalQuery;
 	}
-	
+
 	/**
 	 * Bill expire query builder
 	 * 
@@ -190,13 +188,15 @@ public class BillQueryBuilder {
 			builder.append(" AND businessservice=? )");
 			preparedStmtList.add(businessService);
 		}
+		
 		return builder.toString();
 	}
-	
+
 	public String getBillStatusUpdateBatchQuery() {
-		
+
 		return BILL_STATUS_UPDATE_BATCH_QUERY;
 	}
+
 	/**
 	 * @param billIds
 	 * @param preparedStmtList

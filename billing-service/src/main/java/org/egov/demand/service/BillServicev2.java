@@ -171,8 +171,11 @@ public class BillServicev2 {
 		if (CollectionUtils.isEmpty(billCriteria.getConsumerCode()))
 			billCriteria.setConsumerCode(new HashSet<>());
 		BillResponseV2 res = searchBill(billCriteria.toBillSearchCriteria(), requestInfo);
+		
 		List<BillV2> bills = res.getBill();
-
+		log.info("fetchBill--> bills-->" + bills.size());
+//		String ojb = new JSONObject(bills).toString();
+//		System.out.println(" bills ::"+ ojb);
 		/* 
 		 * If no existing bills found then Generate new bill 
 		 */
@@ -203,7 +206,7 @@ public class BillServicev2 {
 		}
 
 		log.info("fetchBill--------going to generate new bill-------------------");
-
+		
 		Map<String, BillV2> consumerCodeAndBillMap = bills.stream().collect(Collectors.toMap(BillV2::getConsumerCode, Function.identity()));
 		billCriteria.getConsumerCode().addAll(consumerCodeAndBillMap.keySet());
 		/*
@@ -265,7 +268,7 @@ public class BillServicev2 {
 
 		Map<String, String> serviceUrlMap = appProps.getBusinessCodeAndDemandUpdateUrlMap();
 
-			log.info("--------updateDemandsForexpiredBillDetails-------------serviceUrlMap-----" + serviceUrlMap);
+		log.info("--------updateDemandsForexpiredBillDetails-------------serviceUrlMap-----" + serviceUrlMap);
 			String url = serviceUrlMap.get(businessService);
 			log.info("--------gupdateDemandsForexpiredBillDetails-------------url-----" + url);
 			if (StringUtils.isEmpty(url)) {
@@ -325,12 +328,14 @@ public class BillServicev2 {
 				.tenantId(billCriteria.getTenantId())
 				.email(billCriteria.getEmail())
 				.consumerCode(consumerCodes)
-				.isPaymentCompleted(false)
 				.receiptRequired(false)
 				.demandId(demandIds)
 				.periodFrom(billCriteria.getPeriodFrom())
 				.periodTo(billCriteria.getPeriodTo())
 				.build();
+		
+//		String ojb = new JSONObject(demandCriteria).toString();
+//		System.out.println(" demandCriteria ::"+ ojb);
 
 		/* Fetching demands for the given bill search criteria */
 		List<Demand> demandsWithMultipleActive = demandService.getDemands(demandCriteria, requestInfo);
@@ -352,7 +357,7 @@ public class BillServicev2 {
 		if (!demands.isEmpty())
 			bills = prepareBill(demands, requestInfo);
 		else
-			throw new CustomException(EG_BS_BILL_NO_DEMANDS_FOUND_KEY, EG_BS_BILL_NO_DEMANDS_FOUND_MSG);
+			return getBillResponse(Collections.emptyList());
 
 		BillRequestV2 billRequest = BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
 		System.out.println("notifTopicName start " + notifTopicName);
@@ -387,14 +392,14 @@ public class BillServicev2 {
 	private List<BillV2> prepareBill(List<Demand> demands, RequestInfo requestInfo) {
 
 		log.info("prepareBill start::"+demands.size());
-
+		
 		List<BillV2> bills = new ArrayList<>();
 		User payer = null != demands.get(0).getPayer() ?  demands.get(0).getPayer() : new User();
-
-
+		
+		
 		Map<String, List<Demand>> tenatIdDemandsList = demands.stream().collect(Collectors.groupingBy(Demand::getTenantId));
 		for (Entry<String, List<Demand>> demandTenantEntry : tenatIdDemandsList.entrySet()) {
-
+			
 			/*
 			 * Fetching Required master data
 			 */
@@ -408,16 +413,16 @@ public class BillServicev2 {
 				businessCodes.add(demand.getBusinessService());
 				demand.getDemandDetails().forEach(detail -> taxHeadCodes.add(detail.getTaxHeadMasterCode()));
 			}
-
+		
 			Map<String, TaxHeadMaster> taxHeadMap = getTaxHeadMaster(taxHeadCodes, tenantId, requestInfo);
 			Map<String, BusinessServiceDetail> businessMap = getBusinessService(businessCodes, tenantId, requestInfo);
-
-
+			
 			/*
 			 * Grouping the demands by their consumer code and generating a bill for each consumer code
 			 */
 			Map<String, List<Demand>> consumerCodeAndDemandsMap = demandForOneTenant.stream().collect(Collectors.groupingBy(Demand::getConsumerCode));
 
+			
 			for (Entry<String, List<Demand>> consumerCodeAndDemands : consumerCodeAndDemandsMap.entrySet()) {
 
 				BigDecimal billAmount = BigDecimal.ZERO;
@@ -445,30 +450,31 @@ public class BillServicev2 {
 				if (billAmount.compareTo(BigDecimal.ZERO) >= 0) {
 
 					BillV2 bill = BillV2.builder()
-							.auditDetails(util.getAuditDetail(requestInfo))
-							.payerAddress(payer.getPermanentAddress())
-							.mobileNumber(payer.getMobileNumber())
-							.billDate(System.currentTimeMillis())
-							.businessService(business.getCode())
-							.payerName(payer.getName())
-							.consumerCode(consumerCode)
-							.status(BillStatus.ACTIVE)
-							.billDetails(billDetails)
-							.totalAmount(billAmount)
-							.billNumber(billNumber)
-							.tenantId(tenantId)
-							.id(billId)
-							.build();
+						.auditDetails(util.getAuditDetail(requestInfo))
+						.payerAddress(payer.getPermanentAddress())
+						.mobileNumber(payer.getMobileNumber())
+						.billDate(System.currentTimeMillis())
+						.businessService(business.getCode())
+						.payerName(payer.getName())
+						.consumerCode(consumerCode)
+						.status(BillStatus.ACTIVE)
+						.billDetails(billDetails)
+						.totalAmount(billAmount)
+						.billNumber(billNumber)
+						.tenantId(tenantId)
+						.id(billId)
+						.build();
 
 					bills.add(bill);
 				}
 			}
-
+			
 		}
 		String ojb = new JSONObject(bills).toString();
 		log.info("prepar bills::"+ ojb);
 		return bills;
-}
+	}
+	
 
 	private List<String> getBillNumbers(RequestInfo requestInfo, String tenantId, String module, int count) {
 
@@ -541,13 +547,13 @@ public class BillServicev2 {
 	private Long getExpiryDateForDemand(Demand demand) {
 		
 		Long previousExpiryDate = 0l;
-
+		
 		BillSearchCriteria criteria = BillSearchCriteria.builder()
 				.consumerCode(Stream.of(demand.getConsumerCode()).collect(Collectors.toSet()))
 				.tenantId(demand.getTenantId())
 				.build();
 		List<BillV2> searchBills = billRepository.findBill(criteria);
-
+		
 		if (!CollectionUtils.isEmpty(searchBills)) {
 
 			for (BillDetailV2 billDetail : searchBills.get(0).getBillDetails()) {
@@ -555,14 +561,11 @@ public class BillServicev2 {
 					previousExpiryDate = billDetail.getExpiryDate();
 			}
 		}
-
+		
 		Long billExpiryPeriod = demand.getBillExpiryTime();
-		Long fixedBillExpiryDate = demand.getFixedBillExpiryDate();
 		Calendar cal = Calendar.getInstance();
 		
-		if (!ObjectUtils.isEmpty(fixedBillExpiryDate) && fixedBillExpiryDate > cal.getTimeInMillis()) {
-			cal.setTimeInMillis(fixedBillExpiryDate);
-		} else if (previousExpiryDate.compareTo(cal.getTimeInMillis()) > 0) {
+		if (previousExpiryDate.compareTo(cal.getTimeInMillis()) > 0) {
 			cal.setTimeInMillis(previousExpiryDate);
 		} else if (!ObjectUtils.isEmpty(billExpiryPeriod) && 0 < billExpiryPeriod) {
 			cal.setTimeInMillis(cal.getTimeInMillis() + billExpiryPeriod);
@@ -660,6 +663,8 @@ public class BillServicev2 {
 	public BillResponseV2 getBillResponse(List<BillV2> bills) {
 		BillResponseV2 billResponse = new BillResponseV2();
 		billResponse.setBill(bills);
+//		String ojb = new JSONObject(bills).toString();
+//		log.info("getBillResponse::"+ ojb);
 		return billResponse;
 	}
 
@@ -703,5 +708,5 @@ public class BillServicev2 {
 		}
 		
 	}
-
+	
 }

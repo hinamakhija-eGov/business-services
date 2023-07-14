@@ -68,7 +68,6 @@ public class Amendment {
 	@NotNull
 	private List<DemandDetail> demandDetails;
 
-	@NotNull
 	@JsonProperty("documents")
 	@Valid
 	private List<Document> documents;

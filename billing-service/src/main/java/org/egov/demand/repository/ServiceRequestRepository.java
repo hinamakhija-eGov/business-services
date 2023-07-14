@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
@@ -43,7 +42,7 @@ public class ServiceRequestRepository {
 		
 		mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 		Map response = null;
-		log.info("URI: "+ uri);
+		log.info("fetchResult URI: "+ uri);
 		
 		try {
 			log.info("Request: "+mapper.writeValueAsString(request));
@@ -51,7 +50,7 @@ public class ServiceRequestRepository {
 		}catch(HttpClientErrorException e) {
 			log.error("External Service threw an Exception: ",e.getResponseBodyAsString());
 			throw new ServiceCallException(e.getResponseBodyAsString());
-		}catch(JsonProcessingException e) {
+		}catch(Exception e) {
 			log.error("Exception while searching user data : ",e);
 		}
 

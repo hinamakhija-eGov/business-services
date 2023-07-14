@@ -54,7 +54,7 @@ public class NotificationConsumer {
     
     @Autowired
     private ApplicationProperties config;
-
+		
 	@Autowired
 	private KafkaTemplate<String, Object> producer;
 	
@@ -124,11 +124,9 @@ public class NotificationConsumer {
 			String message = buildSmsBody(bill, billReq.getRequestInfo());
 			log.info("sendNotification :: phone:: "+phNo +" message "+message + "bill ::"+bill);
 			if (!StringUtils.isEmpty(message)) {
-
 				Map<String, Object> request = new HashMap<>();
 				request.put("mobileNumber", phNo);
 				request.put("message", message);
-				log.info("Msg sent to user : " + message);
 				producer.send(smsTopic, smsTopickey, request);
 				log.info("******Notification sent Successfully*******");
 			} else {
@@ -151,65 +149,66 @@ public class NotificationConsumer {
 	private String buildSmsBody(BillV2 bill, RequestInfo requestInfo) {
 
 		log.info("build Sms Body ::");
-
+		
 		BillDetailV2 detail = bill.getBillDetails().get(0);
-		/*BillDetail detail = bill.getBillDetails().get(0);
-
-		// notification is enabled only for PT
-		if (bill.getMobileNumber() == null || !detail.getBusinessService().equals("PT"))
-			return null;*/
 
 		String tenantId = bill.getTenantId();
 		String content = null;
+		
+	
+		/*
+		 * if(detail.getBusinessService().equals("PT")) { content =
+		 * fetchContentFromLocalization(requestInfo, tenantId,
+		 * BILLING_LOCALIZATION_MODULE, PAYMENT_MSG_LOCALIZATION_CODE);
+		 * 
+		 * if (!StringUtils.isEmpty(content)) {
+		 * 
+		 * Calendar cal = Calendar.getInstance();
+		 * cal.setTimeInMillis(detail.getExpiryDate());
+		 * 
+		 * content = content.replace(USERNAME_REPLACE_STRING, bill.getPayerName());
+		 * content = content.replace(EXPIRY_DATE_REPLACE_STRING, " " +
+		 * cal.get(Calendar.DATE) + "/" + cal.get(Calendar.MONTH) + "/" +
+		 * cal.get(Calendar.YEAR) + " ".toUpperCase()); content =
+		 * content.replace(PERIOD_REPLACE_STRING, getPeriod(detail.getFromPeriod(),
+		 * detail.getToPeriod())); content =
+		 * content.replace(SERVICENUMBER_OF_MODULE_REPLACE_STRING,
+		 * detail.getConsumerCode().split(":")[0]); content =
+		 * content.replace(MODULE_REPLACE_STRING, MODULE_REPLACE_STRING_VALUE); content
+		 * = content.replace(MODULE_PRIMARYKEY_REPLACE_STRING,
+		 * MODULE_PRIMARYKEY_REPLACE_STRING_VALUE); content =
+		 * content.replace(TAX_REPLACE_STRING, detail.getTotalAmount().toString());
+		 * System.out.println("content PT" + content); } }
+		 */
 
-		/*String content = fetchContentFromLocalization(requestInfo, tenantId, BILLING_LOCALIZATION_MODULE,
-				PAYMENT_MSG_LOCALIZATION_CODE);
-
-		if (!StringUtils.isEmpty(content)) {
-
-			Calendar cal = Calendar.getInstance();
-			cal.setTimeInMillis(detail.getExpiryDate());
-			
-			content = content.replace(USERNAME_REPLACE_STRING, bill.getPayerName());
-			content = content.replace(EXPIRY_DATE_REPLACE_STRING,
-					" "+ cal.get(Calendar.DATE) + "/" + cal.get(Calendar.MONTH) + "/" + cal.get(Calendar.YEAR)+ " ".toUpperCase());
-			content = content.replace(PERIOD_REPLACE_STRING, getPeriod(detail.getFromPeriod(), detail.getToPeriod()));
-			content = content.replace(SERVICENUMBER_OF_MODULE_REPLACE_STRING, detail.getConsumerCode().split(":")[0]);
-			content = content.replace(MODULE_REPLACE_STRING, MODULE_REPLACE_STRING_VALUE);
-			content = content.replace(MODULE_PRIMARYKEY_REPLACE_STRING, MODULE_PRIMARYKEY_REPLACE_STRING_VALUE);
-			content = content.replace(TAX_REPLACE_STRING, detail.getTotalAmount().toString());
-			
-		}
-		return content;
-	}*/
-		content = fetchContentFromLocalization(requestInfo, tenantId, WS_LOCALIZATION_MODULE,
-				"WATER_CONNECTION_BILL_GENERATION_SMS_MESSAGE");
-		if (!StringUtils.isEmpty(content)) {
-			Calendar cal = Calendar.getInstance();
-			log.info("detail.getExpiryDate()1 "+detail.getExpiryDate());
-			cal.setTimeInMillis(detail.getExpiryDate());
-			int month= cal.get(Calendar.MONTH)+1;
-			content = content.replace("<Due Date>", " " + cal.get(Calendar.DATE) + "/" + month
-					+ "/" + cal.get(Calendar.YEAR) + " ".toUpperCase());
-			content = content.replace("<Owner Name>", bill.getPayerName());
-			if(bill.getBusinessService().contains("WS")) {
-				content = content.replace("<Service>", "Water Charges");
-			}else {
-				content = content.replace("<Service>", "Sewerage Charges");
-			}
-			log.info("::append content ::" + content);
-			String actionLink = config.getSmsNotificationLink().
-					replace("$consumerCode", bill.getConsumerCode())
-					.replace("$tenantId", bill.getTenantId());
-			actionLink = config.getNotificationUrl() + actionLink;
-			actionLink = getShortnerURL(actionLink);
-			log.info("Action link "+actionLink);
-			content = content.replace("<Link to Bill>", actionLink);
-
-
-			content = content.replace("<bill amount>", bill.getTotalAmount().toString());
-			log.info("content WS" + content);
-		}
+				content = fetchContentFromLocalization(requestInfo, tenantId, WS_LOCALIZATION_MODULE,
+						"WATER_CONNECTION_BILL_GENERATION_SMS_MESSAGE");
+				if (!StringUtils.isEmpty(content)) {
+					Calendar cal = Calendar.getInstance();
+					log.info("detail.getExpiryDate()1 "+detail.getExpiryDate());
+					cal.setTimeInMillis(detail.getExpiryDate());
+					int month= cal.get(Calendar.MONTH)+1;
+					content = content.replace("<Due Date>", " " + cal.get(Calendar.DATE) + "/" + month
+							+ "/" + cal.get(Calendar.YEAR) + " ".toUpperCase());
+					content = content.replace("<Owner Name>", bill.getPayerName());
+					if(bill.getBusinessService().contains("WS")) {
+						content = content.replace("<Service>", "Water Charges");
+					}else {
+						content = content.replace("<Service>", "Sewerage Charges");
+					}
+					log.info("::append content ::" + content);
+					String actionLink = config.getSmsNotificationLink().
+							replace("$consumerCode", bill.getConsumerCode())
+							.replace("$tenantId", bill.getTenantId());
+					actionLink = config.getNotificationUrl() + actionLink;
+					actionLink = getShortnerURL(actionLink);
+					log.info("Action link "+actionLink);
+					content = content.replace("<Link to Bill>", actionLink);
+					
+					
+					content = content.replace("<bill amount>", bill.getTotalAmount().toString());
+					log.info("content WS" + content);
+				}
 		//	}
 			return content;
 		}

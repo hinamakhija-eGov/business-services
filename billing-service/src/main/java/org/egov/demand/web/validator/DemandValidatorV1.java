@@ -150,7 +150,7 @@ public class DemandValidatorV1 {
 
 			List<DemandDetail> details = demand.getDemandDetails();
 			Map<String, TaxHeadMaster> taxHeadMap = businessTaxCodeMap.get(demand.getBusinessService());
-			log.info(" the taxhead map : " + taxHeadMap);
+			//log.info(" the taxhead map : " + taxHeadMap);
 			detailsForValidation.addAll(details);
 
 			if (isCreate) {
@@ -179,7 +179,8 @@ public class DemandValidatorV1 {
 			validateTaxPeriod(taxPeriodBusinessMap, demand, errorMap, businessServicesWithNoTaxPeriods);
 			
 			// by default demands are being set to active during create but validation should be done for inactive/ cancelled demand in another logic
-			if(demand.getStatus() == null) demand.setStatus(StatusEnum.ACTIVE);
+			if(demand.getStatus() == null) 
+				demand.setStatus(StatusEnum.ACTIVE);
 		}
 
 		/*
