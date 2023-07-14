@@ -85,18 +85,11 @@ public class GenerateBillCriteria {
 	
 	public DemandCriteria toDemandCriteria() {
 		
-		Set<String> consumerCodeSet = null;
-		Set<String> demandIdSet = null;
-
-		if (!StringUtils.isEmpty(consumerCode)) {
-			consumerCodeSet = new HashSet<>();
-			consumerCodeSet.addAll(consumerCode);
-		}
-
-		if (!StringUtils.isEmpty(demandId)) {
-			demandIdSet = new HashSet<>();
-			demandIdSet.add(demandId);
-		}
+		Set<String> consumerCodeSet = new HashSet<>();
+		consumerCodeSet.addAll(consumerCode);
+		
+		Set<String> demandIdSet = new HashSet<>();
+		demandIdSet.add(demandId);
 		
 		return DemandCriteria.builder()
 				.status(DemandStatus.ACTIVE.toString())

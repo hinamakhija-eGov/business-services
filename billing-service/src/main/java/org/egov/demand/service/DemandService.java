@@ -148,8 +148,8 @@ public class DemandService {
 		AuditDetails auditDetail = util.getAuditDetail(requestInfo);
 		log.info("requestInfo: {} and AuditDetails: {}", requestInfo, auditDetail);
 		log.info("AuditDetails tostring: {}", auditDetail.toString());
-		
-		List<AmendmentUpdate> amendmentUpdates = consumeAmendmentIfExists(demands,auditDetail);
+
+		List<AmendmentUpdate> amendmentUpdates = consumeAmendmentIfExists(demands, auditDetail);
 		generateAndSetIdsForNewDemands(demands, auditDetail);
 
 		List<Demand> demandsToBeCreated = new ArrayList<>();
@@ -284,7 +284,6 @@ public class DemandService {
 	 */
 	public List<Demand> getDemands(DemandCriteria demandCriteria, RequestInfo requestInfo) {
 
-		System.out.println("in getDemands");
 		demandValidatorV1.validateDemandCriteria(demandCriteria, requestInfo);
 
 		UserSearchRequest userSearchRequest = null;
@@ -340,7 +339,6 @@ public class DemandService {
 		
 		if (!CollectionUtils.isEmpty(demands) && !CollectionUtils.isEmpty(payers))
 			demands = demandEnrichmentUtil.enrichPayer(demands, payers);
-		
 
 		List<Demand> activeDemands=new ArrayList<Demand>();		
 
