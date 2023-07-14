@@ -65,3 +65,4 @@ public class PercentageComputedField implements IComputedField<Data>{
 
     }
 }
+

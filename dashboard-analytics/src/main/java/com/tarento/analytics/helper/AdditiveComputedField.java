@@ -59,3 +59,4 @@ public class AdditiveComputedField implements IComputedField<Data> {
 
     }
 }
+
