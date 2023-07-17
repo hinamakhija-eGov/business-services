@@ -203,7 +203,7 @@ public class PaymentService {
     public List<Payment> plainSearch(PaymentSearchCriteria paymentSearchCriteria) {
         PaymentSearchCriteria searchCriteria = new PaymentSearchCriteria();
         
-	log.info("plainSearch Service BusinessServices"+paymentSearchCriteria.getBusinessServices() +"plainSearch Service Date "+
+	    log.info("plainSearch Service BusinessServices"+paymentSearchCriteria.getBusinessServices() +"plainSearch Service Date "+
         		 paymentSearchCriteria.getFromDate() +" to "+paymentSearchCriteria.getToDate() +"Teant IT "+paymentSearchCriteria.getTenantId()+" \"plainSearch Service BusinessServices\"+paymentSearchCriteria.getBusinessService():"+paymentSearchCriteria.getBusinessService());    
 	    
         if (applicationProperties.isPaymentsSearchPaginationEnabled()) {

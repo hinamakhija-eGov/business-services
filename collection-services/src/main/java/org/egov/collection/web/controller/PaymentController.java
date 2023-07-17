@@ -71,8 +71,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -166,23 +164,6 @@ public class PaymentController {
 
         log.info("businessservice: " + paymentSearchCriteria.getBusinessServices());
         log.info("paymentSearchCriteria: " + paymentSearchCriteria.getTenantId());
-//         if(!StringUtils.isEmpty(businessservice))
-//		{
-//			HashSet<String> businessservices=new HashSet<>();
-//			businessservices.add(businessservice);
-//            paymentSearchCriteria.setBusinessServices(businessservices);
-//		}
-//        
-//         if(fromDate!=null) {
-//        	 paymentSearchCriteria.setFromDate(fromDate);
-//         }
-//         
-//         if(toDate!=null) {
-//        	 paymentSearchCriteria.setFromDate(toDate);
-//         }
-         
-         log.info("after added  paymentSearchCriteria: " + paymentSearchCriteria);
-
          
         final RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
 

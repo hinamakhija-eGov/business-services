@@ -144,26 +144,18 @@ public class BillDetail {
 	private String cancellationRemarks;
 
 	public Boolean addBillAccountDetail(BillAccountDetail billAccountDetail) {
-		
-		if (CollectionUtils.isEmpty(billAccountDetails)) {
-			  
-			  billAccountDetails = new ArrayList<>(); return
-			  billAccountDetails.add(billAccountDetail); }
-		else if(billAccountDetail.getAmount().compareTo(BigDecimal.ZERO)!=0 && billAccountDetail.getAdjustedAmount().compareTo(BigDecimal.ZERO)!=0){
-			return billAccountDetails.add(billAccountDetail);
-		}else {
-			return false;
-		}
 
-		/*
-		 * if (CollectionUtils.isEmpty(billAccountDetails)) {
-		 * 
-		 * billAccountDetails = new ArrayList<>(); return
-		 * billAccountDetails.add(billAccountDetail); } else {
-		 * 
-		 * if (!billAccountDetails.contains(billAccountDetail)) return
-		 * billAccountDetails.add(billAccountDetail); else return false; }
-		 */
+		if (CollectionUtils.isEmpty(billAccountDetails)) {
+
+			billAccountDetails = new ArrayList<>();
+			return billAccountDetails.add(billAccountDetail);
+		} else {
+
+			if (!billAccountDetails.contains(billAccountDetail))
+				return billAccountDetails.add(billAccountDetail);
+			else
+				return false;
+		}
 	}
 
 }

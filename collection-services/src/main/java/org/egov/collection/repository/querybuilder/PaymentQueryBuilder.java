@@ -170,6 +170,8 @@ public class PaymentQueryBuilder {
 			+ "LEFT OUTER JOIN egcl_billaccountdetail ad ON bd.id = ad.billdetailid AND bd.tenantid = ad.tenantid "
 			+ "WHERE b.id IN (:id);"; 
 
+
+
 	public static String getBillQuery() {
 		return BILL_BASE_QUERY;
 	}
@@ -376,6 +378,12 @@ public class PaymentQueryBuilder {
             addClauseIfRequired(preparedStatementValues, selectQuery);
             selectQuery.append(" py_inner.id IN (:id)  ");
             preparedStatementValues.put("id", searchCriteria.getIds());
+        }
+
+        if (searchCriteria.getReceiptNumbers() != null && !searchCriteria.getReceiptNumbers().isEmpty()) {
+            addClauseIfRequired(preparedStatementValues, selectQuery);
+            selectQuery.append(" pyd.receiptNumber IN (:receiptnumber)  ");
+            preparedStatementValues.put("receiptnumber", searchCriteria.getReceiptNumbers());
         }
 
         if (!CollectionUtils.isEmpty(searchCriteria.getStatus())) {

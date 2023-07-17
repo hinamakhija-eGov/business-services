@@ -136,7 +136,7 @@ public class PaymentEnricher {
 				paymentDetail.setReceiptDate(System.currentTimeMillis());	
 			}
 			paymentDetail.setReceiptType(ReceiptType.BILLBASED.toString());
-		
+			paymentDetail.setReceiptDate(System.currentTimeMillis());
 			paymentDetail.setTotalDue(billIdToBillMap.get(paymentDetail.getBillId()).getTotalAmount());
 		});
 		if (!errorMap.isEmpty())
