@@ -48,8 +48,7 @@ public class EnhanceDomainConfig implements DomainConfig {
     @Override
     public void loadDomains(){
         String enhanceConfigContent = configLoader.get(ENHANCE_DOMAIN_CONFIG);
-       // LOGGER.info("collectionConfigContent json string = "+collectionConfigContent);
-        LOGGER.info("collectionConfigContent json string = "+enhanceConfigContent);
+        //LOGGER.info("collectionConfigContent json string = "+collectionConfigContent);
 
         try{
 
@@ -67,8 +66,7 @@ public class EnhanceDomainConfig implements DomainConfig {
             LOGGER.info("After loading, domainIndexConfigMap size  = "+ domainIndexConfigMap.size());
 
         } catch (Exception e){
-            e.printStackTrace();
-            LOGGER.error("on construction domain collection map: "+ e.getMessage());
+            LOGGER.error("Error occurred on construction domain collection map: "+ e.getMessage());
         }
 
     }

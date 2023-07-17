@@ -92,12 +92,11 @@ public class CollectionTransformationService implements TransformService {
             for(int i=0; (i<parentNodeSize); i++){
                 previousField = findParentKey(specNode.findPath(JOLT_SPEC), "$j", "");
                 ArrayNode nestedNodes = (ArrayNode)incomingNode.findValues(previousField).get(i);
-             LOGGER.info("Parent incomingNode :"+incomingNode.toString());
+                LOGGER.info("Parent incomingNode :"+incomingNode.toString());
                 LOGGER.info(" ArrayNode nestedNodes## " +   nestedNodes.toString());
 
                 for(int j=0; j< nestedNodes.size(); j++){
                     JsonNode idNode = nestedNodes.get(j).get(ID);
-                    
                     String spec = specNode.toString();
                     spec = spec.replace("$i", i+"");
                     spec = spec.replace("$j", j+"");

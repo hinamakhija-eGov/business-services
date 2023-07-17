@@ -27,7 +27,7 @@ public class ProducerController {
     private String topickey;
     @Autowired
     private KafkaTemplate<String, Object> kafkaTemplate;
-  /*
+
     @PostMapping("/update/publish")
     public ResponseEntity<Response> publish(@RequestBody String body){
         LOGGER.info("publishing request body "+body);
@@ -50,7 +50,7 @@ public class ProducerController {
         }
 
     }
-*/
+
     @Value("${kafka.topics.incoming.collection}")
     private String testTopic;
     @Value("${kafka.topics.enriched.key}")

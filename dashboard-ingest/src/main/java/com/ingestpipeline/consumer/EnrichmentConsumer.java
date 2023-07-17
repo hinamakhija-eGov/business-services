@@ -51,9 +51,7 @@ public class EnrichmentConsumer implements KafkaConsumer {
 			push(incomingData, null);
 		} else {
 			for(Object key : incomingData.keySet()){
-				Map data=(Map)incomingData.get(key);
-				String trxid = (String)((Map)data.get(Constants.DATA_OBJECT)).get(Constants.ID);
-				push((Map)incomingData.get(key), trxid);
+				push((Map)incomingData.get(key), key.toString());
 			}
 		}
 	}
@@ -72,10 +70,9 @@ public class EnrichmentConsumer implements KafkaConsumer {
 			}
 			if(updatedIncomingData == null) {
 				LOGGER.info("Incoming Data is null::");
-				ingestProducer.pushToPipeline(incomingData, ERROR_INTENT, ERROR_INTENT);
+				ingestProducer.pushToPipeline(incomingData, ERROR_INTENT, null);
 			}
 		} catch (final Exception e) {
-			e.printStackTrace();
 			LOGGER.error("Exception Encountered while processing the received message : " + e.getMessage());
 		}
 
